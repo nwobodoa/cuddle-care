@@ -1,4 +1,4 @@
-package com.example.cuddlecare.ui.theme
+package com.example.cuddlecare.ui.theme.ui.theme
 
 import android.app.Activity
 import android.os.Build
