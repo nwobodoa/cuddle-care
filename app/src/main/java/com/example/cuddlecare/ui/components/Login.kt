@@ -34,7 +34,7 @@ fun PasswordField(
          onValueChange = {newPassword -> onChange(newPassword) },
          modifier = modifier,
          label = {Text(label) },
-         tralingIcon = {
+         trailingIcon = {
              IconButton(onClick = { visible = !visible }, modifier = Modifier.padding(4.dp)) {
                  Icon(
                      imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,

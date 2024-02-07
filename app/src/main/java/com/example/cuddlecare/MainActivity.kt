@@ -10,21 +10,24 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHost
-import androidx.navigation.compose.composable
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cuddlecare.ui.auth.FirebaseAuthViewModel
-import com.example.cuddlecare.ui.screen.RegisterScreen
 import com.example.cuddlecare.ui.screen.LoginScreen
+import com.example.cuddlecare.ui.screen.RegisterScreen
 import com.example.cuddlecare.ui.screen.Screen
+import com.example.cuddlecare.ui.theme.CuddleCareTheme
 import com.google.firebase.FirebaseApp
+
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
            super.onCreate(savedInstanceState)
         setContent {
             FirebaseApp.initializeApp(LocalContext.current)
+            CuddleCareTheme(content = { CuddleCareApp()})
         }
     }
 }
@@ -40,9 +43,9 @@ fun CuddleCareApp(
         color = MaterialTheme.colorScheme.background
     ){
         val startDestination =
-            if (firebaseAuthViewModel.isAuthenticated()) Screen.AuthenticatedLandingScreen.name else Screen.Welcome.name
+            if (firebaseAuthViewModel.isAuthenticated()) Screen.AuthenticatedLandingScreen.name else Screen.Login.name
 
-        NavHost(navController = navController, startDestination=startDestination) {
+        NavHost(navController = navController, startDestination=Screen.Register.name) {
 //            composable(Screen.Welcome.name){
 //                WelcomePage(navController = navController)
 //            }
@@ -58,10 +61,7 @@ fun CuddleCareApp(
                 )
             }
             composable(Screen.AuthenticatedLandingScreen.name){
-                Screen.AuthenticatedLandingScreen(
-                    firebaseAuthViewModel = firebaseAuthViewModel,
-                    topNavHostController = navController
-                )
+
             }
         }
     }

@@ -1,5 +1,6 @@
 package com.example.cuddlecare.ui.screen
 
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -15,13 +16,5 @@ fun LoginScreen(
     navigationController: NavHostController,
     firebaseAuthViewModel: FirebaseAuthViewModel
 ){
-    var enabledSignInButton by remember{ mutableStateOf(false) }
-    val firebaseAuthUiState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
-    val hasError = firebaseAuthUiState.errors.isNotEmpty()
-
-    LaunchedEffect(key1 = firebaseAuthUiState.currentUser){
-        if (firebaseAuthUiState.currentUser != null){
-            navigationController.navigate(Screen.AuthenticatedLandingScreen.name)
-        }
-    }
+   Text(text = "I am the login page")
 }

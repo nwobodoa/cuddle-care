@@ -16,7 +16,6 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.example.cuddlecare.setup.SetupScreen
 import com.example.cuddlecare.ui.auth.FirebaseAuthViewModel
 
 enum class AuthenticatedLandingScreen {
@@ -26,39 +25,37 @@ enum class AuthenticatedLandingScreen {
 @Composable
 fun AuthenticatedLandingScreen(
     firebaseAuthViewModel: FirebaseAuthViewModel = viewModel(),
-    profileViewmodel: ProfileViewModel = viewModel(),
-    topNavController: NavController: NavHostController
 ){
-    val profileUiState by profileViewmodel.profileUIState.collectAsState()
-    val navHostController = rememberNavController()
-
-    LaunchedEffect(Unit ) {
-        profileViewmodel.getUserProfile(firebaseAuthViewModel.currentUser()!!)
-    }
-    if (profileUiState.loading) {
-        Column(modifier = Modifier.padding(start = 16.dp,end =16.dp)){
-            Loading()
-        }
-        return
-    }
-    val startDestination =
-        if (profileUiState.profile == null) AuthenticatedLandingScreen.setup.name else AuthenticatedLandingScreen.Application.name
-
-    NavHost(navController = navHostController, startDestination = startDestination ) {
-        composable(AuthenticatedLandingScreen.setup.name){
-            Column (modifier = Modifier.padding(start = 16.dp, end = 16.dp)){
-                SetupScreen(
-                    firebaseAuthViewModel = firebaseAuthViewModel,
-                    topNavController = topNavHostController,
-                    profileViewmodel = profileViewmodel
-                )
-
-            }
-        }
-        composable(AuthenticatedLandingScreen.Application.name){
-            ApplicationScreen()
-        }
-    }
+//    val profileUiState by profileViewmodel.profileUIState.collectAsState()
+//    val navHostController = rememberNavController()
+//
+//    LaunchedEffect(Unit ) {
+//        profileViewmodel.getUserProfile(firebaseAuthViewModel.currentUser()!!)
+//    }
+//    if (profileUiState.loading) {
+//        Column(modifier = Modifier.padding(start = 16.dp,end =16.dp)){
+//            Loading()
+//        }
+//        return
+//    }
+//    val startDestination =
+//        if (profileUiState.profile == null) AuthenticatedLandingScreen.setup.name else AuthenticatedLandingScreen.Application.name
+//
+//    NavHost(navController = navHostController, startDestination = startDestination ) {
+//        composable(AuthenticatedLandingScreen.setup.name){
+//            Column (modifier = Modifier.padding(start = 16.dp, end = 16.dp)){
+//                SetupScreen(
+//                    firebaseAuthViewModel = firebaseAuthViewModel,
+//                    topNavController = topNavHostController,
+//                    profileViewmodel = profileViewmodel
+//                )
+//
+//            }
+//        }
+//        composable(AuthenticatedLandingScreen.Application.name){
+//            ApplicationScreen()
+//        }
+//    }
 }
 
 @Composable
