@@ -1,4 +1,4 @@
-package com.example.cuddlecare.ui.theme.ui.auth
+package com.example.cuddlecare.ui.auth
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
