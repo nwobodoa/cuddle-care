@@ -1,3 +1,5 @@
 <resources>
     <string name="app_name">Cuddle Care</string>
+    <string name="diversity2">diversity2</string>
+    <string name="input">Always place your baby on their back to sleep. Do not put them to sleep on their side or stomach. This can cause suffocating or choking, which keeps them from breathing.</string>
 </resources>
