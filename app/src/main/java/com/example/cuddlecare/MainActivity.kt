@@ -15,6 +15,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cuddlecare.ui.auth.FirebaseAuthViewModel
+import com.example.cuddlecare.ui.components.TopBar
+import com.example.cuddlecare.ui.screen.AddBabyScaffold
+import com.example.cuddlecare.ui.screen.HomeSceen
 import com.example.cuddlecare.ui.screen.LoginScreen
 import com.example.cuddlecare.ui.screen.RegisterScreen
 import com.example.cuddlecare.ui.screen.Screen
@@ -26,8 +29,9 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
            super.onCreate(savedInstanceState)
         setContent {
+
             FirebaseApp.initializeApp(LocalContext.current)
-            CuddleCareTheme(content = { CuddleCareApp()})
+            CuddleCareTheme(content = { AddBabyScaffold() })
         }
     }
 }
@@ -43,9 +47,9 @@ fun CuddleCareApp(
         color = MaterialTheme.colorScheme.background
     ){
         val startDestination =
-            if (firebaseAuthViewModel.isAuthenticated()) Screen.AuthenticatedLandingScreen.name else Screen.Login.name
+            if (firebaseAuthViewModel.isAuthenticated()) Screen.AddBabyScreen.name else Screen.Login.name
 
-        NavHost(navController = navController, startDestination=Screen.Register.name) {
+        NavHost(navController = navController, startDestination=Screen.AddBabyScreen.name) {
 //            composable(Screen.Welcome.name){
 //                WelcomePage(navController = navController)
 //            }
@@ -60,10 +64,11 @@ fun CuddleCareApp(
                     firebaseAuthViewModel = firebaseAuthViewModel
                 )
             }
-            composable(Screen.AuthenticatedLandingScreen.name){
-
+            composable(Screen.AddBabyScreen.name){
+                AddBabyScaffold()
             }
         }
     }
+
 }
 
