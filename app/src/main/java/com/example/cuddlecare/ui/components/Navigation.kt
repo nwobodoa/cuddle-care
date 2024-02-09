@@ -28,7 +28,7 @@ fun TopBar(navigationController: NavController, title: String) {
             modifier = Modifier.padding(horizontal = 8.dp)
         ) {
             Icon(
-                imageVector = Icons.Default.ArrowBack,
+                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                 contentDescription = "Back"
             )
         }
