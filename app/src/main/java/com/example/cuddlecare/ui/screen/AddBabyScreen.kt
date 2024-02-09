@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -22,7 +23,6 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -33,8 +33,10 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.RectangleShape
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.cuddlecare.R
@@ -93,45 +95,17 @@ fun AddBabyScaffold() {
             Column(
                 Modifier
                     .fillMaxWidth()
-                    .padding(start = 16.dp, end = 16.dp),
+                    .padding(horizontal = 16.dp, vertical = 16.dp),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
 
                 ) {
-                Row(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    var isEnabled by remember { mutableStateOf(true) }
-                    var isClicked by remember { mutableStateOf(false) }
-                    Button(
-                        modifier = Modifier.padding(top = 16.dp), onClick = {
-                            !isEnabled
 
-                        }, colors = ButtonDefaults.buttonColors(
-                            if (isEnabled) Color.Red else Color.LightGray
-                        )
-                    ) {
-                        Text(text = "Girl")
-                    }
-
-                    Button(
-                        modifier = Modifier.padding(top = 16.dp), onClick = {
-                            !isClicked
-
-                        }, colors = ButtonDefaults.buttonColors(
-                            if (isClicked) Color.Red else Color.LightGray
-                        )
-                    ) {
-                        Text(text = "Boy")
-
-                    }
-                }
+                GenderSelector()
                 Row(
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     var text by remember { mutableStateOf("") }
-                    OutlinedTextField(colors = TextFieldDefaults.colors(
-                        Color.LightGray, unfocusedLabelColor = Color.LightGray
-                    ),
+                    OutlinedTextField(
                         value = text,
                         modifier = Modifier.fillMaxWidth(),
                         onValueChange = { text = it },
@@ -139,9 +113,7 @@ fun AddBabyScaffold() {
                         label = { Text("Baby Name") })
                 }
                 Row(
-                    Modifier
-                        .fillMaxWidth()
-                        .padding(top = 16.dp),
+                    Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -154,12 +126,10 @@ fun AddBabyScaffold() {
 //                            "Entered date timestamp: ${state.selectedDateMillis ?: "no input"}",
 //                            modifier = Modifier.align(Alignment.CenterHorizontally)
 //                        )
-                    }
                 }
+
                 Row(
-                    Modifier
-                        .padding(top = 16.dp)
-                        .fillMaxWidth(),
+                    Modifier.fillMaxWidth(),
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
@@ -184,14 +154,13 @@ fun AddBabyScaffold() {
                 Row(
                     Modifier
                         .fillMaxWidth()
-                        .padding(top = 16.dp, bottom = 16.dp)
+
                 ) {
                     Button(
                         onClick = {
                             //TODO(code to navigate to home screen)
 
                         }, modifier = Modifier
-                            .padding(bottom = 16.dp)
                             .height(70.dp)
                             .fillMaxWidth()
 
@@ -202,7 +171,52 @@ fun AddBabyScaffold() {
                 }
             }
         }
+    }
+
+}
+
+
+@Composable
+@Preview(showBackground = true)
+fun GenderSelector() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+    ) {
+        var isEnabled by remember { mutableStateOf(true) }
+
+
+        GenderButton(
+            enabled = isEnabled,
+            modifier = Modifier.weight(1f),
+            onClick = { isEnabled = true }) {
+            Text(text = "Boy")
+        }
+        GenderButton(
+            enabled = !isEnabled,
+            modifier = Modifier.weight(1f),
+            onClick = { isEnabled =false }) {
+            Text(text = "Girl")
+        }
 
     }
+}
+
+@Composable
+fun GenderButton(
+    enabled: Boolean,
+    modifier: Modifier,
+    onClick: () -> Unit,
+    content: @Composable() (RowScope.() -> Unit)
+) {
+    val colors =
+        if (enabled) ButtonDefaults.buttonColors() else ButtonDefaults.buttonColors(Color.LightGray)
+    Button(
+        onClick = onClick,
+        content = content,
+        modifier = modifier,
+        colors = colors
+    )
+}
 
 
