@@ -10,4 +10,8 @@
     <color name="backcolor">#F5F5F5</color>
     <color name="orange">#FFA451</color>
     <color name="myRed">#FF3B30</color>
+    <color name="tipBack">#FFE4CB</color>
+    <color name="tipBtn">#FF7F6E</color>
 </resources>
+
+
