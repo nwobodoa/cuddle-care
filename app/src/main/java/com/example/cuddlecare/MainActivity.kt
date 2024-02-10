@@ -15,12 +15,12 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cuddlecare.ui.auth.FirebaseAuthViewModel
-import com.example.cuddlecare.ui.components.TopBar
 import com.example.cuddlecare.ui.screen.AddBabyScaffold
-import com.example.cuddlecare.ui.screen.HomeSceen
+import com.example.cuddlecare.ui.screen.HomeScreen
 import com.example.cuddlecare.ui.screen.LoginScreen
 import com.example.cuddlecare.ui.screen.RegisterScreen
 import com.example.cuddlecare.ui.screen.Screen
+import com.example.cuddlecare.ui.screen.add_diaper_record
 import com.example.cuddlecare.ui.theme.CuddleCareTheme
 import com.google.firebase.FirebaseApp
 
@@ -31,7 +31,7 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             FirebaseApp.initializeApp(LocalContext.current)
-            CuddleCareTheme(content = { AddBabyScaffold() })
+            CuddleCareTheme(content = { add_diaper_record() })
         }
     }
 }

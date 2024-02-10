@@ -155,18 +155,7 @@ fun AddBabyScaffold() {
                         .fillMaxWidth()
 
                 ) {
-                    Button(
-                        onClick = {
-                            //TODO(code to navigate to home screen)
-
-                        }, modifier = Modifier
-                            .height(70.dp)
-                            .fillMaxWidth()
-
-                    ) {
-                        Text("save", fontSize = 28.sp)
-
-                    }
+                    SaveButton()
                 }
             }
         }
@@ -216,6 +205,21 @@ fun GenderButton(
         modifier = modifier,
         colors = colors
     )
-}
+}@Composable
+fun SaveButton() {
+        Button(
+            onClick = {
+                //TODO(code to navigate to home screen)
+
+            }, modifier = Modifier
+                .height(70.dp)
+                .fillMaxWidth()
+
+
+        ) {
+            Text("save", fontSize = 28.sp)
+        }
+    }
+
 
 
