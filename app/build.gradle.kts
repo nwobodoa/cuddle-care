@@ -5,11 +5,11 @@ plugins {
 }
 
 android {
-    namespace = "com.example.cuddlecare"
+    namespace = "com.ebony.cuddlecare"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.example.cuddlecare"
+        applicationId = "com.ebony.cuddlecare"
         minSdk = 24
         targetSdk = 34
         versionCode = 1
