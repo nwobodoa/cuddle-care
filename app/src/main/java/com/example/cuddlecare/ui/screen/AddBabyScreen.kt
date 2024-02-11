@@ -174,13 +174,13 @@ fun GenderSelector() {
         var isEnabled by remember { mutableStateOf(true) }
 
 
-        GenderButton(
+        ToggableButton(
             enabled = isEnabled,
             modifier = Modifier.weight(1f),
             onClick = { isEnabled = true }) {
             Text(text = "Boy")
         }
-        GenderButton(
+        ToggableButton(
             enabled = !isEnabled,
             modifier = Modifier.weight(1f),
             onClick = { isEnabled =false }) {
@@ -191,7 +191,7 @@ fun GenderSelector() {
 }
 
 @Composable
-fun GenderButton(
+fun ToggableButton(
     enabled: Boolean,
     modifier: Modifier,
     onClick: () -> Unit,

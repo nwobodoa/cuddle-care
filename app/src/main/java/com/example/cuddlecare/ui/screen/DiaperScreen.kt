@@ -4,9 +4,8 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -14,16 +13,16 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
 import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.DropdownMenu
 import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuBox
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -32,8 +31,10 @@ import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.WaterDrop
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,11 +42,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -53,15 +52,17 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.cuddlecare.R
-import com.example.cuddlecare.ui.components.TopBar
 import com.example.cuddlecare.ui.components.mTopBar
+import com.example.cuddlecare.ui.viewmodel.DiaperUIState
+import com.example.cuddlecare.ui.viewmodel.DiaperViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-fun add_diaper_record() {
+fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel()) {
+    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -74,35 +75,14 @@ fun add_diaper_record() {
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),
-            verticalArrangement=Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         )
         {
 
-            Row(
-                horizontalArrangement = Arrangement.Center,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(top = 4.dp)
-            ) {
-                Image(
-                    painter = painterResource(id = R.drawable.diaper_logo),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(200.dp),
-                    contentScale = ContentScale.Crop
-                )
-            }
-            Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
-
-                Text(text = "Diaper", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-                Text(text = "Last: 20mins ago")
-            }
+            ScreenMainIcon(R.drawable.diaper_logo)
+            LastUpdated()
             extracted()
-            Row() {
-                Text(text = "Diaper Count : 0", fontSize = 14.sp, fontWeight = FontWeight.Bold)
-                Spacer(modifier = Modifier.size(6.dp))
-                Icon(imageVector = Icons.Filled.Add, contentDescription = "Plus icon")
-            }
+            DiaperCount(diaperUIState.diaperCount)
             AttachmentRow()
             SaveButton()
             //TODO disable save button if nothing is entered
@@ -112,41 +92,91 @@ fun add_diaper_record() {
 }
 
 @Composable
+private fun ScreenMainIcon(drawableId:Int) {
+    Row(
+        horizontalArrangement = Arrangement.Center,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 4.dp)
+    ) {
+        Image(
+            painter = painterResource(id = drawableId),
+            contentDescription = null,
+            modifier = Modifier
+                .size(200.dp),
+            contentScale = ContentScale.Crop
+        )
+    }
+}
+
+@Composable
+private fun LastUpdated() {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+
+        Text(text = "Diaper", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(text = "Last: 20mins ago")
+    }
+}
+
+@Composable
+private fun DiaperCount(count:Int) {
+    Row {
+        Text(
+            text = "Diaper Count : $count",
+            fontSize = 14.sp,
+            fontWeight = FontWeight.Bold
+        )
+        Spacer(modifier = Modifier.size(6.dp))
+    }
+}
+
+@Composable
 @Preview(showBackground = true)
-private fun extracted() {
+private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
+    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
             .clip(shape = RoundedCornerShape(20.dp))
             .background(color = Color.White)
             .padding(8.dp)
-            .fillMaxWidth()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     )
 
     {
-        Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.SpaceBetween) {
-            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
-
-                Icon(Icons.Default.AccessTime, contentDescription = "Timer")
-                Text(text = "Time")
-            }
-            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+            LeadingDetailsIcon(
+                title = "Time",
+                imageVector = Icons.Default.AccessTime,
+                contentDescription = "Time"
+            )
+            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Text(text = "9 Nov")
                 Text(text = "2:44 AM")
             }
         }
-        Row(horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment =Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()){
+        Row(
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()
+        ) {
 
             val groups = listOf("Disposable", "Cloth")
             var selectedIndex by remember { mutableStateOf(0) }
-            Row() {
-                Icon(Icons.Outlined.Folder, contentDescription = "Folder icon")
-                Text("Group")
+
+            LeadingDetailsIcon(
+                title = "Group",
+                imageVector = Icons.Outlined.Folder,
+                contentDescription = "Folder icon"
+            )
+
+//            ExposedSelectionMenu(title = "Select group", options = groups, onSelected = { index ->
+//                selectedIndex = index
+//            })
+            Row {
+                Text(text = "Select Group")
+                Icon(Icons.Outlined.ArrowDropDown, contentDescription = "Arrow down icon")
             }
-            ExposedSelectionMenu(title = "Select group", options = groups, onSelected = { index ->
-                selectedIndex = index
-            })
         }
 
         Row(
@@ -155,16 +185,12 @@ private fun extracted() {
 
 
         ) {
-            var isClicked by remember { mutableStateOf(false) }
-            var isEnabled by remember { mutableStateOf(true) }
-            Button(
+
+            ToggableButton(
                 modifier = Modifier.clip(shape = RoundedCornerShape(30.dp)),
-                onClick = { isEnabled = !isEnabled },
-                enabled = !isEnabled
-
-
+                onClick = { diaperViewModel.toggleWetDiaper()},
+                enabled = diaperUIState.isWetDiaper
             ) {
-
                 Icon(
                     imageVector = Icons.Default.WaterDrop,
                     contentDescription = "water drop"
@@ -173,10 +199,16 @@ private fun extracted() {
                 Text(text = "Wet")
 
             }
-            Button(onClick = {
-                isClicked = !isClicked
-            }, enabled = isClicked, modifier = Modifier.padding(start = 8.dp)
-                .clip(shape = RoundedCornerShape(30.dp)))
+
+            ToggableButton(
+                onClick = {
+                    diaperViewModel.toggleDirtyDiaper()
+                },
+                enabled = diaperUIState.isDirtyDiaper,
+                modifier = Modifier
+                    .padding(start = 8.dp)
+                    .clip(shape = RoundedCornerShape(30.dp))
+            )
             {
                 Icon(
                     painter = painterResource(id = R.drawable.poop),
@@ -184,7 +216,7 @@ private fun extracted() {
                     tint = Color.Black
                 )
                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                Text(text = "Dry")
+                Text(text = "Dirty")
             }
         }
     }
@@ -238,6 +270,17 @@ fun AttachmentRow() {
 }
 
 @Composable
+fun LeadingDetailsIcon(title: String, imageVector: ImageVector, contentDescription: String) {
+    Row(
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Icon(imageVector = imageVector, contentDescription = contentDescription)
+        Text(title)
+    }
+}
+
+@Composable
 @OptIn(ExperimentalMaterialApi::class)
 fun ExposedSelectionMenu(
     title: String,
@@ -246,54 +289,49 @@ fun ExposedSelectionMenu(
 ) {
     var expanded by remember { mutableStateOf(false) }
     var selectedOptionText by remember { mutableStateOf("") }
-    ExposedDropdownMenuBox(
-        modifier = Modifier.fillMaxWidth(0.5f),
+    TextField(
+        readOnly = true,
+        modifier = Modifier.clickable(
+            onClick = { expanded = !expanded }
+        ),
+        value = selectedOptionText,
+        onValueChange = { },
+
+        trailingIcon = {
+            ExposedDropdownMenuDefaults.TrailingIcon(
+                expanded = expanded
+            )
+        },
+        placeholder = { Text(text = title) },
+        colors = ExposedDropdownMenuDefaults.textFieldColors(
+            backgroundColor = Color.White,
+            focusedIndicatorColor = Color.Gray,
+            unfocusedIndicatorColor = Color.Gray,
+            disabledIndicatorColor = Color.Transparent,
+        )
+
+    )
+    DropdownMenu(
         expanded = expanded,
-        onExpandedChange = {
-            expanded = !expanded
+        onDismissRequest = {
+            expanded = false
+
         }
     ) {
-
-        TextField(
-            readOnly = true,
-            value = selectedOptionText,
-            onValueChange = { },
-
-//            trailingIcon = {
-//                ExposedDropdownMenuDefaults.TrailingIcon(
-//                    expanded = expanded
-//                )
-//            },
-            placeholder = { Text(text = title)},
-            colors = ExposedDropdownMenuDefaults.textFieldColors(
-                backgroundColor = Color.White,
-                focusedIndicatorColor = Color.Gray,
-                unfocusedIndicatorColor = Color.Gray,
-                disabledIndicatorColor = Color.Transparent,
-            )
-
-        )
-        ExposedDropdownMenu(
-             expanded = expanded,
-            onDismissRequest = {
-                expanded = false
-
-            }
-        ) {
-            options.forEachIndexed { index: Int, selectionOption: String ->
-                DropdownMenuItem(
-                     onClick = {
-                        selectedOptionText = selectionOption
-                        expanded = false
-                        onSelected(index)
-                    }
-                ) {
-                    Text(text = selectionOption)
+        options.forEachIndexed { index: Int, selectionOption: String ->
+            DropdownMenuItem(
+                onClick = {
+                    selectedOptionText = selectionOption
+                    expanded = false
+                    onSelected(index)
                 }
+            ) {
+                Text(text = selectionOption)
             }
         }
     }
 }
+
 
 
 
