@@ -3,11 +3,14 @@ package com.example.cuddlecare.ui.components
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
@@ -17,6 +20,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MediumTopAppBar
 import androidx.compose.material3.Text
+import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -31,14 +35,17 @@ import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
 import com.example.cuddlecare.R
+import com.example.cuddlecare.ui.screen.ExposedSelectionMenu
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun TopBar() {
-    MediumTopAppBar(
+        TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = colorResource(id = R.color.orange),
             titleContentColor = Color.Black,
@@ -100,37 +107,54 @@ fun ProfileAvatar(
     }
 }
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DropdownItem() {
-    var expanded by remember { mutableStateOf(false) }
+@Preview
+fun mTopBar() {
+    TopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = colorResource(id = R.color.orange),
+            titleContentColor = Color.Black,
+        ),
 
-    Box(
-        modifier = Modifier
-            .fillMaxSize()
-            .wrapContentSize(Alignment.TopStart)
-    ) {
-        IconButton(onClick = { expanded = true }) {
-            Icon(Icons.Default.MoreVert, contentDescription = "Localized description")
-        }
-        DropdownMenu(
-            expanded = expanded,
-            onDismissRequest = { expanded = false }
-        ) {
-            DropdownMenuItem(
-                text = { Text("David") },
-                onClick = { /* Handle edit! */ }
+        navigationIcon = {
+            IconButton(
+                //onclick=   NavController.popBackStack()
+                onClick = { },
+
+            ) {
+                Icon(
+                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                    contentDescription = "Back"
+                )
+            }
+            ProfileAvatar(
+                modifier = Modifier.padding(start = 16.dp ,end=16.dp,bottom=8.dp,top=8.dp), id = "D", firstName = "David"
             )
-            DropdownMenuItem(
-                text = { Text("Nathan") },
-                onClick = { /* Handle settings! */ },
+        },
+
+        title = {
+            Text(
+                text = "David"
             )
-            DropdownMenuItem(
-                text = { Text("Bella") },
-                onClick = { /* Handle send feedback! */ },
-                trailingIcon = { Text("F11", textAlign = TextAlign.Center) })
+        },
+        actions = {
+            //search icon
+            IconButton(onClick = {
+
+            }) {
+                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+            }
+
+            // lock icon
+            IconButton(onClick = {
+
+            }) {
+                Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
+            }
         }
-    }
+
+    )
 }
-
-
 

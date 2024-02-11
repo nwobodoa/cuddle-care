@@ -4,7 +4,9 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Button
@@ -38,8 +41,11 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -47,27 +53,28 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.compose.ui.unit.toSize
 import com.example.cuddlecare.R
 import com.example.cuddlecare.ui.components.TopBar
+import com.example.cuddlecare.ui.components.mTopBar
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
 fun add_diaper_record() {
-
-
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     ) {
-        TopBar()
+        mTopBar()
         Column(
             modifier = Modifier
                 .fillMaxHeight()
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
-                .padding(16.dp)
+                .padding(16.dp),
+            verticalArrangement=Arrangement.spacedBy(16.dp)
         )
         {
 
@@ -85,70 +92,14 @@ fun add_diaper_record() {
                     contentScale = ContentScale.Crop
                 )
             }
-            Text(text = "Diaper", fontSize = 28.sp, fontWeight = FontWeight.Bold)
-            Text(text = "Last: 20mins ago")
-            Column(
-                modifier = Modifier
-                    .clip(shape = RoundedCornerShape(20.dp))
-                    .background(color = Color.White)
-                    .padding(8.dp)
-            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)){
 
-            {
-                Row {
-                    Icon(Icons.Default.AccessTime, contentDescription = "Timer")
-                    Text(text = "Time")
-                    Text(text = "9 Nov")
-                    Text(text = "2:44 AM")
-                }
-                Row {
-
-                    val groups = listOf("Disposable", "Cloth")
-                    var selectedIndex by remember { mutableStateOf(0) }
-
-                    Icon(Icons.Outlined.Folder, contentDescription = "Folder icon")
-                    ExposedSelectionMenu(title = "Select group", options =groups , onSelected ={
-                        index -> selectedIndex = index
-                    } )
-                }
-
-                Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.fillMaxWidth()
-
-                ) {
-                    var isClicked by remember { mutableStateOf(false)}
-                    var isEnabled by remember { mutableStateOf(true)}
-                    Button(
-                        onClick = { isEnabled = !isEnabled},
-                        enabled = !isEnabled
-
-
-                    ) {
-
-                        Icon(
-                            imageVector = Icons.Default.WaterDrop,
-                            contentDescription = "water drop"
-                        )
-                        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                        Text(text = "Wet")
-
-                    }
-                    Button(onClick = {
-                           isClicked = !isClicked
-                    }, enabled = isClicked, modifier = Modifier.padding(start = 8.dp)) {
-                        Icon(
-                            painter = painterResource(id = R.drawable.poop),
-                            contentDescription = "Poop",
-                            tint = Color.Black
-                        )
-                        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                        Text(text = "Dry")
-                    }
-                }
+                Text(text = "Diaper", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+                Text(text = "Last: 20mins ago")
             }
+            extracted()
             Row() {
-                Text(text = "Count : 0")
+                Text(text = "Diaper Count : 0", fontSize = 14.sp, fontWeight = FontWeight.Bold)
                 Spacer(modifier = Modifier.size(6.dp))
                 Icon(imageVector = Icons.Filled.Add, contentDescription = "Plus icon")
             }
@@ -156,6 +107,85 @@ fun add_diaper_record() {
             SaveButton()
             //TODO disable save button if nothing is entered
 
+        }
+    }
+}
+
+@Composable
+@Preview(showBackground = true)
+private fun extracted() {
+    Column(
+        modifier = Modifier
+            .clip(shape = RoundedCornerShape(20.dp))
+            .background(color = Color.White)
+            .padding(8.dp)
+            .fillMaxWidth()
+    )
+
+    {
+        Row(modifier=Modifier.fillMaxWidth(), horizontalArrangement=Arrangement.SpaceBetween) {
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+
+                Icon(Icons.Default.AccessTime, contentDescription = "Timer")
+                Text(text = "Time")
+            }
+            Row(horizontalArrangement=Arrangement.spacedBy(8.dp)) {
+                Text(text = "9 Nov")
+                Text(text = "2:44 AM")
+            }
+        }
+        Row(horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment =Alignment.CenterVertically,
+            modifier = Modifier.fillMaxWidth()){
+
+            val groups = listOf("Disposable", "Cloth")
+            var selectedIndex by remember { mutableStateOf(0) }
+            Row() {
+                Icon(Icons.Outlined.Folder, contentDescription = "Folder icon")
+                Text("Group")
+            }
+            ExposedSelectionMenu(title = "Select group", options = groups, onSelected = { index ->
+                selectedIndex = index
+            })
+        }
+
+        Row(
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.fillMaxWidth()
+
+
+        ) {
+            var isClicked by remember { mutableStateOf(false) }
+            var isEnabled by remember { mutableStateOf(true) }
+            Button(
+                modifier = Modifier.clip(shape = RoundedCornerShape(30.dp)),
+                onClick = { isEnabled = !isEnabled },
+                enabled = !isEnabled
+
+
+            ) {
+
+                Icon(
+                    imageVector = Icons.Default.WaterDrop,
+                    contentDescription = "water drop"
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text(text = "Wet")
+
+            }
+            Button(onClick = {
+                isClicked = !isClicked
+            }, enabled = isClicked, modifier = Modifier.padding(start = 8.dp)
+                .clip(shape = RoundedCornerShape(30.dp)))
+            {
+                Icon(
+                    painter = painterResource(id = R.drawable.poop),
+                    contentDescription = "Poop",
+                    tint = Color.Black
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                Text(text = "Dry")
+            }
         }
     }
 }
@@ -214,30 +244,30 @@ fun ExposedSelectionMenu(
     options: List<String>,
     onSelected: (Int) -> Unit
 ) {
-
     var expanded by remember { mutableStateOf(false) }
     var selectedOptionText by remember { mutableStateOf("") }
     ExposedDropdownMenuBox(
-        modifier = Modifier
-            .padding(vertical = 4.dp),
+        modifier = Modifier.fillMaxWidth(0.5f),
         expanded = expanded,
         onExpandedChange = {
             expanded = !expanded
         }
     ) {
+
         TextField(
             readOnly = true,
             value = selectedOptionText,
             onValueChange = { },
-            trailingIcon = {
-                ExposedDropdownMenuDefaults.TrailingIcon(
-                    expanded = expanded
-                )
-            },
+
+//            trailingIcon = {
+//                ExposedDropdownMenuDefaults.TrailingIcon(
+//                    expanded = expanded
+//                )
+//            },
             placeholder = { Text(text = title)},
             colors = ExposedDropdownMenuDefaults.textFieldColors(
                 backgroundColor = Color.White,
-                focusedIndicatorColor = Color.Transparent,
+                focusedIndicatorColor = Color.Gray,
                 unfocusedIndicatorColor = Color.Gray,
                 disabledIndicatorColor = Color.Transparent,
             )

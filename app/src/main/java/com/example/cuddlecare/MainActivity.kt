@@ -1,8 +1,10 @@
 package com.example.cuddlecare
 
+import android.os.Build
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
+import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -16,6 +18,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.example.cuddlecare.ui.auth.FirebaseAuthViewModel
 import com.example.cuddlecare.ui.screen.AddBabyScaffold
+import com.example.cuddlecare.ui.screen.Add_vaccination_record
 import com.example.cuddlecare.ui.screen.HomeScreen
 import com.example.cuddlecare.ui.screen.LoginScreen
 import com.example.cuddlecare.ui.screen.RegisterScreen
@@ -26,6 +29,7 @@ import com.google.firebase.FirebaseApp
 
 
 class MainActivity : ComponentActivity() {
+    @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
            super.onCreate(savedInstanceState)
         setContent {
