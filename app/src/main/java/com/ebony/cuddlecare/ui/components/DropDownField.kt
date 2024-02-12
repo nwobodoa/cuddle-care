@@ -12,7 +12,9 @@ import androidx.compose.material3.TextField
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.tooling.preview.Preview
 
 @Composable
@@ -26,6 +28,7 @@ fun DropDownField(
 
     Text(
         modifier = modifier.clickable { onClick() }, text = value ?: "",
-        textAlign = TextAlign.End
+        textAlign = TextAlign.End,
+        style = TextStyle(textDecoration = TextDecoration.Underline)
     )
 }

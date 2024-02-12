@@ -94,7 +94,7 @@ fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel()) {
 
             ScreenMainIcon(R.drawable.diaper_logo)
             LastUpdated()
-            extracted()
+            TimeTypeSegment()
             DiaperCount(diaperUIState.diaperCount)
             AttachmentRow()
             SaveButton()
@@ -131,6 +131,7 @@ private fun LastUpdated() {
 
 @Composable
 private fun DiaperCount(count: Int) {
+
     Row {
         Text(
             text = "Diaper Count : $count", fontSize = 14.sp, fontWeight = FontWeight.Bold
@@ -142,7 +143,7 @@ private fun DiaperCount(count: Int) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
+private fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
 
     Column(

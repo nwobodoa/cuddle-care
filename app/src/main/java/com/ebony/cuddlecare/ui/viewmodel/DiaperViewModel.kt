@@ -10,6 +10,8 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
+import java.time.ZoneOffset
+import java.time.ZoneOffset.UTC
 
 data class DiaperUIState(
     val isWetDiaper: Boolean = false,
@@ -55,7 +57,7 @@ class DiaperViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun epochMillisToDate(epochMillis: Long): LocalDate {
         return Instant.ofEpochMilli(epochMillis)
-            .atZone(ZoneId.systemDefault())
+            .atZone(ZoneOffset.UTC)
             .toLocalDate()
     }
     @RequiresApi(Build.VERSION_CODES.O)
