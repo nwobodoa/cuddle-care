@@ -8,7 +8,8 @@ import kotlinx.coroutines.flow.update
 data class DiaperUIState(
     val isWetDiaper: Boolean = false,
     val isDirtyDiaper: Boolean = false,
-    val diaperCount: Int = 0
+    val diaperCount: Int = 0,
+    val isTimeExpanded: Boolean = false
 )
 
 
@@ -22,5 +23,9 @@ class DiaperViewModel: ViewModel() {
 
     fun toggleDirtyDiaper() {
         _diaperUIState.update { it.copy(isDirtyDiaper = !it.isDirtyDiaper) }
+    }
+
+    fun toggleDatePicker() {
+        _diaperUIState.update { it.copy(isTimeExpanded = !it.isTimeExpanded) }
     }
 }
