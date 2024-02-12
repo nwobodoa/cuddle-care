@@ -1,8 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.app.TimePickerDialog
 import android.os.Build
-import android.widget.TimePicker
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -16,7 +14,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.DropdownMenu
@@ -24,6 +21,8 @@ import androidx.compose.material.DropdownMenuItem
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
+import androidx.compose.material.LocalTextStyle
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.material.TextFieldDefaults
@@ -34,23 +33,16 @@ import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Scaffold
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TimePicker
-import androidx.compose.material3.TimePickerColors
-import androidx.compose.material3.TimePickerDefaults
-import androidx.compose.material3.TimePickerState
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
@@ -60,7 +52,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
@@ -74,7 +65,10 @@ import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.components.mTopBar
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
+import java.time.Instant
+import java.time.LocalDate
 import java.time.LocalTime
+import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
 @RequiresApi(Build.VERSION_CODES.O)
@@ -130,7 +124,6 @@ private fun ScreenMainIcon(drawableId: Int) {
 @Composable
 private fun LastUpdated() {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-
         Text(text = "Diaper", fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Text(text = "Last: 20mins ago")
     }
@@ -147,7 +140,6 @@ private fun DiaperCount(count: Int) {
 }
 
 @RequiresApi(Build.VERSION_CODES.O)
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview(showBackground = true)
 private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
@@ -157,13 +149,14 @@ private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
         modifier = Modifier
             .clip(shape = RoundedCornerShape(20.dp))
             .background(color = Color.White)
-            .padding(8.dp)
-            .fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)
+            .padding(16.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     )
 
     {
+
         Row(
-//            modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically
         ) {
@@ -174,15 +167,23 @@ private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
                 contentDescription = "Time"
             )
             Row(
-                horizontalArrangement = Arrangement.spacedBy(8.dp),
+                horizontalArrangement = Arrangement.End,
                 modifier = Modifier.weight(1f)
             ) {
                 DateInput(
-                    modifier = Modifier.weight(1f),
                     toggleDatePicker = { diaperViewModel.toggleDatePicker() },
-                    isTimeExpanded = diaperUIState.isTimeExpanded
+                    isTimeExpanded = diaperUIState.isTimeExpanded,
+                    selectedDate = diaperUIState.selectedDate,
+                    setSelectedDate = diaperViewModel::setSelectedDate
                 )
-                TimePicker(modifier = Modifier.weight(1f), label = "")
+                Spacer(modifier = Modifier.size(8.dp))
+                TimeInput(
+                    setTimePicker = diaperViewModel::setShowTimePicker,
+                    label = "",
+                    showTimeDialog = diaperUIState.showTimePicker,
+                    selectedTime = diaperUIState.selectedTime,
+                    onValueChange = diaperViewModel::setSelectedTime,
+                )
             }
         }
         Row(
@@ -190,19 +191,11 @@ private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.fillMaxWidth()
         ) {
-
-            val groups = listOf("Disposable", "Cloth")
-            var selectedIndex by remember { mutableStateOf(0) }
-
             LeadingDetailsIcon(
                 title = "Type",
                 imageVector = Icons.Outlined.Folder,
                 contentDescription = "Folder icon"
             )
-
-//            ExposedSelectionMenu(title = "Select group", options = groups, onSelected = { index ->
-//                selectedIndex = index
-//            })
             Row {
                 Text(text = "Select Type")
                 Icon(Icons.Outlined.ArrowDropDown, contentDescription = "Arrow down icon")
@@ -249,14 +242,26 @@ private fun extracted(diaperViewModel: DiaperViewModel = viewModel()) {
     }
 }
 
+
+@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 private fun DateInput(
-    modifier: Modifier = Modifier, toggleDatePicker: () -> Unit, isTimeExpanded: Boolean = false
+    modifier: Modifier = Modifier,
+    toggleDatePicker: () -> Unit,
+    isTimeExpanded: Boolean = false,
+    selectedDate: LocalDate,
+    setSelectedDate: (Long) -> Unit = {}
 ) {
-    val datePickerState = rememberDatePickerState()
+    val datePickerState = rememberDatePickerState(
+        initialSelectedDateMillis = selectedDate
+            .atStartOfDay(ZoneId.systemDefault())
+            .toInstant()
+            .toEpochMilli()
+    )
     DropDownField(
-        label = "", value = "9 Nov",
+        label = "",
+        value = selectedDate.format(DateTimeFormatter.ofPattern("d MMM")),
         modifier = modifier.padding(horizontal = 4.dp)
     ) {
         toggleDatePicker()
@@ -267,69 +272,17 @@ private fun DateInput(
             onDismissRequest = { toggleDatePicker() },
             confirmButton = {
                 TextButton(onClick = { toggleDatePicker() }) {
+                    setSelectedDate(datePickerState.selectedDateMillis?:0L)
                     Text("OK")
                 }
             },
 
-        ) {
+            ) {
             DatePicker(state = datePickerState, showModeToggle = true, title = {})
         }
     }
 
 }
-//@RequiresApi(Build.VERSION_CODES.O)
-//@OptIn(ExperimentalMaterial3Api::class)
-//@Composable
-//fun TimePickerWithDialog() {
-//    var selectedHour by remember { mutableIntStateOf(0) }
-//    var selectedMinute by remember { mutableIntStateOf(0) }
-//    var showDialog by remember { mutableStateOf(false) }
-//    val timeState = rememberTimePickerState(
-//        initialHour = selectedHour,
-//        initialMinute = selectedMinute
-//    )
-//
-//    if (showDialog) {
-//        AlertDialog(
-//            onDismissRequest = { showDialog = false },
-//            modifier = Modifier.fillMaxWidth()
-//        ) {
-//            Column(
-//                modifier = Modifier
-//                    .background(color = Color.LightGray.copy(alpha = .3f))
-//                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
-//                verticalArrangement = Arrangement.Center,
-//                horizontalAlignment = Alignment.CenterHorizontally
-//            ) {
-//                TimePicker(state = timeState)
-//                Row(
-//                    modifier = Modifier
-//                        .padding(top = 12.dp)
-//                        .fillMaxWidth(), horizontalArrangement = Arrangement.End
-//                ) {
-//                    TextButton(onClick = { showDialog = false }) {
-//                        Text(text = "Dismiss")
-//                    }
-//                    TextButton(onClick = {
-//                        showDialog = false
-//                        selectedHour = timeState.hour
-//                        selectedMinute = timeState.minute
-//                    }) {
-//                        Text(text = "Confirm")
-//                    }
-//                }
-//            }
-//        }
-//    }
-//
-//    Column(horizontalAlignment = Alignment.CenterHorizontally) {
-//        Button(onClick = { showDialog = true }) {
-//            Text(text = "Show Time Picker")
-//        }
-//        Text(text = "Time is ${timeState.hour} : ${timeState.minute}")
-//    }
-//}
-
 
 
 @Composable
@@ -380,7 +333,6 @@ fun AttachmentRow() {
 }
 
 
-
 @Composable
 fun LeadingDetailsIcon(
     modifier: Modifier = Modifier,
@@ -410,7 +362,7 @@ fun ExposedSelectionMenu(
         modifier = Modifier.clickable(onClick = { expanded = !expanded }),
         value = selectedOptionText,
         onValueChange = { },
-
+        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
         trailingIcon = {
             ExposedDropdownMenuDefaults.TrailingIcon(
                 expanded = expanded
@@ -442,64 +394,63 @@ fun ExposedSelectionMenu(
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
+@OptIn(ExperimentalMaterial3Api::class)
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
-fun TimePicker(
+fun TimeInput(
     modifier: Modifier = Modifier,
     label: String,
-    value: String = "23:10",
+    showTimeDialog: Boolean = false,
+    setTimePicker: (Boolean) -> Unit,
     onValueChange: (LocalTime) -> Unit = {},
-    keyboardActions: KeyboardActions = KeyboardActions.Default,
-    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
-    pattern: String = "HH:mm",
-    is24HourView: Boolean = false,
-    initialTime: LocalTime = LocalTime.now(),
-    readOnly: Boolean = false
+    selectedTime: LocalTime = LocalTime.now(),
 ) {
 
-    var timeString by remember {
-        mutableStateOf(
-            initialTime.format(
-                DateTimeFormatter.ofPattern(
-                    pattern
-                )
-            )
-        )
-    }
-    val formatter = DateTimeFormatter.ofPattern(pattern)
-    val time = if (value.isNotBlank()) LocalTime.parse(value, formatter) else LocalTime.now()
-    val dialog = TimePickerDialog(
-        LocalContext.current,
-        { _, hour, minute ->
-            timeString = LocalTime.of(hour, minute).toString()
-            onValueChange(LocalTime.of(hour, minute))
-        },
-        time.hour,
-        time.minute,
-        is24HourView,
+    val timeState = rememberTimePickerState(
+        initialHour = selectedTime.hour,
+        initialMinute = selectedTime.minute
     )
 
-    TextField(
-        label = { Text(label) },
-        value = timeString,
-        onValueChange = {},
-        enabled = readOnly,
-        readOnly = readOnly,
-        colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = Color.White,
-            focusedIndicatorColor = Color.Gray,
-            unfocusedIndicatorColor = Color.Gray,
-            disabledIndicatorColor = Color.Transparent,
-        ),
-        modifier = modifier
-            .clickable(onClick = {
-                if (!readOnly) {
-                    dialog.show()
+    if (showTimeDialog) {
+        AlertDialog(
+            onDismissRequest = { setTimePicker(false) },
+            modifier = Modifier
+                .fillMaxWidth()
+                .background(color = MaterialTheme.colors.background)
+        ) {
+            Column(
+                modifier = Modifier
+                    .background(color = Color.LightGray.copy(alpha = .3f))
+                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            ) {
+                TimePicker(state = timeState)
+                Row(
+                    modifier = Modifier
+                        .padding(top = 12.dp)
+                        .fillMaxWidth(),
+                    horizontalArrangement = Arrangement.End
+                ) {
+                    TextButton(
+                        onClick = { setTimePicker(false) },
+                        content = { Text(text = "Dismiss") })
+                    TextButton(
+                        onClick = {
+                            setTimePicker(false)
+                            onValueChange(LocalTime.of(timeState.hour, timeState.minute))
+                        },
+                        content = { Text(text = "Confirm") })
                 }
-            })
-    )
+            }
+        }
+    }
 
+    DropDownField(
+        modifier = modifier,
+        label = label,
+        value = selectedTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
+        onClick = { setTimePicker(true) })
 
 }
 
