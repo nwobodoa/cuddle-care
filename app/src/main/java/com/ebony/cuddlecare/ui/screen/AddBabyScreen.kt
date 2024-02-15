@@ -173,13 +173,13 @@ fun GenderSelector() {
 
 
         ToggableButton(
-            enabled = isEnabled,
+            activated = isEnabled,
             modifier = Modifier.weight(1f),
             onClick = { isEnabled = true }) {
             Text(text = "Boy")
         }
         ToggableButton(
-            enabled = !isEnabled,
+            activated = !isEnabled,
             modifier = Modifier.weight(1f),
             onClick = { isEnabled =false }) {
             Text(text = "Girl")

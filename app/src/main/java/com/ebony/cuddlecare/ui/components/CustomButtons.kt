@@ -9,13 +9,13 @@ import androidx.compose.ui.graphics.Color
 
 @Composable
 fun ToggableButton(
-    enabled: Boolean,
-    modifier: Modifier,
+    activated: Boolean,
+    modifier: Modifier = Modifier,
     onClick: () -> Unit,
     content: @Composable() (RowScope.() -> Unit)
 ) {
     val colors =
-        if (enabled) ButtonDefaults.buttonColors() else ButtonDefaults.buttonColors(Color.LightGray)
+        if (activated) ButtonDefaults.buttonColors() else ButtonDefaults.buttonColors(Color.LightGray)
     Button(
         onClick = onClick,
         content = content,

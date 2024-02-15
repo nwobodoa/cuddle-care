@@ -65,7 +65,6 @@ import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.components.mTopBar
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -93,7 +92,7 @@ fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel()) {
         {
 
             ScreenMainIcon(R.drawable.diaper_logo)
-            LastUpdated()
+            LastUpdated("Diaper")
             TimeTypeSegment()
             DiaperCount(diaperUIState.diaperCount)
             AttachmentRow()
@@ -105,7 +104,7 @@ fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel()) {
 }
 
 @Composable
-private fun ScreenMainIcon(drawableId: Int) {
+fun ScreenMainIcon(drawableId: Int) {
     Row(
         horizontalArrangement = Arrangement.Center,
         modifier = Modifier
@@ -115,16 +114,16 @@ private fun ScreenMainIcon(drawableId: Int) {
         Image(
             painter = painterResource(id = drawableId),
             contentDescription = null,
-            modifier = Modifier.size(200.dp),
+            modifier = Modifier.size(150.dp),
             contentScale = ContentScale.Crop
         )
     }
 }
 
 @Composable
-private fun LastUpdated() {
+fun LastUpdated(title: String) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(text = "Diaper", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Text(text = title, fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Text(text = "Last: 20mins ago")
     }
 }
@@ -143,7 +142,7 @@ private fun DiaperCount(count: Int) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-private fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
+fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
 
     Column(
@@ -212,7 +211,7 @@ private fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
             ToggableButton(
                 modifier = Modifier.clip(shape = RoundedCornerShape(30.dp)),
                 onClick = { diaperViewModel.toggleWetDiaper() },
-                enabled = diaperUIState.isWetDiaper
+                activated = diaperUIState.isWetDiaper
             ) {
                 Icon(
                     imageVector = Icons.Default.WaterDrop, contentDescription = "water drop"
@@ -226,7 +225,7 @@ private fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
                 onClick = {
                     diaperViewModel.toggleDirtyDiaper()
                 },
-                enabled = diaperUIState.isDirtyDiaper,
+                activated = diaperUIState.isDirtyDiaper,
                 modifier = Modifier
                     .padding(start = 8.dp)
                     .clip(shape = RoundedCornerShape(30.dp))
