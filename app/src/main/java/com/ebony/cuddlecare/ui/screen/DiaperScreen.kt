@@ -246,7 +246,7 @@ fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
-private fun DateInput(
+fun DateInput(
     modifier: Modifier = Modifier,
     toggleDatePicker: () -> Unit,
     isTimeExpanded: Boolean = false,

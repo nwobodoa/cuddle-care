@@ -77,7 +77,7 @@ fun BreastfeedingScreen() {
 
             {
                 Row(modifier = Modifier
-                    .fillMaxWidth()) {
+                    .fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     BreastFeedingControlBtn(modifier = Modifier.weight(1f), breastSide = "L", onClick = {/*TODO*/})
                     BreastFeedingControlBtn(modifier = Modifier.weight(1f), breastSide = "R",onClick = {/*TODO*/})
                 }

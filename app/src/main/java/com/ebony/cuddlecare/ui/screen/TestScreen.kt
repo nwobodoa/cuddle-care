@@ -71,7 +71,7 @@ fun TipsCard() {
 
 @Preview
 @Composable
-fun scrollTab() {
+fun ScrollTab() {
     var selectedTabIndex by remember { mutableStateOf(0) }
     val tabs = listOf("Fruits", "Vegetables", "Meats", "Miscellaneous")
     CustomScrollableTabRow(
