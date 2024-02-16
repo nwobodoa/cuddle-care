@@ -201,7 +201,7 @@ fun SaveButton() {
 
 
         ) {
-            Text("save", fontSize = 28.sp)
+            Text("save", fontSize = 20.sp)
         }
     }
 

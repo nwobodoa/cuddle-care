@@ -4,7 +4,7 @@ enum class Screen {
     AuthenticatedLandingScreen,
     Register,
     Login,
-    ApplicationScreen,
+
     AddBabyScreen
 
 }
