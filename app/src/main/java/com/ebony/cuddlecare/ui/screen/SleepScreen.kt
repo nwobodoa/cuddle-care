@@ -31,8 +31,9 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.ToggableButton
-import com.ebony.cuddlecare.ui.components.mTopBar
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
@@ -44,7 +45,7 @@ fun SleepingScreen() {
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        mTopBar()
+        MTopBar()
         Column(
             modifier = Modifier
                 .fillMaxHeight()

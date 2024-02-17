@@ -33,7 +33,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
-import com.ebony.cuddlecare.ui.components.mTopBar
+import com.ebony.cuddlecare.ui.components.MTopBar
+
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
@@ -44,7 +45,7 @@ fun Add_vaccination_record() {
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     ) {
-        mTopBar()
+        MTopBar()
         Column(
             modifier = Modifier
                 .fillMaxHeight()

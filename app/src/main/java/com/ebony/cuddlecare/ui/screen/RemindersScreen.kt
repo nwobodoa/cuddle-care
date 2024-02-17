@@ -13,9 +13,12 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.Alarm
+import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.outlined.AlarmOff
 import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
@@ -40,10 +43,11 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
-import com.ebony.cuddlecare.ui.components.mTopBar
+import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.ToggableButton
+
 
 @OptIn(ExperimentalMaterial3Api::class)
-@Preview
 @Composable
 fun ReminderScreen() {
     val sheetState = rememberModalBottomSheetState()
@@ -56,7 +60,7 @@ fun ReminderScreen() {
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        mTopBar()
+        MTopBar()
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -77,23 +81,10 @@ fun ReminderScreen() {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                var checked by remember { mutableStateOf(false) }
+
                 Text(text = "Show notification for baby 'David'")
-                Switch(checked = checked, onCheckedChange = {
-                    checked = it
-                }, thumbContent = if (checked) {
-                    {
-                        Icon(
-                            imageVector = Icons.Filled.Check,
-                            contentDescription = null,
-                            modifier = Modifier.size(SwitchDefaults.IconSize),
-                        )
-                    }
-                } else {
-                    null
-//                            Icon(imageVector = Icons.Filled.Cancel,
-//                                contentDesciption = "cancel")
-                })
+                MySwitch()
+
             }
 
             FloatingActionButton(
@@ -193,7 +184,128 @@ fun ReminderScreen() {
 
     }
 }
+@Preview
+@Composable
+fun RemindersSetting(){
+Column (modifier = Modifier
+    .fillMaxHeight()
+    .background(color = colorResource(id = R.color.orange)))
+{
+    MTopBar()
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+            .background(color = colorResource(id = R.color.backcolor))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        Text(text = "Reminders")
 
+        var isEnabled by remember { mutableStateOf(true) }
+        Row (modifier= Modifier.fillMaxWidth()){
+            ToggableButton(activated = isEnabled, onClick = {isEnabled=true}, modifier = Modifier.weight(1f)) {
+                Text(text = "Basic")
+            }
+            ToggableButton(activated = !isEnabled, onClick = { isEnabled = false},modifier = Modifier.weight(1f) ){
+                Text(text = "Advanced")
+            }
+        }
+        Column(modifier = Modifier
+            .background(Color.White)
+            .fillMaxWidth()
+            .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(8.dp))
+        {
+            if (isEnabled) {
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                LeadingDetailsIcon(
+                    title = "Every",
+                    imageVector = Icons.Default.Alarm,
+                    contentDescription = "Alarm clock icon"
+                )
+                Text(text = "3h")
+            }
+            Row(
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically,
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                LeadingDetailsIcon(
+                    title = "Do not disturb",
+                    imageVector = Icons.Outlined.AlarmOff,
+                    contentDescription = "Alarm off icon"
+                )
+                MySwitch()
+            }
+        }else {
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    LeadingDetailsIcon(
+                        title = "Date",
+                        imageVector = Icons.Default.CalendarToday,
+                        contentDescription = "calendar icon"
+                    )
+                    Text(text = "Today, 24 Nov")
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    LeadingDetailsIcon(
+                        title = "Time",
+                        imageVector = Icons.Default.Alarm,
+                        contentDescription = "Alarm icon"
+                    )
+                    Text(text = "3:00 PM")
+                }
+                Row(
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier.fillMaxWidth()
+                ) {
+                    LeadingDetailsIcon(
+                        title = "",
+                        imageVector = Icons.Default.Repeat,
+                        contentDescription = "repeat icon"
+                    )
+                    MySwitch()
+
+                }
+            }
+
+        SaveButton()
+    }
+}
+}}
+
+
+@Composable
+fun MySwitch() {
+    var checked by remember { mutableStateOf(false) }
+    Switch(checked = checked, onCheckedChange = {
+        checked = it
+    }, thumbContent = if (checked) {
+        {
+            Icon(
+                imageVector = Icons.Filled.Check,
+                contentDescription = null,
+                modifier = Modifier.size(SwitchDefaults.IconSize),
+            )
+        }
+    } else {
+        null
+
+    })
+}
 
 
 

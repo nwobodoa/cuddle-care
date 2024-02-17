@@ -62,8 +62,8 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DropDownField
+import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.ToggableButton
-import com.ebony.cuddlecare.ui.components.mTopBar
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import java.time.LocalDate
 import java.time.LocalTime
@@ -80,7 +80,7 @@ fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel()) {
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     ) {
-        mTopBar()
+        MTopBar()
         Column(
             modifier = Modifier
                 .fillMaxHeight()

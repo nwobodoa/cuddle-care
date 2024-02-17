@@ -130,23 +130,8 @@ fun AddBabyScaffold() {
                     verticalAlignment = Alignment.CenterVertically,
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
-                    var checked by remember { mutableStateOf(false) }
                     Text("Premature?")
-                    Switch(checked = checked, onCheckedChange = {
-                        checked = it
-                    }, thumbContent = if (checked) {
-                        {
-                            Icon(
-                                imageVector = Icons.Filled.Check,
-                                contentDescription = null,
-                                modifier = Modifier.size(SwitchDefaults.IconSize),
-                            )
-                        }
-                    } else {
-                        null
-//                            Icon(imageVector = Icons.Filled.Cancel,
-//                                contentDesciption = "cancel")
-                    })
+                    MySwitch()
                 }
                 Row(
                     Modifier

@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -28,6 +29,8 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import com.ebony.cuddlecare.R
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -88,17 +91,17 @@ fun ProfileAvatar(
         }
         val initials = (firstName.take(1).uppercase())
         Canvas(modifier = Modifier.fillMaxSize()) {
-            drawCircle(SolidColor(color), radius = 70f, style = Stroke(width = 15f), alpha = 0.3f)
-            drawCircle(SolidColor(color))
+            drawCircle(SolidColor(color), radius = 50f, style = Stroke(width = 10f), alpha = 0.3f)
+            drawCircle(SolidColor(color),radius = 40f)
         }
-        androidx.compose.material.Text(text = initials, style = textStyle, color = Color.White)
+        Text(text = initials, style = textStyle, color = Color.White, fontSize= 18.sp)
     }
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun mTopBar() {
+fun MTopBar() {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
         colors = TopAppBarDefaults.topAppBarColors(
@@ -108,8 +111,8 @@ fun mTopBar() {
 
         navigationIcon = {
             IconButton(
-                //onclick=   NavController.popBackStack()
-                onClick = { },
+              //  onClick=   { NavController.popBackStack()}
+                onClick = { /*TODO*/},
 
             ) {
                 Icon(
@@ -118,7 +121,7 @@ fun mTopBar() {
                 )
             }
             ProfileAvatar(
-                modifier = Modifier.padding(start = 16.dp ,end=16.dp,bottom=8.dp,top=8.dp), id = "D", firstName = "David"
+                modifier = Modifier.padding(start = 46.dp ,end=4.dp,bottom=8.dp,top=8.dp), id = "D", firstName = "David"
             )
         },
 
@@ -126,22 +129,8 @@ fun mTopBar() {
             Text(
                 text = "David"
             )
-        },
-        actions = {
-            //search icon
-            IconButton(onClick = {
-
-            }) {
-                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
-            }
-
-            // lock icon
-            IconButton(onClick = {
-
-            }) {
-                Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
-            }
         }
+
 
     )
 }

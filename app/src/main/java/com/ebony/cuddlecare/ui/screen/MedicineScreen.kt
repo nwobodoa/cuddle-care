@@ -15,10 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
-import androidx.compose.material.icons.filled.AccessTimeFilled
 import androidx.compose.material.icons.filled.Medication
-import androidx.compose.material.icons.filled.PunchClock
-import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -32,9 +29,8 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
-import com.ebony.cuddlecare.ui.components.mTopBar
+import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.screen.AttachmentRow
-import com.ebony.cuddlecare.ui.screen.BreastFeedingControlBtn
 import com.ebony.cuddlecare.ui.screen.DateInput
 import com.ebony.cuddlecare.ui.screen.LastUpdated
 import com.ebony.cuddlecare.ui.screen.LeadingDetailsIcon
@@ -53,7 +49,7 @@ fun MedicineScreen(diaperViewModel: DiaperViewModel = viewModel()) {
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     ) {
-        mTopBar()
+        MTopBar()
         Column(
             modifier = Modifier
                 .fillMaxHeight()

@@ -57,7 +57,7 @@ class DiaperViewModel: ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun epochMillisToDate(epochMillis: Long): LocalDate {
         return Instant.ofEpochMilli(epochMillis)
-            .atZone(ZoneOffset.UTC)
+            .atZone(UTC)
             .toLocalDate()
     }
     @RequiresApi(Build.VERSION_CODES.O)
