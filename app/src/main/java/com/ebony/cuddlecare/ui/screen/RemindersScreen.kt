@@ -17,7 +17,9 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarToday
+import androidx.compose.material.icons.filled.Cancel
 import androidx.compose.material.icons.filled.Check
+import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.outlined.AlarmOff
 import androidx.compose.material3.Button
@@ -45,6 +47,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -157,12 +160,16 @@ private fun SetReminderModal(
         }) {
         Column(
             modifier = Modifier
+                .padding(start=16.dp,end=16.dp)
                 .fillMaxWidth()
-                .fillMaxHeight()
+                .fillMaxHeight(),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
+
         ) {
-            Text(text = "Reminder")
+            Text(text = "Reminder",fontSize = 28.sp, fontWeight = FontWeight.Bold)
             LazyVerticalGrid(
                 columns = GridCells.Fixed(3),
+                verticalArrangement = Arrangement.spacedBy(32.dp),
                 horizontalArrangement = Arrangement.Center
             ) {
                 items(reminderCategories.size) { idx ->
@@ -174,8 +181,8 @@ private fun SetReminderModal(
 
             Button(onClick = {
                 onClose()
-            }, modifier = Modifier.fillMaxWidth()) {
-                Text(text = "Cancel", fontSize = 20.sp)
+            }, modifier = Modifier.fillMaxWidth().padding(top = 16.dp)) {
+                Text(text = "Cancel", fontSize = 24.sp)
             }
         }
     }
@@ -192,22 +199,28 @@ fun ReminderSetting(modifier: Modifier = Modifier) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "Reminders")
+        Text(text = "Reminders",fontSize = 28.sp, fontWeight = FontWeight.Bold)
+Column(modifier=Modifier
+    .clip(shape = RoundedCornerShape(20.dp))
+    .background(color = Color.White)) {
 
-        Row {
-            Text(text = "Allow notifications")
-        }
+    Row(modifier = Modifier.padding(top=16.dp,start=8.dp)) {
+        Text(text = "Allow notifications", fontWeight = FontWeight.Bold)
+    }
 
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
+    Row(
+        Modifier
+            .padding(start = 8.dp,end=16.dp)
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
 
-            Text(text = "Show notification for baby 'David'")
-            MySwitch()
+        Text(text = "Show notification for baby 'David'")
+        MySwitch()
 
-        }
+    }
+}
 
     }
 }
@@ -229,7 +242,7 @@ fun ReminderForm(selectedReminderType: String?) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Reminder: $selectedReminderType")
+            Text(text = "Reminder: $selectedReminderType", fontSize = 28.sp, fontWeight = FontWeight.Bold)
 
             var isEnabled by remember { mutableStateOf(true) }
             Row(modifier = Modifier.fillMaxWidth()) {
@@ -329,21 +342,22 @@ fun ReminderForm(selectedReminderType: String?) {
 
 @Composable
 fun MySwitch() {
+    /*TODO: expose the if checked so i can add other functionality when it's checked*/
     var checked by remember { mutableStateOf(false) }
     Switch(checked = checked, onCheckedChange = {
         checked = it
-    }, thumbContent = if (checked) {
-        {
+    }, thumbContent =  {
+
             Icon(
-                imageVector = Icons.Filled.Check,
+                imageVector = if (checked)Icons.Filled.Check else Icons.Filled.Close,
                 contentDescription = null,
                 modifier = Modifier.size(SwitchDefaults.IconSize),
             )
         }
-    } else {
-        null
 
-    })
+
+
+    )
 }
 
 
