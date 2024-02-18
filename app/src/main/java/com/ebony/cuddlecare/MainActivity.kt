@@ -22,6 +22,7 @@ import com.ebony.cuddlecare.ui.screen.LoginScreen
 import com.ebony.cuddlecare.ui.screen.RegisterScreen
 import com.ebony.cuddlecare.ui.screen.Screen
 import com.ebony.cuddlecare.ui.screen.RecordDiaperStateScreen
+import com.ebony.cuddlecare.ui.screen.ReminderScreen
 import com.ebony.cuddlecare.ui.theme.CuddleCareTheme
 import com.google.firebase.FirebaseApp
 
@@ -33,7 +34,7 @@ class MainActivity : ComponentActivity() {
         setContent {
 
             FirebaseApp.initializeApp(LocalContext.current)
-            CuddleCareTheme(content = { RecordDiaperStateScreen() })
+            CuddleCareTheme(content = { ReminderScreen() })
         }
     }
 }

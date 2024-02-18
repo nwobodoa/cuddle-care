@@ -9,6 +9,8 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -22,12 +24,16 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.FloatingActionButton
 import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SheetState
 import androidx.compose.material3.Switch
 import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -42,15 +48,25 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.ToggableButton
+import com.ebony.cuddlecare.ui.viewmodel.ReminderViewModel
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ReminderScreen() {
+@Preview
+fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
+    val reminderUIState by reminderViewModel.reminderUIState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
+    val navController: NavHostController = rememberNavController()
+
     var isOpen by rememberSaveable {
         mutableStateOf(false)
     }
@@ -60,140 +76,115 @@ fun ReminderScreen() {
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        MTopBar()
-        Column(
-            modifier = Modifier
-                .fillMaxHeight()
-                .fillMaxWidth()
-                .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-                .background(color = colorResource(id = R.color.backcolor))
-                .padding(16.dp),
-            verticalArrangement = Arrangement.spacedBy(8.dp)
+        Scaffold(
+            topBar = { MTopBar(navController) },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {
+                        isOpen = true
+                    }, containerColor = colorResource(id = R.color.myRed),
+                    contentColor = Color.White, shape = CircleShape
+                ) {
+                    Icon(Icons.Filled.Add, "Floating action button.")
+                }
+            }
         ) {
-            Text(text = "Reminders")
+            Column (modifier=Modifier.padding(it)){
 
-            Row {
-                Text(text = "Allow notifications")
-            }
-
-            Row(
-                Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-
-                Text(text = "Show notification for baby 'David'")
-                MySwitch()
-
-            }
-
-            FloatingActionButton(
-                onClick = {
-                    isOpen = true
-                }, containerColor = colorResource(id = R.color.myRed),
-                contentColor = Color.White, shape = CircleShape
-            ) {
-                Icon(Icons.Filled.Add, "Floating action button.")
-            }
-            if (isOpen) {
-
-                ModalBottomSheet(sheetState = sheetState,
-                    onDismissRequest = {
-                        isOpen = false
-                    }) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .fillMaxHeight()
-                    ) {
-                        Text(text = "Reminder")
-                        val imageModifier = Modifier.size(75.dp)
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Column {
-                                Image(
-                                    modifier = imageModifier,
-                                    painter = painterResource(id = R.drawable.bf),
-                                    contentDescription = "breastfeeding icon"
-                                )
-                                Text(text = "Breastfeeding")
-                            }
-                            Column {
-
-                                Image(
-                                    modifier = imageModifier,
-                                    painter = painterResource(id = R.drawable.bottle),
-                                    contentDescription = "bottle icon"
-                                )
-                                Text(text = "Bottle")
-                            }
-                            Column {
-
-                                Image(
-                                    modifier = imageModifier,
-                                    painter = painterResource(id = R.drawable.diaper),
-                                    contentDescription = "diaper icon"
-                                )
-                                Text(text = "Diaper")
-                            }
-                        }
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceEvenly
-                        ) {
-                            Column {
-
-                                Image(
-                                    modifier = imageModifier,
-                                    painter = painterResource(id = R.drawable.crib),
-                                    contentDescription = "breastfeeding icon"
-                                )
-                                Text(text = "Sleeping")
-                            }
-                            Column {
-
-                                Image(
-                                    modifier = imageModifier,
-                                    painter = painterResource(id = R.drawable.medicine),
-                                    contentDescription = "bottle icon"
-                                )
-                                Text(text = "Medication")
-                            }
-                            Column {
-
-                                Image(
-                                    modifier = imageModifier,
-                                    painter = painterResource(id = R.drawable.vaccine),
-                                    contentDescription = "breastfeeding icon"
-                                )
-                                Text(text = "Vaccination")
-                            }
-                        }
-
-                        Button(onClick = {
-                            isOpen = false
-                        },modifier =Modifier.fillMaxWidth()) {
-                            Text(text = "Cancel", fontSize = 20.sp)
-                        }
+                NavHost(navController = navController, startDestination = "setting") {
+                    composable("setting") {
+                        ReminderSetting()
                     }
+                    composable("form") {
+                        ReminderForm(reminderUIState.selectedReminderType)
+                    }
+                }
+
+                if (isOpen) {
+                    SetReminderModal(
+                        sheetState, onClose = { isOpen = false },
+                        setReminderCategory = {
+                            reminderViewModel.setSelectedReminderType(it)
+                            navController.navigate("form")
+                            isOpen = false
+                        }
+                    )
                 }
             }
         }
 
     }
 }
-@Preview
+
+
+data class ReminderCategory(val iconId: Int, val name: String)
+
+val reminderCategories = listOf(
+    ReminderCategory(R.drawable.bf, "Breastfeeding"),
+    ReminderCategory(R.drawable.bottle, "Bottle"),
+    ReminderCategory(R.drawable.diaper, "Diaper"),
+    ReminderCategory(R.drawable.crib, "Sleeping"),
+    ReminderCategory(R.drawable.medicine, "Medication"),
+    ReminderCategory(R.drawable.vaccine, "Vaccination"),
+)
+
 @Composable
-fun RemindersSetting(){
-Column (modifier = Modifier
-    .fillMaxHeight()
-    .background(color = colorResource(id = R.color.orange)))
-{
-    MTopBar()
+fun ReminderGridItem(category: ReminderCategory, setCategory: (String) -> Unit) {
+    Column(horizontalAlignment = Alignment.CenterHorizontally) {
+        IconButton(modifier = Modifier.size(75.dp),
+            onClick = { setCategory(category.name) }) {
+            Image(
+                modifier = Modifier.size(75.dp),
+                painter = painterResource(id = category.iconId),
+                contentDescription = "${category.name} icon"
+            )
+        }
+        Text(category.name)
+    }
+}
+
+@Composable
+@OptIn(ExperimentalMaterial3Api::class)
+private fun SetReminderModal(
+    sheetState: SheetState,
+    onClose: () -> Unit,
+    setReminderCategory: (String) -> Unit
+) {
+
+    ModalBottomSheet(sheetState = sheetState,
+        onDismissRequest = {
+            onClose()
+        }) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight()
+        ) {
+            Text(text = "Reminder")
+            LazyVerticalGrid(
+                columns = GridCells.Fixed(3),
+                horizontalArrangement = Arrangement.Center
+            ) {
+                items(reminderCategories.size) { idx ->
+                    ReminderGridItem(category = reminderCategories[idx]) {
+                        setReminderCategory(it)
+                    }
+                }
+            }
+
+            Button(onClick = {
+                onClose()
+            }, modifier = Modifier.fillMaxWidth()) {
+                Text(text = "Cancel", fontSize = 20.sp)
+            }
+        }
+    }
+}
+
+@Composable
+fun ReminderSetting(modifier: Modifier = Modifier) {
     Column(
-        modifier = Modifier
+        modifier = modifier
             .fillMaxHeight()
             .fillMaxWidth()
             .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
@@ -203,89 +194,137 @@ Column (modifier = Modifier
     ) {
         Text(text = "Reminders")
 
-        var isEnabled by remember { mutableStateOf(true) }
-        Row (modifier= Modifier.fillMaxWidth()){
-            ToggableButton(activated = isEnabled, onClick = {isEnabled=true}, modifier = Modifier.weight(1f)) {
-                Text(text = "Basic")
-            }
-            ToggableButton(activated = !isEnabled, onClick = { isEnabled = false},modifier = Modifier.weight(1f) ){
-                Text(text = "Advanced")
-            }
+        Row {
+            Text(text = "Allow notifications")
         }
-        Column(modifier = Modifier
-            .background(Color.White)
-            .fillMaxWidth()
-            .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp))
-        {
-            if (isEnabled) {
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                LeadingDetailsIcon(
-                    title = "Every",
-                    imageVector = Icons.Default.Alarm,
-                    contentDescription = "Alarm clock icon"
-                )
-                Text(text = "3h")
-            }
-            Row(
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                LeadingDetailsIcon(
-                    title = "Do not disturb",
-                    imageVector = Icons.Outlined.AlarmOff,
-                    contentDescription = "Alarm off icon"
-                )
-                MySwitch()
-            }
-        }else {
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    LeadingDetailsIcon(
-                        title = "Date",
-                        imageVector = Icons.Default.CalendarToday,
-                        contentDescription = "calendar icon"
-                    )
-                    Text(text = "Today, 24 Nov")
-                }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    LeadingDetailsIcon(
-                        title = "Time",
-                        imageVector = Icons.Default.Alarm,
-                        contentDescription = "Alarm icon"
-                    )
-                    Text(text = "3:00 PM")
-                }
-                Row(
-                    horizontalArrangement = Arrangement.SpaceBetween,
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier.fillMaxWidth()
-                ) {
-                    LeadingDetailsIcon(
-                        title = "",
-                        imageVector = Icons.Default.Repeat,
-                        contentDescription = "repeat icon"
-                    )
-                    MySwitch()
 
-                }
-            }
+        Row(
+            Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
 
-        SaveButton()
+            Text(text = "Show notification for baby 'David'")
+            MySwitch()
+
+        }
+
     }
 }
-}}
+
+@Composable
+fun ReminderForm(selectedReminderType: String?) {
+    Column(
+        modifier = Modifier
+            .fillMaxHeight()
+            .background(color = colorResource(id = R.color.orange))
+    )
+    {
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .fillMaxWidth()
+                .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+                .background(color = colorResource(id = R.color.backcolor))
+                .padding(16.dp),
+            verticalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
+            Text(text = "Reminder: $selectedReminderType")
+
+            var isEnabled by remember { mutableStateOf(true) }
+            Row(modifier = Modifier.fillMaxWidth()) {
+                ToggableButton(
+                    activated = isEnabled,
+                    onClick = { isEnabled = true },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Basic")
+                }
+                ToggableButton(
+                    activated = !isEnabled,
+                    onClick = { isEnabled = false },
+                    modifier = Modifier.weight(1f)
+                ) {
+                    Text(text = "Advanced")
+                }
+            }
+            Column(
+                modifier = Modifier
+                    .background(Color.White)
+                    .fillMaxWidth()
+                    .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            )
+            {
+                if (isEnabled) {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        LeadingDetailsIcon(
+                            title = "Every",
+                            imageVector = Icons.Default.Alarm,
+                            contentDescription = "Alarm clock icon"
+                        )
+                        Text(text = "3h")
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        LeadingDetailsIcon(
+                            title = "Do not disturb",
+                            imageVector = Icons.Outlined.AlarmOff,
+                            contentDescription = "Alarm off icon"
+                        )
+                        MySwitch()
+                    }
+                } else {
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        LeadingDetailsIcon(
+                            title = "Date",
+                            imageVector = Icons.Default.CalendarToday,
+                            contentDescription = "calendar icon"
+                        )
+                        Text(text = "Today, 24 Nov")
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        LeadingDetailsIcon(
+                            title = "Time",
+                            imageVector = Icons.Default.Alarm,
+                            contentDescription = "Alarm icon"
+                        )
+                        Text(text = "3:00 PM")
+                    }
+                    Row(
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically,
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        LeadingDetailsIcon(
+                            title = "",
+                            imageVector = Icons.Default.Repeat,
+                            contentDescription = "repeat icon"
+                        )
+                        MySwitch()
+
+                    }
+                }
+
+                SaveButton()
+            }
+        }
+    }
+}
 
 
 @Composable
