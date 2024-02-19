@@ -11,15 +11,10 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.CircleShape
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Check
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
@@ -36,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.SwitchWithIcon
 import com.ebony.cuddlecare.ui.components.ToggableButton
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -131,7 +127,7 @@ fun AddBabyScaffold() {
                     horizontalArrangement = Arrangement.SpaceBetween
                 ) {
                     Text("Premature?")
-                    MySwitch()
+                    SwitchWithIcon()
                 }
                 Row(
                     Modifier

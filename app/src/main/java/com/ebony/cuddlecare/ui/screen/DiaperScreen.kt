@@ -62,6 +62,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DropDownField
+import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
@@ -333,22 +334,6 @@ fun AttachmentRow() {
 }
 
 
-@Composable
-fun LeadingDetailsIcon(
-    modifier: Modifier = Modifier,
-    title: String,
-    imageVector: ImageVector,
-    contentDescription: String
-) {
-    Row(
-        modifier,
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        Icon(imageVector = imageVector, contentDescription = contentDescription)
-        Text(title)
-    }
-}
 
 @Composable
 @OptIn(ExperimentalMaterialApi::class)

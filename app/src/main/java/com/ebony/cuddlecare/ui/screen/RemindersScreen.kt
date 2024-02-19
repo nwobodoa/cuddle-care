@@ -1,39 +1,23 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.annotation.SuppressLint
-import androidx.compose.animation.core.FastOutSlowInEasing
-import androidx.compose.animation.core.animateDpAsState
-import androidx.compose.animation.core.tween
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.Interaction
-import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.IntrinsicSize
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.width
-import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.TabRowDefaults.tabIndicatorOffset
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarToday
-import androidx.compose.material.icons.filled.Cancel
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.filled.Close
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.outlined.AlarmOff
 import androidx.compose.material3.Button
@@ -44,47 +28,37 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
-import androidx.compose.material3.Switch
-import androidx.compose.material3.SwitchDefaults
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabPosition
-import androidx.compose.material3.TabRow
-import androidx.compose.material3.TabRowDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
 import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
-import androidx.compose.ui.Alignment.Companion.CenterStart
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.platform.debugInspectorInfo
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.zIndex
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SwitchWithIcon
 import com.ebony.cuddlecare.ui.components.ToggableButton
+import com.ebony.cuddlecare.ui.viewmodel.ReminderType
+import com.ebony.cuddlecare.ui.viewmodel.ReminderUIState
 import com.ebony.cuddlecare.ui.viewmodel.ReminderViewModel
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.emptyFlow
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -117,14 +91,13 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
                 }
             }
         ) {
-            Column (modifier=Modifier.padding(it)){
-
+            Column(modifier = Modifier.padding(it)) {
                 NavHost(navController = navController, startDestination = "form") {
                     composable("setting") {
                         ReminderSetting()
                     }
                     composable("form") {
-                        ReminderForm(reminderUIState.selectedReminderType)
+                        ReminderForm(reminderUIState.reminderSubject, reminderViewModel)
                     }
                 }
 
@@ -132,7 +105,7 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
                     SetReminderModal(
                         sheetState, onClose = { isOpen = false },
                         setReminderCategory = {
-                            reminderViewModel.setSelectedReminderType(it)
+                            reminderViewModel.setSelectedReminderSubject(it)
                             navController.navigate("form")
                             isOpen = false
                         }
@@ -147,14 +120,6 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
 
 data class ReminderCategory(val iconId: Int, val name: String)
 
-val reminderCategories = listOf(
-    ReminderCategory(R.drawable.bf, "Breastfeeding"),
-    ReminderCategory(R.drawable.bottle, "Bottle"),
-    ReminderCategory(R.drawable.diaper, "Diaper"),
-    ReminderCategory(R.drawable.crib, "Sleeping"),
-    ReminderCategory(R.drawable.medicine, "Medication"),
-    ReminderCategory(R.drawable.vaccine, "Vaccination"),
-)
 
 @Composable
 fun ReminderGridItem(category: ReminderCategory, setCategory: (String) -> Unit) {
@@ -178,11 +143,11 @@ private fun SetReminderModal(
     onClose: () -> Unit,
     setReminderCategory: (String) -> Unit
 ) {
-
-    ModalBottomSheet(sheetState = sheetState,
-        onDismissRequest = {
-            onClose()
-        }) {
+    ModalBottomSheet(
+        sheetState = sheetState,
+        onDismissRequest = onClose
+    )
+    {
         Column(
             modifier = Modifier
                 .padding(start = 16.dp, end = 16.dp)
@@ -191,25 +156,38 @@ private fun SetReminderModal(
             verticalArrangement = Arrangement.spacedBy(16.dp)
 
         ) {
-            Text(text = "Reminder",fontSize = 28.sp, fontWeight = FontWeight.Bold)
-            LazyVerticalGrid(
-                columns = GridCells.Fixed(3),
-                verticalArrangement = Arrangement.spacedBy(32.dp),
-                horizontalArrangement = Arrangement.Center
+            Text(text = "Reminder", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            ReminderCategoryGrid { setReminderCategory(it) }
+            Button(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                onClick = onClose
             ) {
-                items(reminderCategories.size) { idx ->
-                    ReminderGridItem(category = reminderCategories[idx]) {
-                        setReminderCategory(it)
-                    }
-                }
-            }
-
-            Button(onClick = {
-                onClose()
-            }, modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)) {
                 Text(text = "Cancel", fontSize = 24.sp)
+            }
+        }
+    }
+}
+
+@Composable
+private fun ReminderCategoryGrid(setReminderCategory: (String) -> Unit) {
+    val reminderCategories = listOf(
+        ReminderCategory(R.drawable.bf, "Breastfeeding"),
+        ReminderCategory(R.drawable.bottle, "Bottle"),
+        ReminderCategory(R.drawable.diaper, "Diaper"),
+        ReminderCategory(R.drawable.crib, "Sleeping"),
+        ReminderCategory(R.drawable.medicine, "Medication"),
+        ReminderCategory(R.drawable.vaccine, "Vaccination"),
+    )
+    LazyVerticalGrid(
+        columns = GridCells.Fixed(3),
+        verticalArrangement = Arrangement.spacedBy(32.dp),
+        horizontalArrangement = Arrangement.Center
+    ) {
+        items(reminderCategories.size) { idx ->
+            ReminderGridItem(category = reminderCategories[idx]) {
+                setReminderCategory(it)
             }
         }
     }
@@ -226,34 +204,37 @@ fun ReminderSetting(modifier: Modifier = Modifier) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        Text(text = "Reminders",fontSize = 28.sp, fontWeight = FontWeight.Bold)
-Column(modifier= Modifier
-    .clip(shape = RoundedCornerShape(20.dp))
-    .background(color = Color.White)) {
+        Text(text = "Reminders", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+        Column(
+            modifier = Modifier
+                .clip(shape = RoundedCornerShape(20.dp))
+                .background(color = Color.White)
+        ) {
 
-    Row(modifier = Modifier.padding(top=16.dp,start=8.dp)) {
-        Text(text = "Allow notifications", fontWeight = FontWeight.Bold)
-    }
+            Row(modifier = Modifier.padding(top = 16.dp, start = 8.dp)) {
+                Text(text = "Allow notifications", fontWeight = FontWeight.Bold)
+            }
 
-    Row(
-        Modifier
-            .padding(start = 8.dp, end = 16.dp)
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+            Row(
+                Modifier
+                    .padding(start = 8.dp, end = 16.dp)
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
 
-        Text(text = "Show notification for baby 'David'")
-        MySwitch()
+                Text(text = "Show notification for baby 'David'")
+                SwitchWithIcon()
 
-    }
-}
+            }
+        }
 
     }
 }
 
 @Composable
-fun ReminderForm(selectedReminderType: String?) {
+fun ReminderForm(selectedReminderType: String? = null, reminderViewModel: ReminderViewModel) {
+    val reminderUIState by reminderViewModel.reminderUIState.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -269,30 +250,13 @@ fun ReminderForm(selectedReminderType: String?) {
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            Text(text = "Reminder: $selectedReminderType", fontSize = 28.sp, fontWeight = FontWeight.Bold)
+            Text(
+                text = "Reminder: $selectedReminderType",
+                fontSize = 28.sp,
+                fontWeight = FontWeight.Bold
+            )
 
-            var isEnabled by remember { mutableStateOf(true) }
-            Row(modifier = Modifier.fillMaxWidth().height(50.dp)
-                .background(Color.LightGray, shape = RoundedCornerShape(50))
-            ) {
-
-                ToggableButton(
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                    activated = isEnabled,
-                    onClick = { isEnabled = true },
-                ) {
-                    Text(text = "Basic")
-                }
-                ToggableButton(
-                    modifier = Modifier.weight(1f).fillMaxHeight(),
-                    activated = !isEnabled,
-                    onClick = { isEnabled = false },
-
-                ) {
-                    Text(text = "Advanced")
-                }
-            }
-
+            FormControlButtonGroup(reminderViewModel)
 
             Column(
                 modifier = Modifier
@@ -303,100 +267,135 @@ fun ReminderForm(selectedReminderType: String?) {
                 verticalArrangement = Arrangement.spacedBy(8.dp)
             )
             {
-                if (isEnabled) {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LeadingDetailsIcon(
-                            title = "Every",
-                            imageVector = Icons.Default.Alarm,
-                            contentDescription = "Alarm clock icon"
-                        )
-                        Text(text = "3h")
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LeadingDetailsIcon(
-                            title = "Do not disturb",
-                            imageVector = Icons.Outlined.AlarmOff,
-                            contentDescription = "Alarm off icon"
-                        )
-                        MySwitch()
-                    }
+                if (reminderUIState.reminderType == ReminderType.BASIC) {
+                    BasicReminderForm(reminderViewModel = reminderViewModel)
                 } else {
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LeadingDetailsIcon(
-                            title = "Date",
-                            imageVector = Icons.Default.CalendarToday,
-                            contentDescription = "calendar icon"
-                        )
-                        Text(text = "Today, 24 Nov")
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LeadingDetailsIcon(
-                            title = "Time",
-                            imageVector = Icons.Default.Alarm,
-                            contentDescription = "Alarm icon"
-                        )
-                        Text(text = "3:00 PM")
-                    }
-                    Row(
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically,
-                        modifier = Modifier.fillMaxWidth()
-                    ) {
-                        LeadingDetailsIcon(
-                            title = "",
-                            imageVector = Icons.Default.Repeat,
-                            contentDescription = "repeat icon"
-                        )
-                        MySwitch()
-
-                    }
+                    AdvancedReminderForm(reminderViewModel = reminderViewModel)
                 }
-
             }
             SaveButton()
         }
     }
 }
 
-
 @Composable
-fun MySwitch() {
-    /*TODO: expose the if checked so i can add other functionality when it's checked*/
-    var checked by remember { mutableStateOf(false) }
-    Switch(checked = checked, onCheckedChange = {
-        checked = it
-    }, thumbContent =  {
+private fun FormControlButtonGroup(
+    reminderViewModel: ReminderViewModel
+) {
+    val reminderUIState: ReminderUIState by reminderViewModel.reminderUIState.collectAsState()
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(50.dp)
+            .background(Color.LightGray, shape = RoundedCornerShape(50))
+    ) {
 
-            Icon(
-                imageVector = if (checked)Icons.Filled.Check else Icons.Filled.Close,
-                contentDescription = null,
-                modifier = Modifier.size(SwitchDefaults.IconSize),
-            )
+        ToggableButton(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            activated = reminderUIState.reminderType == ReminderType.BASIC,
+            onClick = { reminderViewModel.setSelectedReminderType(ReminderType.BASIC) },
+        ) {
+            Text(text = "Basic")
+        }
 
-        },
-        colors = SwitchDefaults.colors(
-            checkedTrackColor = colorResource(id = R.color.myRed)
+        ToggableButton(
+            modifier = Modifier
+                .weight(1f)
+                .fillMaxHeight(),
+            activated = reminderUIState.reminderType == ReminderType.ADVANCED,
+            onClick = { reminderViewModel.setSelectedReminderType(ReminderType.ADVANCED) },
 
-        )
-
-
-
-    )
+            ) {
+            Text(text = "Advanced")
+        }
+    }
 }
 
 
+@Composable
+fun BasicReminderForm(reminderViewModel: ReminderViewModel) {
+    val reminderUIState by reminderViewModel.reminderUIState.collectAsState()
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LeadingDetailsIcon(
+            title = "Every",
+            imageVector = Icons.Default.Alarm,
+            contentDescription = "Alarm clock icon"
+        )
+        Text(text = "3h")
+    }
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LeadingDetailsIcon(
+            title = "Do not disturb",
+            imageVector = Icons.Outlined.AlarmOff,
+            contentDescription = "Alarm off icon"
+        )
+        SwitchWithIcon(
+            isChecked = reminderUIState.basicReminder.isDoNotDisturb,
+            onCheck = reminderViewModel::setDoNotDisturb
+        )
 
+
+    }
+    if (reminderUIState.basicReminder.isDoNotDisturb) {
+        Row {
+            Text(text = "Do not disturb me")
+        }
+    }
+}
+
+@Composable
+fun AdvancedReminderForm(reminderViewModel: ReminderViewModel) {
+    val reminderUIState by reminderViewModel.reminderUIState.collectAsState()
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LeadingDetailsIcon(
+            title = "Date",
+            imageVector = Icons.Default.CalendarToday,
+            contentDescription = "calendar icon"
+        )
+        Text(text = "Today, 24 Nov")
+    }
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LeadingDetailsIcon(
+            title = "Time",
+            imageVector = Icons.Default.Alarm,
+            contentDescription = "Alarm icon"
+        )
+        Text(text = "3:00 PM")
+    }
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LeadingDetailsIcon(
+            title = "",
+            imageVector = Icons.Default.Repeat,
+            contentDescription = "repeat icon"
+        )
+        SwitchWithIcon(
+            isChecked = reminderUIState.advancedReminder.isRepeated,
+            onCheck = reminderViewModel::setReminderRepeated
+        )
+
+    }
+
+    if (reminderUIState.advancedReminder.isRepeated) {
+        Text(text = "Lets repeat")
+    }
+}
