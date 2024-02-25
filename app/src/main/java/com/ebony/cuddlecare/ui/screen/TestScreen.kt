@@ -21,9 +21,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
 
 @Composable
@@ -31,26 +33,27 @@ fun TipsCard() {
     ElevatedCard(
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.tipBack),),
         elevation = CardDefaults.cardElevation(
-            defaultElevation = 6.dp
+            defaultElevation = 10.dp
         ),
         modifier = Modifier
             .fillMaxWidth()
             .padding(start = 16.dp, end = 16.dp)
-            .size(width = 240.dp, height = 200.dp)
+            .size(width = 150.dp, height = 150.dp)
     ) {
         Text(
-            text = "Sleep",
+            text = "Sleep", fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .padding(16.dp),
+                 .padding( 8.dp),
             textAlign = TextAlign.Center,
         )
         Text(
+            fontSize = 12.sp,
             modifier = Modifier.padding(start = 16.dp, end = 16.dp),
             text = "Always place your baby on their back to sleep. Do not put them to sleep on their side or stomach. This can cause suffocating or choking, which keeps them from breathing."
         )
         Row(
             modifier = Modifier
-                .padding(end = 16.dp, bottom = 16.dp, start = 22.dp)
+                .padding(end = 16.dp, start = 22.dp, bottom =8.dp, top = 8.dp)
                 .align(Alignment.End),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {

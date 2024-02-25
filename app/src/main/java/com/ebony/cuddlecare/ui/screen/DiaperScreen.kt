@@ -74,14 +74,14 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel()) {
+fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack: () -> Unit = {}) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     ) {
-        MTopBar()
+        MTopBar(onNavigateBack = onNavigateBack)
         Column(
             modifier = Modifier
                 .fillMaxHeight()

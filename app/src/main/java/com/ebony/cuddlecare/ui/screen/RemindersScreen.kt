@@ -1,10 +1,12 @@
 package com.ebony.cuddlecare.ui.screen
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -14,11 +16,15 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ButtonDefaults
+import androidx.compose.material.OutlinedButton
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Repeat
+import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.AlarmOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -43,6 +49,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -64,7 +71,7 @@ import com.ebony.cuddlecare.ui.viewmodel.ReminderViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
+fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel(),onNavigateBack:() -> Unit = {}) {
     val reminderUIState by reminderViewModel.reminderUIState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
     val navController: NavHostController = rememberNavController()
@@ -79,7 +86,7 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
     )
     {
         Scaffold(
-            topBar = { MTopBar(navController) },
+            topBar = { MTopBar(onNavigateBack=onNavigateBack) },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
@@ -92,9 +99,9 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel()) {
             }
         ) {
             Column(modifier = Modifier.padding(it)) {
-                NavHost(navController = navController, startDestination = "form") {
+                NavHost(navController = navController, startDestination = "setting") {
                     composable("setting") {
-                        ReminderSetting()
+                        ReminderSetting{ navController.popBackStack()}
                     }
                     composable("form") {
                         ReminderForm(reminderUIState.reminderSubject, reminderViewModel)
@@ -164,7 +171,7 @@ private fun SetReminderModal(
                     .padding(top = 16.dp),
                 onClick = onClose
             ) {
-                Text(text = "Cancel", fontSize = 24.sp)
+                Text(text = "Cancel", fontSize = 20.sp)
             }
         }
     }
@@ -194,7 +201,8 @@ private fun ReminderCategoryGrid(setReminderCategory: (String) -> Unit) {
 }
 
 @Composable
-fun ReminderSetting(modifier: Modifier = Modifier) {
+fun ReminderSetting(modifier: Modifier = Modifier,onNavigateBack: () -> Unit) {
+    MTopBar(onNavigateBack = onNavigateBack)
     Column(
         modifier = modifier
             .fillMaxHeight()
@@ -204,6 +212,7 @@ fun ReminderSetting(modifier: Modifier = Modifier) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        ScreenMainIcon(drawableId = R.drawable.bell)
         Text(text = "Reminders", fontSize = 28.sp, fontWeight = FontWeight.Bold)
         Column(
             modifier = Modifier
@@ -211,7 +220,7 @@ fun ReminderSetting(modifier: Modifier = Modifier) {
                 .background(color = Color.White)
         ) {
 
-            Row(modifier = Modifier.padding(top = 16.dp, start = 8.dp)) {
+            Row(modifier = Modifier.padding(top = 8.dp, start = 8.dp)) {
                 Text(text = "Allow notifications", fontWeight = FontWeight.Bold)
             }
 
@@ -223,8 +232,25 @@ fun ReminderSetting(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
 
-                Text(text = "Show notification for baby 'David'")
+                Text(text = "Show notification for baby 'David'", fontSize = 12.sp)
                 SwitchWithIcon()
+
+            }
+        }
+        Column (modifier= Modifier
+            .fillMaxHeight()
+            .padding(top = 100.dp),
+            horizontalAlignment = Alignment.CenterHorizontally){
+            Text(text = "Maintain your child's routine by setting up reminders for upcoming activities",
+                textAlign = TextAlign.Center)
+            OutlinedButton(onClick = { /*TODO*/ },
+                shape = RoundedCornerShape(50),
+                border = BorderStroke(width = 3.dp, color = colorResource(id = R.color.orange)) ){
+                Icon(
+                    imageVector = Icons.Default.AddCircle, contentDescription = "add circle icon"
+                )
+                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                      Text("Add Reminder")
 
             }
         }
@@ -384,7 +410,7 @@ fun AdvancedReminderForm(reminderViewModel: ReminderViewModel) {
         modifier = Modifier.fillMaxWidth()
     ) {
         LeadingDetailsIcon(
-            title = "",
+            title = "Repeat",
             imageVector = Icons.Default.Repeat,
             contentDescription = "repeat icon"
         )

@@ -4,7 +4,14 @@ enum class Screen {
     AuthenticatedLandingScreen,
     Register,
     Login,
-
-    AddBabyScreen
+    BreastfeedingScreen,
+    AddBabyScreen,
+    HomeScreen,
+    VaccineScreen,
+    ReminderScreen,
+    Bottle,
+    Diaper,
+    SleepingScreen,
+    MedicationScreen
 
 }

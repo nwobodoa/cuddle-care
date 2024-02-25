@@ -36,7 +36,7 @@ import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel()) {
+fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack: () -> Unit = {}) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
@@ -44,7 +44,7 @@ fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel()) {
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        MTopBar()
+        MTopBar(onNavigateBack=onNavigateBack)
         Column(
             modifier = Modifier
                 .fillMaxHeight()

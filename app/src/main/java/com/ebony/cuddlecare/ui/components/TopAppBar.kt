@@ -35,7 +35,7 @@ import com.ebony.cuddlecare.R
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar() {
+fun TopBar(onNotificationClick:() -> Unit = {}) {
         TopAppBar(
         colors = TopAppBarDefaults.topAppBarColors(
             containerColor = colorResource(id = R.color.orange),
@@ -63,9 +63,7 @@ fun TopBar() {
             }
 
             // lock icon
-            IconButton(onClick = {
-
-            }) {
+            IconButton(onClick = onNotificationClick) {
                 Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
             }
         }
@@ -101,7 +99,7 @@ fun ProfileAvatar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun MTopBar(navController: NavHostController = rememberNavController()) {
+fun MTopBar(onNavigateBack: () -> Unit = {}) {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
         colors = TopAppBarDefaults.topAppBarColors(
@@ -111,7 +109,7 @@ fun MTopBar(navController: NavHostController = rememberNavController()) {
 
         navigationIcon = {
             IconButton(
-                onClick = navController::popBackStack,
+                onClick = onNavigateBack,
             ) {
                 Icon(
                     imageVector = Icons.AutoMirrored.Filled.ArrowBack,

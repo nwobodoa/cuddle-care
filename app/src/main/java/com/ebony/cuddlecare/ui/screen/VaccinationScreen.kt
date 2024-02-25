@@ -39,13 +39,13 @@ import com.ebony.cuddlecare.ui.components.MTopBar
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-fun Add_vaccination_record() {
+fun VaccinationScreen(onNavigateBack: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     ) {
-        MTopBar()
+        MTopBar(onNavigateBack = onNavigateBack)
         Column(
             modifier = Modifier
                 .fillMaxHeight()

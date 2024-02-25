@@ -40,14 +40,14 @@ import com.ebony.cuddlecare.ui.components.ToggableButton
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun BreastfeedingScreen() {
+fun BreastfeedingScreen(onNavigateBack: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        MTopBar()
+        MTopBar(onNavigateBack = onNavigateBack)
         Column(
             modifier = Modifier
                 .fillMaxHeight()
