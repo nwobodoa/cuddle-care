@@ -93,7 +93,7 @@ fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel(),onNav
         {
 
             ScreenMainIcon(R.drawable.diaper_logo)
-            LastUpdated("Diaper")
+            LastUpdated("Diaper","Last: 20mins ago")
             TimeTypeSegment()
             DiaperCount(diaperUIState.diaperCount)
             AttachmentRow()
@@ -122,10 +122,11 @@ fun ScreenMainIcon(drawableId: Int) {
 }
 
 @Composable
-fun LastUpdated(title: String) {
-    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+fun LastUpdated(title: String, text: String) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp))
+    {
         Text(text = title, fontSize = 28.sp, fontWeight = FontWeight.Bold)
-        Text(text = "Last: 20mins ago")
+        Text(text = text)
     }
 }
 
@@ -288,95 +289,54 @@ fun DateInput(
 
 @Composable
 fun AttachmentRow() {
-    val maxLength = 3000
-    var inputValue by remember { mutableStateOf("") }
+    Column (
+        verticalArrangement = Arrangement.spacedBy(8.dp)){
+        val maxLength = 3000
+        var inputValue by remember { mutableStateOf("") }
 
-    TextField(
-        modifier = Modifier.fillMaxWidth(),
-        value = inputValue,
-        onValueChange = {
-            if (it.length <= maxLength) inputValue = it
-        },
+        TextField(
+            modifier = Modifier.fillMaxWidth(),
+            value = inputValue,
+            onValueChange = {
+                if (it.length <= maxLength) inputValue = it
+            },
 
-        colors = TextFieldDefaults.textFieldColors(
-            backgroundColor = colorResource(id = R.color.backcolor),
-            unfocusedIndicatorColor = Color.Gray,
-            focusedIndicatorColor = Color.Transparent,
-            disabledIndicatorColor = Color.Transparent,
-        ),
-        keyboardOptions = KeyboardOptions(autoCorrect = true),
-        label = { Text(text = "Notes") },
+            colors = TextFieldDefaults.textFieldColors(
+                backgroundColor = colorResource(id = R.color.backcolor),
+                unfocusedIndicatorColor = Color.Gray,
+                focusedIndicatorColor = Color.Transparent,
+                disabledIndicatorColor = Color.Transparent,
+            ),
+            keyboardOptions = KeyboardOptions(autoCorrect = true),
+            label = { Text(text = "Notes") },
 
-        )
-    Text(
-        text = "${inputValue.length}/$maxLength",
-        textAlign = TextAlign.End,
-        color = Color.Gray,
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(end = 16.dp)
-    )
-
-    Row(modifier = Modifier.fillMaxWidth()) {
-        Text(text = "Attachments", modifier = Modifier.weight(1f))
-        Icon(
-            painter = painterResource(id = R.drawable.img),
-            contentDescription = "Gallery icon",
-            modifier = Modifier.align(Alignment.CenterVertically)
-
-        )
-        Icon(
-            imageVector = Icons.Default.CameraAlt,
-            contentDescription = "Camera icon",
-            modifier = Modifier.align(Alignment.CenterVertically)
-        )
-    }
-}
-
-
-
-@Composable
-@OptIn(ExperimentalMaterialApi::class)
-fun ExposedSelectionMenu(
-    title: String, options: List<String>, onSelected: (Int) -> Unit
-) {
-    var expanded by remember { mutableStateOf(false) }
-    var selectedOptionText by remember { mutableStateOf("") }
-    TextField(
-        readOnly = true,
-        modifier = Modifier.clickable(onClick = { expanded = !expanded }),
-        value = selectedOptionText,
-        onValueChange = { },
-        textStyle = LocalTextStyle.current.copy(textAlign = TextAlign.Center),
-        trailingIcon = {
-            ExposedDropdownMenuDefaults.TrailingIcon(
-                expanded = expanded
             )
-        },
-        placeholder = { Text(text = title) },
-        colors = ExposedDropdownMenuDefaults.textFieldColors(
-            backgroundColor = Color.White,
-            focusedIndicatorColor = Color.Gray,
-            unfocusedIndicatorColor = Color.Gray,
-            disabledIndicatorColor = Color.Transparent,
+        Text(
+            text = "${inputValue.length}/$maxLength",
+            textAlign = TextAlign.End,
+            color = Color.Gray,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(end = 16.dp)
         )
 
-    )
-    DropdownMenu(expanded = expanded, onDismissRequest = {
-        expanded = false
+        Row(modifier = Modifier.fillMaxWidth()) {
+            Text(text = "Attachments", modifier = Modifier.weight(1f))
+            Icon(
+                painter = painterResource(id = R.drawable.img),
+                contentDescription = "Gallery icon",
+                modifier = Modifier.align(Alignment.CenterVertically)
 
-    }) {
-        options.forEachIndexed { index: Int, selectionOption: String ->
-            DropdownMenuItem(onClick = {
-                selectedOptionText = selectionOption
-                expanded = false
-                onSelected(index)
-            }) {
-                Text(text = selectionOption)
-            }
+            )
+            Icon(
+                imageVector = Icons.Default.CameraAlt,
+                contentDescription = "Camera icon",
+                modifier = Modifier.align(Alignment.CenterVertically)
+            )
         }
     }
 }
+
 
 
 @OptIn(ExperimentalMaterial3Api::class)

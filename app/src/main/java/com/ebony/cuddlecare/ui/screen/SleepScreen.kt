@@ -24,6 +24,7 @@ import androidx.compose.material.icons.filled.Timer
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
@@ -39,14 +40,14 @@ import com.ebony.cuddlecare.ui.components.ToggableButton
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun SleepingScreen() {
+fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        MTopBar()
+        MTopBar(onNavigateBack = onNavigateBack)
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -58,7 +59,7 @@ fun SleepingScreen() {
             ScreenMainIcon(R.drawable.sleep_logo)
             Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
                 Row {
-                    LastUpdated("Sleeping")
+                    LastUpdated("Sleeping","Last: Never")
                 }
                 Row {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add icon")
@@ -96,7 +97,10 @@ fun SleepingScreen() {
             {
 
 
-                Row {
+                Row (
+                    horizontalArrangement = Arrangement.SpaceBetween,
+                    verticalAlignment = Alignment.CenterVertically
+                ){
                     LeadingDetailsIcon(title = "Duration", imageVector = Icons.Default.Timelapse,
                         contentDescription = "timeelapsed icon" )
                     Row(

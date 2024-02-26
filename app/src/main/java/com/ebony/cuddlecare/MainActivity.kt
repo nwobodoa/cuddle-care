@@ -27,6 +27,7 @@ import com.ebony.cuddlecare.ui.screen.RegisterScreen
 import com.ebony.cuddlecare.ui.screen.ReminderScreen
 import com.ebony.cuddlecare.ui.screen.ReminderSetting
 import com.ebony.cuddlecare.ui.screen.Screen
+import com.ebony.cuddlecare.ui.screen.SleepingScreen
 import com.ebony.cuddlecare.ui.screen.VaccinationScreen
 import com.ebony.cuddlecare.ui.theme.CuddleCareTheme
 import com.google.firebase.FirebaseApp
@@ -65,6 +66,9 @@ fun CuddleCareApp(
 //            }
             composable(Screen.HomeScreen.name) {
                 HomeScreen(onNotificationClick = {navController.navigate(Screen.ReminderScreen.name)}, onTopNavigation = { dest -> navController.navigate(dest) })
+            }
+            composable(Screen.SleepingScreen.name){
+                SleepingScreen{ navController.popBackStack()}
             }
 
             composable(Screen.BreastfeedingScreen.name){

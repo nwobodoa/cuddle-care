@@ -59,7 +59,7 @@ fun BreastfeedingScreen(onNavigateBack: () -> Unit = {}) {
             ScreenMainIcon(R.drawable.breastfeeding_logo)
             Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
                 Row {
-                    LastUpdated("Breastfeeding")
+                    LastUpdated("Breastfeeding", "Last: Never")
                 }
                 Row {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add icon")

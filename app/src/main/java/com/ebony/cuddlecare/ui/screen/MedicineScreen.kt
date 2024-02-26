@@ -62,7 +62,7 @@ fun MedicineScreen(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack
         {
 
             ScreenMainIcon(R.drawable.medicine_logo)
-            LastUpdated("Medication")
+            LastUpdated("Medication", "Last: Never")
             Column(
                 modifier = Modifier
                     .clip(shape = RoundedCornerShape(20.dp))

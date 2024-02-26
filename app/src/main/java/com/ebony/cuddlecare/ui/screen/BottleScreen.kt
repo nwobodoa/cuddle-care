@@ -59,7 +59,7 @@ fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack:
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
                 Row {
-                    LastUpdated("Bottle")
+                    LastUpdated("Bottle", "Last: Never")
                 }
             }
             Column(

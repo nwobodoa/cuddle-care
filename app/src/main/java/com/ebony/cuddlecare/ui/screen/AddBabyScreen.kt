@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -80,8 +83,6 @@ fun AddBabyScaffold() {
     }
     if (isOpen) {
         ModalBottomSheet(sheetState = sheetState,
-
-            //dragHandle = ,
             onDismissRequest = {
                 isOpen = false
             }) {
@@ -169,9 +170,31 @@ fun GenderSelector() {
     }
 }
 
+@Composable
+fun SelectType() {
+    val vaccineType = listOf(
+        "Chickenpox (Var)",
+        "Diphtheria, tetanus, & whooping cough (DTap)",
+        "Haemophilus Influenzae type b(Hib)",
+        "Hepatitis A (Hep A)",
+        "Hepatitis B (Hep B)",
+        "Influenza (Flu)",
+        "Measles, mumps, rubella (MMR)",
+        "Meningococcal (MenB)",
+        "Pneumococcal (PCV)",
+        "Polio (IPV)",
+        "Rotavirus (RV)",
+        "Tuberculosis (BCG)"
+    )
+}
 
 @Composable
 fun SaveButton() {
+    Column(modifier = Modifier
+        .fillMaxHeight()
+        .padding(28.dp),
+        verticalArrangement = Arrangement.Bottom,
+    ) {
         Button(
             onClick = {
                 //TODO(code to navigate to home screen)
@@ -182,9 +205,10 @@ fun SaveButton() {
 
 
         ) {
-            Text("save", fontSize = 20.sp)
+            Text("save", fontSize = 28.sp)
         }
     }
+}
 
 
 

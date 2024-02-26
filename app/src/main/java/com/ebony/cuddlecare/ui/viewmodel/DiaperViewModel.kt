@@ -18,15 +18,15 @@ data class DiaperUIState(
     val isDirtyDiaper: Boolean = false,
     val diaperCount: Int = 0,
     val isTimeExpanded: Boolean = false,
-    val showTimePicker:Boolean = false,
-    val showDatePicker:Boolean = false,
-    val selectedTime:LocalTime = LocalTime.now(),
+    val showTimePicker: Boolean = false,
+    val showDatePicker: Boolean = false,
+    val selectedTime: LocalTime = LocalTime.now(),
     val selectedDate: LocalDate = LocalDate.now()
 )
 
 
-class DiaperViewModel: ViewModel() {
-    private val  _diaperUIState = MutableStateFlow(DiaperUIState())
+class DiaperViewModel : ViewModel() {
+    private val _diaperUIState = MutableStateFlow(DiaperUIState())
     val diaperUIState = _diaperUIState.asStateFlow()
 
     fun toggleWetDiaper() {
@@ -41,11 +41,11 @@ class DiaperViewModel: ViewModel() {
         _diaperUIState.update { it.copy(isTimeExpanded = !it.isTimeExpanded) }
     }
 
-    fun setShowTimePicker(isVisible:Boolean) {
+    fun setShowTimePicker(isVisible: Boolean) {
         _diaperUIState.update { it.copy(showTimePicker = isVisible) }
     }
 
-    fun setShowDatePicker(isVisible:Boolean) {
+    fun setShowDatePicker(isVisible: Boolean) {
         _diaperUIState.update { it.copy(showDatePicker = isVisible) }
     }
 
@@ -60,9 +60,10 @@ class DiaperViewModel: ViewModel() {
             .atZone(UTC)
             .toLocalDate()
     }
+
     @RequiresApi(Build.VERSION_CODES.O)
     fun setSelectedDate(dateEpochMilli: Long) {
-        _diaperUIState.update{it.copy(selectedDate =  epochMillisToDate(dateEpochMilli))}
+        _diaperUIState.update { it.copy(selectedDate = epochMillisToDate(dateEpochMilli)) }
 
     }
 }
