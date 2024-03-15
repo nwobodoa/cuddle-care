@@ -25,7 +25,6 @@ import com.ebony.cuddlecare.ui.screen.LoginScreen
 import com.ebony.cuddlecare.ui.screen.RecordDiaperStateScreen
 import com.ebony.cuddlecare.ui.screen.RegisterScreen
 import com.ebony.cuddlecare.ui.screen.ReminderScreen
-import com.ebony.cuddlecare.ui.screen.ReminderSetting
 import com.ebony.cuddlecare.ui.screen.Screen
 import com.ebony.cuddlecare.ui.screen.SleepingScreen
 import com.ebony.cuddlecare.ui.screen.VaccinationScreen
@@ -103,6 +102,9 @@ fun CuddleCareApp(
             }
             composable(Screen.ReminderScreen.name) {
                 ReminderScreen {navController.popBackStack()}
+            }
+            composable(Screen.CommunityScreen.name){
+             //   CommunityScreen { navController.popBackStack() }
             }
         }
     }

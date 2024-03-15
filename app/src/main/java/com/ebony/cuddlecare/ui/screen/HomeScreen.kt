@@ -15,13 +15,16 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.BottomNavBar
+import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
+import java.io.InputStream
 
 
 data class NavigationItem(
@@ -29,6 +32,7 @@ data class NavigationItem(
     val title:String,
     val destination: Screen,
 )
+
 
 val screens = listOf(
     NavigationItem(R.drawable.bf,"breastfeeding", Screen.BreastfeedingScreen),
@@ -81,5 +85,6 @@ fun HomeScreen(onNotificationClick:() -> Unit = {} ,onTopNavigation:(String) -> 
 
 
 }
+
 
 

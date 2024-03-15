@@ -1,6 +1,7 @@
 package com.ebony.cuddlecare.ui.screen
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -14,6 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ModalBottomSheet
@@ -28,6 +30,7 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -130,13 +133,9 @@ fun AddBabyScaffold() {
                     Text("Premature?")
                     SwitchWithIcon()
                 }
-                Row(
-                    Modifier
-                        .fillMaxWidth()
 
-                ) {
                     SaveButton()
-                }
+
             }
         }
     }
@@ -149,6 +148,8 @@ fun AddBabyScaffold() {
 fun GenderSelector() {
     Row(
         modifier = Modifier
+            .background(Color.LightGray, shape = RoundedCornerShape(50))
+            .height(40.dp)
             .fillMaxWidth()
     ) {
         var isEnabled by remember { mutableStateOf(true) }
@@ -171,28 +172,10 @@ fun GenderSelector() {
 }
 
 @Composable
-fun SelectType() {
-    val vaccineType = listOf(
-        "Chickenpox (Var)",
-        "Diphtheria, tetanus, & whooping cough (DTap)",
-        "Haemophilus Influenzae type b(Hib)",
-        "Hepatitis A (Hep A)",
-        "Hepatitis B (Hep B)",
-        "Influenza (Flu)",
-        "Measles, mumps, rubella (MMR)",
-        "Meningococcal (MenB)",
-        "Pneumococcal (PCV)",
-        "Polio (IPV)",
-        "Rotavirus (RV)",
-        "Tuberculosis (BCG)"
-    )
-}
-
-@Composable
 fun SaveButton() {
     Column(modifier = Modifier
         .fillMaxHeight()
-        .padding(28.dp),
+       .padding(28.dp),
         verticalArrangement = Arrangement.Bottom,
     ) {
         Button(

@@ -12,6 +12,7 @@ enum class Screen {
     Bottle,
     Diaper,
     SleepingScreen,
-    MedicationScreen
+    MedicationScreen,
+    CommunityScreen
 
 }

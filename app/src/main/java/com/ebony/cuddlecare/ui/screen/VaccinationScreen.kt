@@ -144,4 +144,21 @@ private fun TimeTypeSegment(
         }
     }
 }
+@Composable
+fun VaccineType() {
+    val vaccineType = listOf(
+        "Chickenpox (Var)",
+        "Diphtheria, tetanus, & whooping cough (DTap)",
+        "Haemophilus Influenzae type b(Hib)",
+        "Hepatitis A (Hep A)",
+        "Hepatitis B (Hep B)",
+        "Influenza (Flu)",
+        "Measles, mumps, rubella (MMR)",
+        "Meningococcal (MenB)",
+        "Pneumococcal (PCV)",
+        "Polio (IPV)",
+        "Rotavirus (RV)",
+        "Tuberculosis (BCG)"
+    )
+}
 
