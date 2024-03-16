@@ -3,6 +3,7 @@ package com.ebony.cuddlecare.ui.viewmodel
 import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
+import com.ebony.cuddlecare.ui.components.epochMillisToDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -52,13 +53,6 @@ class DiaperViewModel : ViewModel() {
     @RequiresApi(Build.VERSION_CODES.O)
     fun setSelectedTime(localTime: LocalTime) {
         _diaperUIState.update { it.copy(selectedTime = localTime) }
-    }
-
-    @RequiresApi(Build.VERSION_CODES.O)
-    fun epochMillisToDate(epochMillis: Long): LocalDate {
-        return Instant.ofEpochMilli(epochMillis)
-            .atZone(UTC)
-            .toLocalDate()
     }
 
     @RequiresApi(Build.VERSION_CODES.O)

@@ -2,7 +2,6 @@ package com.ebony.cuddlecare.ui.screen
 
 import android.os.Build
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -10,7 +9,6 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -23,24 +21,18 @@ import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.viewmodel.VaccinationViewModel
 import com.ebony.cuddlecare.ui.viewmodel.VaccineUIState
 
@@ -65,14 +57,14 @@ fun VaccinationScreen(
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),
-                 verticalArrangement = Arrangement.spacedBy(16.dp)
+            verticalArrangement = Arrangement.spacedBy(16.dp)
         )
         {
             ScreenMainIcon(drawableId = R.drawable.vac_logo)
             LastUpdated(title = "Vaccination", "Last: Never")
             TimeTypeSegment(vaccinationViewModel, vaccineUIState)
             AttachmentRow()
-            SaveButton()
+            SaveButton(onClick = {/*TODO*/})
             //TODO disable save button if nothing is entered
         }
     }
@@ -144,6 +136,7 @@ private fun TimeTypeSegment(
         }
     }
 }
+
 @Composable
 fun VaccineType() {
     val vaccineType = listOf(

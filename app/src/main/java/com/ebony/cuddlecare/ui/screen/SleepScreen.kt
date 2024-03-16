@@ -34,13 +34,14 @@ import androidx.compose.ui.unit.dp
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
+fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -57,13 +58,16 @@ fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ScreenMainIcon(R.drawable.sleep_logo)
-            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Row {
-                    LastUpdated("Sleeping","Last: Never")
+                    LastUpdated("Sleeping", "Last: Never")
                 }
                 Row {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add icon")
-                    Icon(imageVector = Icons.Default.Delete, contentDescription =" Delete icon" )
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = " Delete icon")
                 }
 
             }
@@ -78,31 +82,40 @@ fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
             )
 
             {
-                Row(modifier = Modifier
-                    .fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
-                   ToggableButton(activated = false, onClick = { /*TODO*/ }) {
-                       Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "play icon")
-                       Icon(imageVector = Icons.Default.Pause, contentDescription = "play icon")
-                       Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                       Text(text = "Resume")
-                   }
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth(), horizontalArrangement = Arrangement.Center
+                ) {
+                    ToggableButton(activated = false, onClick = { /*TODO*/ }) {
+                        Icon(
+                            imageVector = Icons.Default.PlayArrow,
+                            contentDescription = "play icon"
+                        )
+                        Icon(imageVector = Icons.Default.Pause, contentDescription = "play icon")
+                        Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+                        Text(text = "Resume")
+                    }
                 }
             }
-            Column (modifier = Modifier
-                .clip(shape = RoundedCornerShape(20.dp))
-                .background(color = Color.White)
-                .padding(16.dp)
-                .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp))
+            Column(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(20.dp))
+                    .background(color = Color.White)
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            )
             {
 
 
-                Row (
+                Row(
                     horizontalArrangement = Arrangement.SpaceBetween,
                     verticalAlignment = Alignment.CenterVertically
-                ){
-                    LeadingDetailsIcon(title = "Duration", imageVector = Icons.Default.Timelapse,
-                        contentDescription = "timeelapsed icon" )
+                ) {
+                    LeadingDetailsIcon(
+                        title = "Duration", imageVector = Icons.Default.Timelapse,
+                        contentDescription = "timeelapsed icon"
+                    )
                     Row(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
@@ -111,8 +124,10 @@ fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
                     }
                 }
                 Row {
-                    LeadingDetailsIcon(title = "Pause", imageVector = Icons.Default.Pause,
-                        contentDescription = "pause icon" )
+                    LeadingDetailsIcon(
+                        title = "Pause", imageVector = Icons.Default.Pause,
+                        contentDescription = "pause icon"
+                    )
                     Row(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
@@ -121,8 +136,10 @@ fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
                     }
                 }
                 Row {
-                    LeadingDetailsIcon(title = "Started", imageVector = Icons.Default.Timer,
-                        contentDescription = "timer icon" )
+                    LeadingDetailsIcon(
+                        title = "Started", imageVector = Icons.Default.Timer,
+                        contentDescription = "timer icon"
+                    )
                     Row(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
@@ -132,8 +149,10 @@ fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
                     }
                 }
                 Row {
-                    LeadingDetailsIcon(title = "Ended", imageVector = Icons.Default.Flag,
-                        contentDescription = "timer icon" )
+                    LeadingDetailsIcon(
+                        title = "Ended", imageVector = Icons.Default.Flag,
+                        contentDescription = "timer icon"
+                    )
                     Row(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
@@ -144,7 +163,7 @@ fun SleepingScreen(onNavigateBack:() -> Unit = {}) {
                 }
             }
             AttachmentRow()
-            SaveButton()
+            SaveButton(onClick = {/*TODO*/})
         }
     }
 }

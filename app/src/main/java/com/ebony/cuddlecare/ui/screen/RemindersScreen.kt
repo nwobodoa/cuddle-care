@@ -24,7 +24,6 @@ import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.Alarm
 import androidx.compose.material.icons.filled.CalendarToday
 import androidx.compose.material.icons.filled.Repeat
-import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.AlarmOff
 import androidx.compose.material3.Button
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -61,6 +60,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.SwitchWithIcon
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.ReminderType
@@ -71,7 +71,10 @@ import com.ebony.cuddlecare.ui.viewmodel.ReminderViewModel
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel(),onNavigateBack:() -> Unit = {}) {
+fun ReminderScreen(
+    reminderViewModel: ReminderViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {}
+) {
     val reminderUIState by reminderViewModel.reminderUIState.collectAsState()
     val sheetState = rememberModalBottomSheetState()
     val navController: NavHostController = rememberNavController()
@@ -86,7 +89,7 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel(),onNavigate
     )
     {
         Scaffold(
-            topBar = { MTopBar(onNavigateBack=onNavigateBack) },
+            topBar = { MTopBar(onNavigateBack = onNavigateBack) },
             floatingActionButton = {
                 FloatingActionButton(
                     onClick = {
@@ -101,7 +104,7 @@ fun ReminderScreen(reminderViewModel: ReminderViewModel = viewModel(),onNavigate
             Column(modifier = Modifier.padding(it)) {
                 NavHost(navController = navController, startDestination = "setting") {
                     composable("setting") {
-                        ReminderSetting{ navController.popBackStack()}
+                        ReminderSetting { navController.popBackStack() }
                     }
                     composable("form") {
                         ReminderForm(reminderUIState.reminderSubject, reminderViewModel)
@@ -201,7 +204,7 @@ private fun ReminderCategoryGrid(setReminderCategory: (String) -> Unit) {
 }
 
 @Composable
-fun ReminderSetting(modifier: Modifier = Modifier,onNavigateBack: () -> Unit) {
+fun ReminderSetting(modifier: Modifier = Modifier, onNavigateBack: () -> Unit) {
     MTopBar(onNavigateBack = onNavigateBack)
     Column(
         modifier = modifier
@@ -237,20 +240,26 @@ fun ReminderSetting(modifier: Modifier = Modifier,onNavigateBack: () -> Unit) {
 
             }
         }
-        Column (modifier= Modifier
-            .fillMaxHeight()
-            .padding(top = 100.dp),
-            horizontalAlignment = Alignment.CenterHorizontally){
-            Text(text = "Maintain your child's routine by setting up reminders for upcoming activities",
-                textAlign = TextAlign.Center)
-            OutlinedButton(onClick = { /*TODO*/ },
+        Column(
+            modifier = Modifier
+                .fillMaxHeight()
+                .padding(top = 100.dp),
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Maintain your child's routine by setting up reminders for upcoming activities",
+                textAlign = TextAlign.Center
+            )
+            OutlinedButton(
+                onClick = { /*TODO*/ },
                 shape = RoundedCornerShape(50),
-                border = BorderStroke(width = 3.dp, color = colorResource(id = R.color.orange)) ){
+                border = BorderStroke(width = 3.dp, color = colorResource(id = R.color.orange))
+            ) {
                 Icon(
                     imageVector = Icons.Default.AddCircle, contentDescription = "add circle icon"
                 )
                 Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                      Text("Add Reminder")
+                Text("Add Reminder")
 
             }
         }
@@ -299,7 +308,7 @@ fun ReminderForm(selectedReminderType: String? = null, reminderViewModel: Remind
                     AdvancedReminderForm(reminderViewModel = reminderViewModel)
                 }
             }
-            SaveButton()
+            SaveButton(onClick = {/*TODO*/})
         }
     }
 }

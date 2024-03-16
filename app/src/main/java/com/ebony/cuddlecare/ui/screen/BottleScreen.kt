@@ -31,12 +31,13 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 
 @RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack: () -> Unit = {}) {
+fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(), onNavigateBack: () -> Unit = {}) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
@@ -44,7 +45,7 @@ fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack:
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        MTopBar(onNavigateBack=onNavigateBack)
+        MTopBar(onNavigateBack = onNavigateBack)
         Column(
             modifier = Modifier
                 .fillMaxHeight()
@@ -104,18 +105,24 @@ fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack:
 
                     }
                 }
-                Row(modifier = Modifier.fillMaxWidth()){
+                Row(modifier = Modifier.fillMaxWidth()) {
 
-                    Image(painter = painterResource(id = R.drawable.minusbtn), contentDescription = "minus button")
-                    Text(text="0")
-                    Text(text="ml")
-                    Image(painter = painterResource(id = R.drawable.plusbtn), contentDescription = "plus button")
+                    Image(
+                        painter = painterResource(id = R.drawable.minusbtn),
+                        contentDescription = "minus button"
+                    )
+                    Text(text = "0")
+                    Text(text = "ml")
+                    Image(
+                        painter = painterResource(id = R.drawable.plusbtn),
+                        contentDescription = "plus button"
+                    )
 
 
                 }
             }
             AttachmentRow()
-            SaveButton()
+            SaveButton(onClick = {})
         }
 
     }

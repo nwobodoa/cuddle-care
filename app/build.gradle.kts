@@ -51,7 +51,8 @@ android {
 }
 
 dependencies {
-val compose_version = "1.6.0"
+implementation("androidx.appcompat:appcompat:1.6.1")
+    val compose_version = "1.6.0"
     implementation("androidx.core:core-ktx:1.12.0")
     implementation("io.coil-kt:coil-compose:2.5.0")
     implementation ("com.google.accompanist:accompanist-systemuicontroller:0.27.0")

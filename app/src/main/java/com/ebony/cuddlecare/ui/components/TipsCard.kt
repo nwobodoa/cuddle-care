@@ -33,7 +33,7 @@ data class TipItem(val tipHeader: String, val tipBody: String)
 
 @Composable
 
-fun TipsCard() {
+fun TipsCard(onDismiss: () -> Unit) {
     val random = remember{ Random.Default}
     val tipsList = readHealthTips(context = LocalContext.current)
     val randomIndex = remember {random.nextInt(tipsList.size)}
@@ -68,7 +68,7 @@ fun TipsCard() {
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    onClick = { /*TODO*/ },
+                    onClick = { /*TODO: implement save functionality*/ },
                     modifier = Modifier.padding(top = 8.dp, end = 8.dp), colors = ButtonDefaults
                         .buttonColors(containerColor = colorResource(id = R.color.tipBtn))
                 ) {
@@ -76,7 +76,7 @@ fun TipsCard() {
                 }
                 Button(
                     modifier = Modifier.padding(top = 8.dp),
-                    onClick = { /*TODO*/ }, colors = ButtonDefaults
+                    onClick = onDismiss, colors = ButtonDefaults
                         .buttonColors(containerColor = colorResource(id = R.color.tipBtn))
                 ) {
                     Text(text = "Dismiss")

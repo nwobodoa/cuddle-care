@@ -5,10 +5,12 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -16,8 +18,9 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navigation
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
-import com.ebony.cuddlecare.ui.screen.AddBabyScaffold
+import com.ebony.cuddlecare.ui.screen.AddBaby
 import com.ebony.cuddlecare.ui.screen.BottleFeeding
 import com.ebony.cuddlecare.ui.screen.BreastfeedingScreen
 import com.ebony.cuddlecare.ui.screen.HomeScreen
@@ -59,10 +62,8 @@ fun CuddleCareApp(
         val startDestination =
             if (firebaseAuthViewModel.isAuthenticated()) Screen.HomeScreen.name else Screen.Login.name
 
-        NavHost(navController = navController, startDestination=Screen.HomeScreen.name) {
-//            composable(Screen.Welcome.name){
-//                WelcomePage(navController = navController)
-//            }
+        NavHost(navController = navController, startDestination=Screen.AddBabyScreen.name) {
+//
             composable(Screen.HomeScreen.name) {
                 HomeScreen(onNotificationClick = {navController.navigate(Screen.ReminderScreen.name)}, onTopNavigation = { dest -> navController.navigate(dest) })
             }
@@ -92,7 +93,7 @@ fun CuddleCareApp(
                 )
             }
             composable(Screen.AddBabyScreen.name){
-                AddBabyScaffold()
+                AddBaby(navController)
             }
             composable(Screen.Diaper.name){
                 RecordDiaperStateScreen{navController.popBackStack()}

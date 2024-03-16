@@ -34,6 +34,7 @@ import androidx.compose.ui.unit.dp
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 
 
@@ -57,13 +58,16 @@ fun BreastfeedingScreen(onNavigateBack: () -> Unit = {}) {
             verticalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             ScreenMainIcon(R.drawable.breastfeeding_logo)
-            Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween) {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
                 Row {
                     LastUpdated("Breastfeeding", "Last: Never")
                 }
                 Row {
                     Icon(imageVector = Icons.Default.Add, contentDescription = "Add icon")
-                    Icon(imageVector = Icons.Default.Delete, contentDescription =" Delete icon" )
+                    Icon(imageVector = Icons.Default.Delete, contentDescription = " Delete icon")
                 }
 
             }
@@ -78,74 +82,100 @@ fun BreastfeedingScreen(onNavigateBack: () -> Unit = {}) {
             )
 
             {
-                Row(modifier = Modifier
-                    .fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                    BreastFeedingControlBtn(modifier = Modifier.weight(1f), breastSide = "L", onClick = {/*TODO*/})
-                    BreastFeedingControlBtn(modifier = Modifier.weight(1f), breastSide = "R",onClick = {/*TODO*/})
-                }
-            }
-            Column (modifier = Modifier
-                .clip(shape = RoundedCornerShape(20.dp))
-                .background(color = Color.White)
-                .padding(16.dp)
-                .fillMaxWidth(),
-                verticalArrangement = Arrangement.spacedBy(16.dp))
-                {
-
-
-            Row {
-                LeadingDetailsIcon(title = "Duration", imageVector = Icons.Default.Timelapse,
-                    contentDescription = "timeelapsed icon" )
                 Row(
-                    horizontalArrangement = Arrangement.End,
-                    modifier = Modifier.weight(1f)
+                    modifier = Modifier
+                        .fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)
                 ) {
-                    Text(text = "1 min 50 s")
+                    BreastFeedingControlBtn(
+                        modifier = Modifier.weight(1f),
+                        breastSide = "L",
+                        onClick = {/*TODO*/ })
+                    BreastFeedingControlBtn(
+                        modifier = Modifier.weight(1f),
+                        breastSide = "R",
+                        onClick = {/*TODO*/ })
                 }
             }
-                    Row {
-                        LeadingDetailsIcon(title = "Pause", imageVector = Icons.Default.Pause,
-                            contentDescription = "pause icon" )
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "0 s")
-                        }
+            Column(
+                modifier = Modifier
+                    .clip(shape = RoundedCornerShape(20.dp))
+                    .background(color = Color.White)
+                    .padding(16.dp)
+                    .fillMaxWidth(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+            )
+            {
+
+
+                Row {
+                    LeadingDetailsIcon(
+                        title = "Duration", imageVector = Icons.Default.Timelapse,
+                        contentDescription = "timeelapsed icon"
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "1 min 50 s")
                     }
-                    Row {
-                        LeadingDetailsIcon(title = "Started", imageVector = Icons.Default.Timer,
-                            contentDescription = "timer icon" )
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "9 Nov ")
-                            Text(text = " 2:44 AM")
-                        }
+                }
+                Row {
+                    LeadingDetailsIcon(
+                        title = "Pause", imageVector = Icons.Default.Pause,
+                        contentDescription = "pause icon"
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "0 s")
                     }
-                    Row {
-                        LeadingDetailsIcon(title = "Ended", imageVector = Icons.Default.Flag,
-                            contentDescription = "timer icon" )
-                        Row(
-                            horizontalArrangement = Arrangement.End,
-                            modifier = Modifier.weight(1f)
-                        ) {
-                            Text(text = "9 Nov ")
-                            Text(text = " 2:44 AM")
-                        }
+                }
+                Row {
+                    LeadingDetailsIcon(
+                        title = "Started", imageVector = Icons.Default.Timer,
+                        contentDescription = "timer icon"
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "9 Nov ")
+                        Text(text = " 2:44 AM")
                     }
+                }
+                Row {
+                    LeadingDetailsIcon(
+                        title = "Ended", imageVector = Icons.Default.Flag,
+                        contentDescription = "timer icon"
+                    )
+                    Row(
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.weight(1f)
+                    ) {
+                        Text(text = "9 Nov ")
+                        Text(text = " 2:44 AM")
+                    }
+                }
             }
             AttachmentRow()
-            SaveButton()
+            SaveButton(onClick = {})
         }
     }
 }
 
 @Composable
-fun BreastFeedingControlBtn(modifier: Modifier = Modifier,breastSide:String, onClick:() -> Unit) {
-    Column(modifier= modifier,horizontalAlignment = Alignment.CenterHorizontally) {
-        ToggableButton(activated = false, onClick = { /*TODO*/ }, modifier = Modifier.fillMaxWidth()) {
+fun BreastFeedingControlBtn(
+    modifier: Modifier = Modifier,
+    breastSide: String,
+    onClick: () -> Unit
+) {
+    Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
+        ToggableButton(
+            activated = false,
+            onClick = { /*TODO*/ },
+            modifier = Modifier.fillMaxWidth()
+        ) {
             Icon(imageVector = Icons.Default.PlayArrow, contentDescription = "play icon")
             Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
             Text(text = "($breastSide)Start")

@@ -32,76 +32,76 @@ import com.ebony.cuddlecare.ui.components.TopBar
 
 @Composable
 fun LoginScreen(
-   navigationController: NavHostController,
-   firebaseAuthViewModel: FirebaseAuthViewModel
+    navigationController: NavHostController,
+    firebaseAuthViewModel: FirebaseAuthViewModel
 ) {
 
-   var enabledSignInButton by remember { mutableStateOf(false) }
-   val firebaseAuthUIState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
-   val hasError = firebaseAuthUIState.errors.isNotEmpty()
+    var enabledSignInButton by remember { mutableStateOf(false) }
+    val firebaseAuthUIState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
+    val hasError = firebaseAuthUIState.errors.isNotEmpty()
 
 
-   LaunchedEffect(key1 = firebaseAuthUIState.email, key2 = firebaseAuthUIState.password) {
-      val isValidEmail =
-         Patterns.EMAIL_ADDRESS.matcher(firebaseAuthUIState.email.trim()).matches()
-      val isValidPassword = firebaseAuthUIState.password.length >= 6
-      enabledSignInButton = isValidEmail && isValidPassword
-   }
+    LaunchedEffect(key1 = firebaseAuthUIState.email, key2 = firebaseAuthUIState.password) {
+        val isValidEmail =
+            Patterns.EMAIL_ADDRESS.matcher(firebaseAuthUIState.email.trim()).matches()
+        val isValidPassword = firebaseAuthUIState.password.length >= 6
+        enabledSignInButton = isValidEmail && isValidPassword
+    }
 
-   LaunchedEffect(key1 = firebaseAuthUIState.currentUser) {
-      if (firebaseAuthUIState.currentUser != null) {
-         navigationController.navigate(Screen.AuthenticatedLandingScreen.name)
-      }
-   }
+    LaunchedEffect(key1 = firebaseAuthUIState.currentUser) {
+        if (firebaseAuthUIState.currentUser != null) {
+            navigationController.navigate(Screen.AuthenticatedLandingScreen.name)
+        }
+    }
 
-   ScreenScaffold(
-      topBar = { TopBar(navigationController = navigationController, title = "Sign In") },
-      horizontalAlignment = Alignment.CenterHorizontally
-   ) {
-      Column(modifier = Modifier.padding(top = 32.dp)) {
-         EmailField(
-            modifier = Modifier.fillMaxWidth(),
-            email = firebaseAuthUIState.email,
-            isError = hasError
-         ) {
-            firebaseAuthViewModel.setEmail(it)
-         }
-         Spacer(modifier = Modifier.padding(bottom = 16.dp))
-         PasswordField(
-            modifier = Modifier.fillMaxWidth(),
-            password = firebaseAuthUIState.password,
-            isError = hasError
-         ) {
-            firebaseAuthViewModel.setPassword(it)
-         }
-         if (hasError) {
-           Column { firebaseAuthUIState.errors.forEach { e -> ErrorText(e) } }
-         }
-         Spacer(modifier = Modifier.padding(bottom = 16.dp, top = 16.dp))
-         Button(onClick = {
-            firebaseAuthViewModel
-               .signInWithEmailAndPassword()
-         }, modifier = Modifier.fillMaxWidth(), enabled = enabledSignInButton) {
-            if (firebaseAuthUIState.loading) {
-               CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
-            } else {
-               Text("Sign in")
+    ScreenScaffold(
+        topBar = { TopBar(navigationController = navigationController, title = "Sign In") },
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Column(modifier = Modifier.padding(top = 32.dp)) {
+            EmailField(
+                modifier = Modifier.fillMaxWidth(),
+                email = firebaseAuthUIState.email,
+                isError = hasError
+            ) {
+                firebaseAuthViewModel.setEmail(it)
             }
-         }
-         Spacer(modifier = Modifier.padding(bottom = 16.dp))
-      }
-      Row(){
+            Spacer(modifier = Modifier.padding(bottom = 16.dp))
+            PasswordField(
+                modifier = Modifier.fillMaxWidth(),
+                password = firebaseAuthUIState.password,
+                isError = hasError
+            ) {
+                firebaseAuthViewModel.setPassword(it)
+            }
+            if (hasError) {
+                Column { firebaseAuthUIState.errors.forEach { e -> ErrorText(e) } }
+            }
+            Spacer(modifier = Modifier.padding(bottom = 16.dp, top = 16.dp))
+            Button(onClick = {
+                firebaseAuthViewModel
+                    .signInWithEmailAndPassword()
+            }, modifier = Modifier.fillMaxWidth(), enabled = enabledSignInButton) {
+                if (firebaseAuthUIState.loading) {
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+                } else {
+                    Text("Sign in")
+                }
+            }
+            Spacer(modifier = Modifier.padding(bottom = 16.dp))
+        }
+        Row {
 
-         TextButton(onClick = { /*TODO*/ }) {
-            Text("Forgot Password?")
-         }
+            TextButton(onClick = { /*TODO*/ }) {
+                Text("Forgot Password?")
+            }
 
-         TextButton(onClick = {
+            TextButton(onClick = {
 
             }) {
-            Text("No Account? Signup", color = Color.Blue)
-         }
-      }
-   }
+                Text("No Account? Signup", color = Color.Blue)
+            }
+        }
+    }
 
 }

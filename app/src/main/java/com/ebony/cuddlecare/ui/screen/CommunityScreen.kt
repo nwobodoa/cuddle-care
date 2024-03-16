@@ -3,7 +3,6 @@ package com.ebony.cuddlecare.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -14,11 +13,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.CardDefaults
-import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -38,7 +35,6 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
@@ -46,22 +42,23 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.CommunityViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SelectedTab
-import com.google.firebase.annotations.concurrent.Background
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
 
 @Composable
-fun CommunityScreen(onNavigateBack: () -> Unit = {},communityViewModel:CommunityViewModel= viewModel()) {
+fun CommunityScreen(
+    onNavigateBack: () -> Unit = {},
+    communityViewModel: CommunityViewModel = viewModel()
+) {
     val navController: NavHostController = rememberNavController()
     val communityUIState by communityViewModel.communityUIState.collectAsState()
 
     Column {
-        NavTopBar(onNavigateBack = onNavigateBack,"Community")
+        NavTopBar(onNavigateBack = onNavigateBack, "Community")
         TabSelection(communityViewModel)
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)){
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
 
         }
-
 
 
     }
@@ -69,7 +66,7 @@ fun CommunityScreen(onNavigateBack: () -> Unit = {},communityViewModel:Community
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun NavTopBar(onNavigateBack: () -> Unit = {},text:String){
+fun NavTopBar(onNavigateBack: () -> Unit = {}, text: String) {
     TopAppBar(
         modifier = Modifier.fillMaxWidth(),
         colors = TopAppBarDefaults.topAppBarColors(
@@ -100,7 +97,7 @@ fun NavTopBar(onNavigateBack: () -> Unit = {},text:String){
 }
 
 @Composable
-private fun TabSelection(communityViewModel: CommunityViewModel){
+private fun TabSelection(communityViewModel: CommunityViewModel) {
     val communityUIState by communityViewModel.communityUIState.collectAsState()
     Row(
         modifier = Modifier
@@ -131,12 +128,14 @@ private fun TabSelection(communityViewModel: CommunityViewModel){
         }
     }
 }
+
 @Preview(showBackground = true)
 @Composable
-fun ListItem(){
+fun ListItem() {
     OutlinedCard(
         colors = CardDefaults.cardColors(
-            containerColor = MaterialTheme.colorScheme.background),
+            containerColor = MaterialTheme.colorScheme.background
+        ),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp
         ),
@@ -149,7 +148,7 @@ fun ListItem(){
         Text(
             text = "Sleep", fontWeight = FontWeight.Bold,
             modifier = Modifier
-                .padding( 8.dp),
+                .padding(8.dp),
             textAlign = TextAlign.Center,
         )
         Text(
@@ -157,5 +156,5 @@ fun ListItem(){
             modifier = Modifier.padding(start = 16.dp, end = 16.dp),
             text = "Always place your baby on their back to sleep. Do not put them to sleep on their side or stomach. This can cause suffocating or choking, which keeps them from breathing."
         )
-}
+    }
 }

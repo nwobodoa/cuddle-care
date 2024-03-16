@@ -4,7 +4,6 @@ import android.os.Build
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -16,12 +15,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.DropdownMenu
-import androidx.compose.material.DropdownMenuItem
-import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.ExposedDropdownMenuDefaults
 import androidx.compose.material.Icon
-import androidx.compose.material.LocalTextStyle
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.material.TextField
@@ -50,7 +44,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
@@ -64,6 +57,7 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import java.time.LocalDate
@@ -74,7 +68,10 @@ import java.time.format.DateTimeFormatter
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack: () -> Unit = {}) {
+fun RecordDiaperStateScreen(
+    diaperViewModel: DiaperViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {}
+) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
@@ -93,11 +90,11 @@ fun RecordDiaperStateScreen(diaperViewModel: DiaperViewModel = viewModel(),onNav
         {
 
             ScreenMainIcon(R.drawable.diaper_logo)
-            LastUpdated("Diaper","Last: 20mins ago")
+            LastUpdated("Diaper", "Last: 20mins ago")
             TimeTypeSegment()
             DiaperCount(diaperUIState.diaperCount)
             AttachmentRow()
-            SaveButton()
+            SaveButton(onClick = {})
             //TODO disable save button if nothing is entered
 
         }
@@ -274,7 +271,7 @@ fun DateInput(
             onDismissRequest = { toggleDatePicker() },
             confirmButton = {
                 TextButton(onClick = { toggleDatePicker() }) {
-                    setSelectedDate(datePickerState.selectedDateMillis?:0L)
+                    setSelectedDate(datePickerState.selectedDateMillis ?: 0L)
                     Text("OK")
                 }
             },
@@ -289,8 +286,9 @@ fun DateInput(
 
 @Composable
 fun AttachmentRow() {
-    Column (
-        verticalArrangement = Arrangement.spacedBy(8.dp)){
+    Column(
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
         val maxLength = 3000
         var inputValue by remember { mutableStateOf("") }
 
@@ -336,7 +334,6 @@ fun AttachmentRow() {
         }
     }
 }
-
 
 
 @OptIn(ExperimentalMaterial3Api::class)

@@ -31,11 +31,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
+import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.screen.AttachmentRow
 import com.ebony.cuddlecare.ui.screen.DateInput
 import com.ebony.cuddlecare.ui.screen.LastUpdated
-
-import com.ebony.cuddlecare.ui.screen.SaveButton
 import com.ebony.cuddlecare.ui.screen.ScreenMainIcon
 import com.ebony.cuddlecare.ui.screen.TimeInput
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
@@ -43,7 +42,10 @@ import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
-fun MedicineScreen(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack: () -> Unit = {}) {
+fun MedicineScreen(
+    diaperViewModel: DiaperViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {}
+) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
@@ -125,13 +127,13 @@ fun MedicineScreen(diaperViewModel: DiaperViewModel = viewModel(),onNavigateBack
 
 
 
-                AttachmentRow()
-                SaveButton()
-                //TODO disable save button if nothing is entered
+            AttachmentRow()
+            SaveButton(onClick = {/*TODO*/})
+            //TODO disable save button if nothing is entered
 
-            }
         }
     }
+}
 
 
 
