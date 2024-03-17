@@ -4,61 +4,78 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxHeight
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.Icon
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Close
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.AccountAvatar
 import com.ebony.cuddlecare.ui.components.MTopBar
-import com.ebony.cuddlecare.ui.theme.backcolor
 
 @Composable
-fun Caregivers(onNavigateBack: () -> Unit = {}){
-    MTopBar(onNavigateBack = onNavigateBack)
-    Column(
-        modifier = Modifier
-            .fillMaxHeight()
-            .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
-            .background(color = colorResource(id = R.color.backcolor))
-            .padding(16.dp),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
+fun Caregivers(onNavigateBack: () -> Unit = {}) {
+    Column() {
+        MTopBar(onNavigateBack = onNavigateBack)
         HeaderText(text = "Caregivers")
-        Text(text = "Primary caregiver")
-        Row(modifier = Modifier
-            .background(Color.White)){
-            Row {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(16.dp)
+                .background(color = colorResource(id = R.color.backcolor)),
+            verticalArrangement = Arrangement.spacedBy(16.dp)
 
-                AccountAvatar(id = "C", firstName = "Chuka", radius = 75f)
-                Column {
-                    Text(text = "Igbo Man")
-                    Text(text = "cinwobi@gmail.com")
+        ) {
+
+            Text(text = "Primary caregiver", fontSize = 18.sp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White)
+            ) {
+                Row (modifier = Modifier.padding(16.dp),
+                    horizontalArrangement = Arrangement.spacedBy(8.dp)){
+
+                    AccountAvatar(id = "C", firstName = "Chuka", radius = 75f)
+                    Column {
+                        Text(text = "Igbo Man")
+                        Text(text = "cinwobi@gmail.com")
+                    }
                 }
             }
-        }
-        Text(text = "Caregivers")
-        Row (modifier = Modifier
-            .background(Color.White)){
-            Column {
+            Text(text = "Caregivers", fontSize = 18.sp)
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(Color.White),
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Column (modifier = Modifier
+                    .padding(16.dp)){
 
-                AccountAvatar(id = "A", firstName = "Adanwa", radius = 75f)
-            }
-            Column {
-                Text(text = "Adanwa Nwobodo")
-                Text(text = "adanwobodo85@gmail.com")
-            }
+                    AccountAvatar(id = "A", firstName = "Adanwa", radius = 75f)
+                }
+                Column {
+                    Text(text = "Adanwa Nwobodo")
+                    Text(text = "adanwobodo85@gmail.com")
+                }
+                Column(modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(end = 16.dp),
+                    horizontalAlignment = Alignment.End,
+                    verticalArrangement = Arrangement.Center) {
 
-            Icon(imageVector = Icons.Default.Close, contentDescription =null )
+                    Icon(imageVector = Icons.Default.Close, contentDescription = null)
+                }
+            }
         }
     }
 }

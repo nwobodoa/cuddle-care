@@ -7,6 +7,9 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.SnackbarHost
+import androidx.compose.material.SnackbarHostState
+import androidx.compose.material.rememberScaffoldState
 import androidx.compose.material3.Button
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -14,6 +17,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
@@ -31,16 +35,19 @@ fun RegisterScreen(
     firebaseAuthViewModel: FirebaseAuthViewModel = viewModel()
 ) {
     val context = LocalContext.current
+    val scaffoldState = rememberScaffoldState()
+    val snackbarHostState = remember {SnackbarHostState()}
     val firebaseAuthUiState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
     LaunchedEffect(firebaseAuthUiState.isRegistrationSuccessful) {
         if (firebaseAuthUiState.isRegistrationSuccessful) {
-            Toast.makeText(context, "Successfully Registered", Toast.LENGTH_LONG).show()
+            scaffoldState.snackbarHostState.showSnackbar("Successfully Registered")
             navigationController.navigate(Screen.Login.name)
         }
     }
     val errors = firebaseAuthUiState.errors
     val hasError = errors.isNotEmpty()
     Scaffold(
+        snackbarHost = {SnackbarHost(hostState = snackbarHostState)},
         topBar = { TopBar(navigationController = navigationController, title = "Create Account") },
 
         ) {

@@ -1,5 +1,4 @@
 //package com.ebony.cuddlecare.ui.screen
-//TODO finish of the implemnetation
 //import android.app.Application
 //import androidx.compose.foundation.layout.Arrangement
 //import androidx.compose.foundation.layout.Column
@@ -20,8 +19,8 @@
 //import com.ebony.cuddlecare.ui.viewmodel.ProfileViewModel
 //
 //enum class AuthenticatedLandingScreen {
-//    setup,
-//    Application
+//    AddBaby,
+//    HomeScreen
 //}
 //@Composable
 //fun AuthenticatedLandingScreen(

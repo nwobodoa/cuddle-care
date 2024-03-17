@@ -107,7 +107,7 @@ fun CuddleCareApp(
 
             }
             composable(Screen.Profile.name){
-                AccountScreen{dest -> navController.navigate(dest)}
+                AccountScreen(onTopNavigation = { dest -> navController.navigate(dest)})
             }
             composable(Screen.Statistics.name){
 
