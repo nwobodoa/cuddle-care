@@ -67,14 +67,7 @@ fun TipsCard(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                Button(
-                    onClick = { /*TODO: implement save functionality*/ },
-                    modifier = Modifier.padding(top = 8.dp, end = 8.dp), colors = ButtonDefaults
-                        .buttonColors(containerColor = colorResource(id = R.color.tipBtn))
-                ) {
-                    Text(text = "Save")
-                }
-                Button(
+                 Button(
                     modifier = Modifier.padding(top = 8.dp),
                     onClick = onDismiss, colors = ButtonDefaults
                         .buttonColors(containerColor = colorResource(id = R.color.tipBtn))

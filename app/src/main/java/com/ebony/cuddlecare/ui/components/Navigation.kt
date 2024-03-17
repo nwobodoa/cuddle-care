@@ -9,6 +9,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.Diversity3
 import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.PermIdentity
 import androidx.compose.material.icons.outlined.Analytics
 import androidx.compose.material.icons.outlined.PermIdentity
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -30,6 +31,9 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
+import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.ebony.cuddlecare.ui.screen.NavigationItem
+import com.ebony.cuddlecare.ui.screen.Screen
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -69,27 +73,32 @@ fun ScreenScaffold(
 
     }
 }
-class NavItem(val item : String, val itemIcon : ImageVector)
 
-@Preview
+
 @Composable
-fun BottomNavBar(){
+fun BottomNavBar(onTopNavigation: (String) -> Unit){
 
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf(
-        NavItem("Home",Icons.Default.Home),
-        NavItem("Community",Icons.Default.Diversity3),
-        NavItem("Development",Icons.Outlined.PermIdentity),
-        NavItem("Statistics",Icons.Outlined.Analytics))
+        NavigationItem(title = "Home",icon = Icons.Default.Home,destination = Screen.HomeScreen),
+        NavigationItem(title = "Community",icon = Icons.Default.Diversity3,destination = Screen.CommunityScreen),
+        NavigationItem(title = "Statistics",icon = Icons.Outlined.Analytics, destination = Screen.Statistics),
+        NavigationItem(title = "Account",icon = Icons.Default.PermIdentity, destination = Screen.Profile)
+    )
 
     NavigationBar {
         items.forEachIndexed { index, item ->
             NavigationBarItem(
-                icon = { Icon(item.itemIcon, contentDescription = item.item) },
-                label = { Text(item.item) },
+                icon = { Icon(item.icon!!, contentDescription = item.title) },
+                label = { Text(item.title) },
                 selected = selectedItem == index,
-                onClick = { selectedItem = index }
+                onClick = {
+                    selectedItem = index
+                    onTopNavigation(item.destination.name)
+                }
             )
         }
+
     }
 }
+

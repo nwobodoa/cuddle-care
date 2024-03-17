@@ -18,6 +18,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -28,21 +29,22 @@ import com.ebony.cuddlecare.ui.components.TopBar
 
 
 data class NavigationItem(
-    val iconDrawableId: Int,
+    val iconDrawableId: Int? = null,
+    val icon: ImageVector? = null,
     val title: String,
     val destination: Screen,
 )
 
 
 val screens = listOf(
-    NavigationItem(R.drawable.bf, "Breastfeeding", Screen.BreastfeedingScreen),
-    NavigationItem(R.drawable.bottle, "Bottle", Screen.Bottle),
-    NavigationItem(R.drawable.diaper, "Diaper", Screen.Diaper),
-    NavigationItem(R.drawable.crib, "Sleeping", Screen.SleepingScreen),
-    NavigationItem(R.drawable.medicine, "Medication", Screen.MedicationScreen),
-    NavigationItem(R.drawable.vaccine, "Vaccination", Screen.VaccineScreen),
-    NavigationItem(R.drawable.doc, "Doctor Visit", Screen.VaccineScreen),
-    NavigationItem(R.drawable.potty, "Potty", Screen.VaccineScreen),
+    NavigationItem(iconDrawableId = R.drawable.bf, title = "Breastfeeding", destination = Screen.BreastfeedingScreen),
+    NavigationItem(iconDrawableId = R.drawable.bottle, title = "Bottle", destination = Screen.Bottle),
+    NavigationItem(iconDrawableId = R.drawable.diaper, title = "Diaper", destination = Screen.Diaper),
+    NavigationItem(iconDrawableId = R.drawable.crib, title = "Sleeping", destination = Screen.SleepingScreen),
+    NavigationItem(iconDrawableId = R.drawable.medicine, title = "Medication", destination = Screen.MedicationScreen),
+    NavigationItem(iconDrawableId = R.drawable.vaccine, title = "Vaccination", destination = Screen.VaccineScreen),
+    NavigationItem(iconDrawableId = R.drawable.doc, title = "Doctor Visit", destination = Screen.VaccineScreen),
+    NavigationItem(iconDrawableId = R.drawable.potty, title = "Potty", destination = Screen.VaccineScreen),
 )
 
 @Composable
@@ -67,12 +69,12 @@ fun NavigationIcon(
 
 
 @Composable
-fun HomeScreen(onNotificationClick: () -> Unit = {}, onTopNavigation: (String) -> Unit) {
+fun HomeScreen(onNotificationClick: () -> Unit = {},
+               onTopNavigation: (String) -> Unit) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     Scaffold(
         topBar = { TopBar(onNotificationClick = onNotificationClick) },
-        bottomBar = { BottomNavBar() },
-
+        bottomBar = { BottomNavBar(onTopNavigation) },
         ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
@@ -82,9 +84,12 @@ fun HomeScreen(onNotificationClick: () -> Unit = {}, onTopNavigation: (String) -
                 horizontalArrangement = Arrangement.spacedBy(8.dp)
             ) {
                 items(screens) { item ->
-                    NavigationIcon(drawableId = item.iconDrawableId, text = item.title, onClick = {
-                        onTopNavigation(item.destination.name)
-                    })
+                    NavigationIcon(
+                        drawableId = item.iconDrawableId!!,
+                        text = item.title,
+                        onClick = {
+                            onTopNavigation(item.destination.name)
+                        })
                 }
             }
             Row(modifier = Modifier.padding(top = 8.dp)) {
@@ -93,14 +98,8 @@ fun HomeScreen(onNotificationClick: () -> Unit = {}, onTopNavigation: (String) -
                     TipsCard(onDismiss = { isTipsCardVisible = false })
                 }
             }
-
-
         }
-
-
     }
-
-
 }
 
 

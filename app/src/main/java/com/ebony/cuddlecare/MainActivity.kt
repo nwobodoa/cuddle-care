@@ -5,12 +5,10 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -18,11 +16,12 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navigation
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
+import com.ebony.cuddlecare.ui.screen.AccountScreen
 import com.ebony.cuddlecare.ui.screen.AddBaby
 import com.ebony.cuddlecare.ui.screen.BottleFeeding
 import com.ebony.cuddlecare.ui.screen.BreastfeedingScreen
+import com.ebony.cuddlecare.ui.screen.Caregivers
 import com.ebony.cuddlecare.ui.screen.HomeScreen
 import com.ebony.cuddlecare.ui.screen.LoginScreen
 import com.ebony.cuddlecare.ui.screen.RecordDiaperStateScreen
@@ -40,10 +39,10 @@ class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
            super.onCreate(savedInstanceState)
-        setContent {
+       setContent {
 
             FirebaseApp.initializeApp(LocalContext.current)
-            CuddleCareTheme(content = { CuddleCareApp()})
+            CuddleCareTheme(content = { CuddleCareApp() })
         }
     }
 }
@@ -63,9 +62,10 @@ fun CuddleCareApp(
             if (firebaseAuthViewModel.isAuthenticated()) Screen.HomeScreen.name else Screen.Login.name
 
         NavHost(navController = navController, startDestination=Screen.AddBabyScreen.name) {
-//
+
             composable(Screen.HomeScreen.name) {
-                HomeScreen(onNotificationClick = {navController.navigate(Screen.ReminderScreen.name)}, onTopNavigation = { dest -> navController.navigate(dest) })
+                HomeScreen(onNotificationClick = {navController.navigate(Screen.ReminderScreen.name)},
+                    onTopNavigation = { dest -> navController.navigate(dest) })
             }
             composable(Screen.SleepingScreen.name){
                 SleepingScreen{ navController.popBackStack()}
@@ -87,8 +87,7 @@ fun CuddleCareApp(
                 BottleFeeding {navController.popBackStack()}
             }
             composable(Screen.Login.name) {
-                LoginScreen(
-                    navigationController = navController,
+                LoginScreen(navController,
                     firebaseAuthViewModel = firebaseAuthViewModel
                 )
             }
@@ -105,7 +104,16 @@ fun CuddleCareApp(
                 ReminderScreen {navController.popBackStack()}
             }
             composable(Screen.CommunityScreen.name){
-             //   CommunityScreen { navController.popBackStack() }
+
+            }
+            composable(Screen.Profile.name){
+                AccountScreen{dest -> navController.navigate(dest)}
+            }
+            composable(Screen.Statistics.name){
+
+            }
+            composable (Screen.Caregiver.name){
+                Caregivers{navController.popBackStack()}
             }
         }
     }

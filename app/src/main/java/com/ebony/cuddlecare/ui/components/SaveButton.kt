@@ -18,7 +18,7 @@ fun SaveButton(onClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxHeight()
-            .padding(16.dp),
+            .padding(top = 16.dp, bottom= 8.dp),
         verticalArrangement = Arrangement.Bottom,
     ) {
         Button(
