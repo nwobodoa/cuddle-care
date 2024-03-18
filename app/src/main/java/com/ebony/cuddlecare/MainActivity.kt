@@ -121,13 +121,6 @@ private fun Loading() {
             verticalArrangement = Arrangement.Center,
 
             ) {
-            Image(
-                painter = painterResource(id = R.drawable.splashbaby),
-                contentDescription = null,
-                modifier = Modifier.fillMaxWidth(),
-                contentScale = ContentScale.FillWidth
-            )
-
             CircularProgressIndicator()
 
         }

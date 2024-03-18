@@ -13,6 +13,7 @@ import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AddCircle
+import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PermIdentity
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.outlined.Delete
@@ -209,6 +210,21 @@ fun SheetPageContent(onClick: () -> Unit) {
             .padding(16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
+        Column(
+            modifier = Modifier.fillMaxWidth(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        )
+        {
+            Row (modifier = Modifier.padding(bottom = 32.dp)){
+
+                AccountAvatar(id = "A9309404911", firstName = "Adanwa", radius = 140f)
+            }
+            Row {
+
+                Text(text = "adanwobodo84@gmail.com")
+            }
+        }
         Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
             Icon(imageVector = Icons.Default.PermIdentity, contentDescription = null)
             Text(text = "Adanwa", modifier = Modifier.padding(start=8.dp))
@@ -223,12 +239,12 @@ fun SheetPageContent(onClick: () -> Unit) {
         HorizontalDivider()
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
-            Text(text = "Sign out")
+            Text(text = "Sign out",modifier =Modifier.clickable { /*TODO:implement logout*/ })
         }
         HorizontalDivider()
         Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)){
-            Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
-            Text(text = "Delete account")
+            Icon(imageVector = Icons.Outlined.Delete, contentDescription = null, tint = Color.Red)
+            Text(text = "Delete account", color = Color.Red,modifier = Modifier.clickable { /*TODO:implement account deletion*/ })
         }
             OutlinedButton(onClick = onClick, modifier = Modifier
                 .height(40.dp)
@@ -257,21 +273,7 @@ fun AccountManagement(isOpen: Boolean, onClose: () -> Unit) {
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        verticalArrangement = Arrangement.Center,
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    )
-                    {
-                        Row {
 
-                            AccountAvatar(id = "A9309404912", firstName = "Adanwa", radius = 140f)
-                        }
-                        Row {
-
-                            Text(text = "adanwobodo85@gmail.com")
-                        }
-                    }
                 }
             }) {
 
