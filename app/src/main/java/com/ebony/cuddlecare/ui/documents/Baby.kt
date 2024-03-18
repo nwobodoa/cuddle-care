@@ -1,8 +1,5 @@
 package com.ebony.cuddlecare.ui.documents
 
-import java.time.LocalDate
-import java.util.Date
-
 enum class Gender{
     BOY,
     GIRL

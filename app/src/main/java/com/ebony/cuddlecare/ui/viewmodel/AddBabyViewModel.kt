@@ -17,12 +17,17 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDate
+import java.time.LocalTime
+import java.time.ZoneId
 
 data class AddBabyUIState(
     val selectedGender: Gender = Gender.BOY,
     val babyName: String = "",
     val isPremature: Boolean = false,
-    val selectedDate: Long = 0L,
+    val selectedDate: Long = LocalTime.now().atDate(LocalDate.now())
+        .atZone(ZoneId.systemDefault())
+        .toInstant()
+        .toEpochMilli(),
     val showDatePicker: Boolean = false,
     val isSaved: Boolean = false,
     val isDateExpanded: Boolean = false
@@ -41,7 +46,9 @@ class AddBabyViewModel : ViewModel() {
     fun setIsSaved(state: Boolean) {
         _addBabyUIState.update { it.copy(isSaved = state) }
     }
-
+    fun setIsPremature(state: Boolean){
+        _addBabyUIState.update { it.copy(isPremature = state) }
+    }
     fun setBabyName(name: String) {
         _addBabyUIState.update { it.copy(babyName = name) }
     }

@@ -18,8 +18,10 @@ import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PeopleOutline
+import androidx.compose.material3.ButtonColors
 import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
@@ -36,7 +38,9 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.ui.components.AccountAvatar
@@ -112,7 +116,7 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
             }
 
         }
-        Divider()
+        HorizontalDivider()
         Row(
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -174,7 +178,7 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
             }
 
         }
-        Divider()
+        HorizontalDivider()
         Row(
             modifier = Modifier
                 .padding(top = 8.dp)
@@ -195,7 +199,6 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
     }
 }
 
-
 @Composable
 fun SheetPageContent(onClick: () -> Unit) {
     Column(
@@ -204,27 +207,36 @@ fun SheetPageContent(onClick: () -> Unit) {
             .height(375.dp)
             .background(Color.White)
             .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-
-        Row {
+        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
             Icon(imageVector = Icons.Default.PermIdentity, contentDescription = null)
-            Text(text = "Adanwa")
+            Text(text = "Adanwa", modifier = Modifier.padding(start=8.dp))
+        Row (modifier = Modifier
+            .padding(end = 16.dp)
+            .fillMaxWidth(),verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.End){
+
             Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
         }
-        Divider()
-        Row {
+        }
+        HorizontalDivider()
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
             Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
             Text(text = "Sign out")
         }
-        Divider()
-        Row {
+        HorizontalDivider()
+        Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)){
             Icon(imageVector = Icons.Outlined.Delete, contentDescription = null)
             Text(text = "Delete account")
         }
-        OutlinedButton(onClick = onClick)
-        {
-            Text(text = "Close")
-        }
+            OutlinedButton(onClick = onClick, modifier = Modifier
+                .height(40.dp)
+                .padding(start = 24.dp, end = 24.dp)
+                .fillMaxWidth(), )
+            {
+                Text(text = "Close", fontSize = 20.sp)
+            }
     }
 }
 
@@ -241,7 +253,7 @@ fun AccountManagement(isOpen: Boolean, onClose: () -> Unit) {
             dragHandle = {
                 Column(
                     modifier = Modifier
-                        .padding(top = 16.dp)
+                        .padding(top = 32.dp)
                         .fillMaxWidth(),
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -251,9 +263,14 @@ fun AccountManagement(isOpen: Boolean, onClose: () -> Unit) {
                         horizontalAlignment = Alignment.CenterHorizontally
                     )
                     {
+                        Row {
 
-                        AccountAvatar(id = "A9309404912", firstName = "Adanwa", radius = 80f)
-                        Text(text = "adanwobodo85@gmail.com")
+                            AccountAvatar(id = "A9309404912", firstName = "Adanwa", radius = 140f)
+                        }
+                        Row {
+
+                            Text(text = "adanwobodo85@gmail.com")
+                        }
                     }
                 }
             }) {

@@ -14,6 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
@@ -84,6 +85,7 @@ fun AddBaby(
             dragHandle = { BabyDetailsFormHeader() }
         ) {
             BabyDetailsForm(
+                addBabyViewModel = addBabyViewModel,
                 navigateToHomeScreen = { navController.navigate(Screen.HomeScreen.name) },
                 addBabyUIState = addBabyUIState,
                 setSelectedGender = addBabyViewModel::setSelectedGender,
@@ -102,6 +104,7 @@ fun AddBaby(
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun BabyDetailsForm(
+    addBabyViewModel: AddBabyViewModel,
     navigateToHomeScreen: () -> Unit,
     addBabyUIState: AddBabyUIState,
     setSelectedGender: (Gender) -> Unit,
@@ -116,23 +119,25 @@ fun BabyDetailsForm(
            navigateToHomeScreen()
        }
     }
-    Column(
+    LazyColumn(
         Modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        GenderSelector(
+        item { GenderSelector(
             selectedGender = addBabyUIState.selectedGender,
             setGender = setSelectedGender
-        )
-        OutlinedTextField(
-            value = addBabyUIState.babyName,
-            modifier = Modifier.fillMaxWidth(),
-            onValueChange = setBabyName,
-            shape = CircleShape,
-            label = { Text("Baby Name") })
-
+        )}
+        item {
+            OutlinedTextField(
+                value = addBabyUIState.babyName,
+                modifier = Modifier.fillMaxWidth(),
+                onValueChange = setBabyName,
+                shape = CircleShape,
+                label = { Text("Baby Name") })
+        }
+        item {
         Row(
             Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
@@ -146,16 +151,22 @@ fun BabyDetailsForm(
                 setSelectedDate = setSelectedDate
             )
 
-        }
+        }}
+        item {
         Row(
             Modifier.fillMaxWidth(),
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
             Text("Premature?")
-            SwitchWithIcon()
+            SwitchWithIcon(
+                isChecked = addBabyUIState.isPremature,
+                onCheck =  addBabyViewModel::setIsPremature
+            )
+        }}
+        item {
+            SaveButton(onClick = { saveBaby() })
         }
-        SaveButton(onClick = { saveBaby() })
     }
 
 
