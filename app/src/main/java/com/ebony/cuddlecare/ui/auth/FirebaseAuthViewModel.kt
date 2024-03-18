@@ -2,8 +2,12 @@ package com.ebony.cuddlecare.ui.auth
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
+import com.ebony.cuddlecare.ui.documents.Document
+import com.ebony.cuddlecare.ui.documents.UserProfile
+import com.google.android.gms.tasks.Task
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
+import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
@@ -12,20 +16,23 @@ data class FirebaseAuthUiState(
     val currentUser: FirebaseUser? = null,
     val loading: Boolean = false,
     val firstname: String = "",
-    val lastname:String = "",
+    val lastname: String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
     val errors: List<String> = emptyList(),
     val isRegistrationSuccessful: Boolean = false
 )
-class FirebaseAuthViewModel : ViewModel(){
+
+class FirebaseAuthViewModel : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
+    private val firestore = FirebaseFirestore.getInstance()
     private val _firebaseAuthUIState = MutableStateFlow(FirebaseAuthUiState())
     val firebaseAuthUiState = _firebaseAuthUIState.asStateFlow()
 
+
     init {
-        setCurrentUser(firebaseAuth.currentUser)
+        setCurrentFirebaseUser(firebaseAuth.currentUser)
     }
 
     fun setFirstname(firstname: String) {
@@ -35,42 +42,53 @@ class FirebaseAuthViewModel : ViewModel(){
     fun setLastname(lastname: String) {
         _firebaseAuthUIState.update { it.copy(lastname = lastname) }
     }
+
     private fun clearErrors() {
         _firebaseAuthUIState.update { it.copy(errors = emptyList()) }
     }
+
     private fun updateRegistrationState(state: Boolean) {
         _firebaseAuthUIState.update { it.copy(isRegistrationSuccessful = state) }
     }
+
     private fun isValidEmail(email: String): Boolean {
         return email.isEmpty() || Patterns.EMAIL_ADDRESS.matcher(email).matches()
     }
+
     fun setEmail(email: String) {
         _firebaseAuthUIState.update { it.copy(email = email.trim()) }
     }
 
-    private fun setCurrentUser(user: FirebaseUser? = null) {
+    private fun setCurrentFirebaseUser(user: FirebaseUser? = null) {
         _firebaseAuthUIState.update { it.copy(currentUser = user) }
     }
 
-       fun currentUser(): FirebaseUser?{
+    fun currentUser(): FirebaseUser? {
         return (_firebaseAuthUIState.value.currentUser ?: firebaseAuth.currentUser)
     }
-    fun isAuthenticated(): Boolean{
+
+    fun reset() {
+        _firebaseAuthUIState.value = FirebaseAuthUiState()
+    }
+    fun isAuthenticated(): Boolean {
         return _firebaseAuthUIState.value.currentUser != null
     }
-     fun signInWithEmailAndPassword(){
-         setLoadingState(true)
-         firebaseAuth . signInWithEmailAndPassword(
-             _firebaseAuthUIState.value.email.trim(),
-             _firebaseAuthUIState.value.password.trim()
-         ).addOnSuccessListener{
-             setCurrentUser((it.user))
-         }.addOnFailureListener{
-             addError("Invalid email or password")
-         }.addOnCompleteListener{
-             setLoadingState(false)
-         }
-     }
+
+    fun signInWithEmailAndPassword() {
+        setLoadingState(true)
+        firebaseAuth.signInWithEmailAndPassword(
+            _firebaseAuthUIState.value.email.trim(),
+            _firebaseAuthUIState.value.password.trim()
+        ).addOnSuccessListener {
+            setCurrentFirebaseUser((it.user))
+
+        }.addOnFailureListener {
+            addError("Invalid email or password")
+        }.addOnCompleteListener {
+            setLoadingState(false)
+        }
+    }
+
     fun createAccount() {
         if (isValidated()) {
             setLoadingState(true)
@@ -78,16 +96,37 @@ class FirebaseAuthViewModel : ViewModel(){
                 _firebaseAuthUIState.value.email.trim(),
                 _firebaseAuthUIState.value.password.trim()
             ).addOnSuccessListener {
-                signOut()
-                updateRegistrationState(true)
+                val user = UserProfile(
+                    uuid = it.user!!.uid,
+                    email = _firebaseAuthUIState.value.email,
+                    firstname = _firebaseAuthUIState.value.firstname,
+                    lastname = _firebaseAuthUIState.value.lastname
+                )
+                saveProfile(it.user!!.uid, user)
+                    .addOnFailureListener { e ->
+                        addError(e.message.toString())
+                        it.user!!.delete()
+                    }.addOnSuccessListener {
+                        signOut()
+                        updateRegistrationState(true)
+                    }.addOnCompleteListener {
+                        setLoadingState(false)
+                    }
+
             }.addOnFailureListener { failure ->
                 addError(failure.message.toString())
-            }.addOnCompleteListener {
-                setLoadingState(false)
             }
 
         }
     }
+
+
+
+    fun saveProfile(uuid: String, user: UserProfile): Task<Void> {
+        val userProfileRef = firestore.collection(Document.User.name).document(uuid)
+        return userProfileRef.set(user)
+    }
+
     private fun isValidated(): Boolean {
         clearErrors()
         val mPassword = _firebaseAuthUIState.value.password.trim()
@@ -99,9 +138,11 @@ class FirebaseAuthViewModel : ViewModel(){
         if (mConfirmPassword != mPassword) {
             addError("Password and Confirmation do not match")
         }
+
         if (mConfirmPassword == "") {
             addError("Password cannot be empty")
         }
+
         if (mEmail.isEmpty()) {
             addError("Email cannot be empty")
         }
@@ -110,13 +151,14 @@ class FirebaseAuthViewModel : ViewModel(){
             addError("Email is not valid")
         }
 
-        if(firstname.isBlank()) {
+        if (firstname.isBlank()) {
             addError("Firstname cannot be empty")
         }
 
-        if(lastname.isBlank()) {
+        if (lastname.isBlank()) {
             addError("Lastname cannot be empty")
         }
+
         return _firebaseAuthUIState.value.errors.isEmpty()
     }
 
@@ -127,9 +169,10 @@ class FirebaseAuthViewModel : ViewModel(){
     private fun setLoadingState(state: Boolean) {
         _firebaseAuthUIState.update { it.copy(loading = state) }
     }
+
     fun signOut() {
         firebaseAuth.signOut()
-        setCurrentUser()
+        setCurrentFirebaseUser()
     }
 
     fun setPassword(password: String) {
@@ -139,4 +182,6 @@ class FirebaseAuthViewModel : ViewModel(){
     fun setConfirmPassword(confirmPassword: String) {
         _firebaseAuthUIState.update { it.copy(confirmPassword = confirmPassword) }
     }
+
+
 }

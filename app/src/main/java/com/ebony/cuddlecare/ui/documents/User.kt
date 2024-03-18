@@ -10,30 +10,30 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import android.content.ContentValues.TAG
+import androidx.lifecycle.viewmodel.compose.viewModel
 
 
-data class User(
-    val uuid: String,
-    val email: String,
-    val firstname: String,
-    val lastname:String,
-    val primaryCareGiverTo:List<String>,
-    val careGiverTo: List<String>,
+data class UserProfile(
+    val uuid: String = "",
+    val email: String = "",
+    val firstname: String = "",
+    val lastname:String = "",
+    val primaryCareGiverTo:List<String> = listOf(),
+    val careGiverTo: List<String> = listOf(),
 
-) {
-    constructor() : this("","","","",listOf(), listOf())
+    ) {
+//    constructor() : this("","","","",listOf(), listOf())
 
     fun hasAtLeastABabyInCare() = primaryCareGiverTo.isNotEmpty() || careGiverTo.isNotEmpty()
 }
 
 data class UserUIState(
-    val user: User? = null,
+    val user: UserProfile? = null,
     val loading: Boolean = true,
     val isSaved: Boolean = false,
 )
 
-class UserViewModel(): ViewModel() {
-    private val firebaseAuthViewModel = FirebaseAuthViewModel()
+class UserViewModel(firebaseAuthViewModel: FirebaseAuthViewModel = FirebaseAuthViewModel()): ViewModel() {
     private val db = Firebase.firestore
     private val _userUISate = MutableStateFlow(UserUIState())
     val userUIState = _userUISate.asStateFlow()
@@ -42,7 +42,7 @@ class UserViewModel(): ViewModel() {
         _userUISate.update { it.copy(loading = loading) }
     }
 
-    private fun setUser(user:User?) {
+    private fun setUser(user:UserProfile?) {
         _userUISate.update { it.copy(user = user) }
     }
     fun loadUser(user: FirebaseUser?) {
@@ -52,7 +52,7 @@ class UserViewModel(): ViewModel() {
                 .document(user.uid)
                 .get()
                 .addOnSuccessListener {
-                    setUser(it.toObject(User::class.java))
+                    setUser(it.toObject(UserProfile::class.java))
                 }
                 .addOnCompleteListener{
                     setLoading(false)

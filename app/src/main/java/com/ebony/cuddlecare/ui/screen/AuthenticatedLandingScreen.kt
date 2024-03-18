@@ -14,7 +14,10 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import com.ebony.cuddlecare.ui.auth.FirebaseAuthUiState
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
+import com.ebony.cuddlecare.ui.documents.UserProfile
+import com.ebony.cuddlecare.ui.documents.UserUIState
 import com.ebony.cuddlecare.ui.documents.UserViewModel
 import drawable.MedicineScreen
 
@@ -22,16 +25,14 @@ import drawable.MedicineScreen
 @RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AuthenticatedScreens(
-    userViewModel: UserViewModel = viewModel(),
+    user: UserProfile,
     navController: NavHostController = rememberNavController()
 ) {
-
-    val userUIState by userViewModel.userUIState.collectAsState()
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        val startDestination = if(userUIState.user!!.hasAtLeastABabyInCare()) Screen.HomeScreen.name else Screen.AddBabyScreen.name
+        val startDestination = if(user.hasAtLeastABabyInCare()) Screen.HomeScreen.name else Screen.AddBabyScreen.name
 
         NavHost(navController = navController, startDestination = startDestination) {
 

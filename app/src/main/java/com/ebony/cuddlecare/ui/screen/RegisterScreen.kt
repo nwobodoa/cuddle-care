@@ -25,6 +25,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.ebony.cuddlecare.ui.auth.FirebaseAuthUiState
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
 import com.ebony.cuddlecare.ui.components.EmailField
 import com.ebony.cuddlecare.ui.components.ErrorText
@@ -34,16 +35,24 @@ import com.ebony.cuddlecare.ui.components.TopBar
 @Composable
 fun RegisterScreen(
     navigationController: NavController,
-    firebaseAuthViewModel: FirebaseAuthViewModel = viewModel()
+    reset:() -> Unit,
+    firebaseAuthUiState: FirebaseAuthUiState,
+    setFirstname:(String) -> Unit,
+    setLastname:(String) -> Unit,
+    setEmail: (String) -> Unit,
+    setPassword: (String) -> Unit,
+    setConfirmPassword: (String) -> Unit,
+    createAccount: () -> Unit
 ) {
     val context = LocalContext.current
     val scaffoldState = rememberScaffoldState()
     val snackbarHostState = remember { SnackbarHostState() }
-    val firebaseAuthUiState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
+
     LaunchedEffect(firebaseAuthUiState.isRegistrationSuccessful) {
         if (firebaseAuthUiState.isRegistrationSuccessful) {
             navigationController.navigate(Screen.Login.name)
             scaffoldState.snackbarHostState.showSnackbar("Successfully Registered")
+            reset()
         }
     }
     val errors = firebaseAuthUiState.errors
@@ -71,12 +80,12 @@ fun RegisterScreen(
                     verticalArrangement = Arrangement.spacedBy(16.dp)
                 ) {
                     OutlinedTextField(value = firebaseAuthUiState.firstname,
-                        onValueChange = firebaseAuthViewModel::setFirstname,
+                        onValueChange = setFirstname,
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text("Firstname") })
 
                     OutlinedTextField(value = firebaseAuthUiState.lastname,
-                        onValueChange = firebaseAuthViewModel::setLastname,
+                        onValueChange = setLastname,
                         modifier = Modifier.fillMaxWidth(),
                         label = { Text("Lastname") })
 
@@ -84,14 +93,14 @@ fun RegisterScreen(
                         modifier = Modifier.fillMaxWidth(),
                         email = firebaseAuthUiState.email,
                         isError = hasError,
-                        onChange = firebaseAuthViewModel::setEmail
+                        onChange = setEmail
                     )
 
                     PasswordField(
                         modifier = Modifier.fillMaxWidth(),
                         password = firebaseAuthUiState.password,
                         isError = hasError,
-                        onChange = firebaseAuthViewModel::setPassword
+                        onChange = setPassword
                     )
 
                     PasswordField(
@@ -99,7 +108,7 @@ fun RegisterScreen(
                         password = firebaseAuthUiState.confirmPassword,
                         label = "confirm password",
                         isError = hasError,
-                        onChange = firebaseAuthViewModel::setConfirmPassword
+                        onChange = setConfirmPassword
                     )
 
                     if (hasError) {
@@ -107,7 +116,7 @@ fun RegisterScreen(
                     }
                 }
                 Button(
-                    onClick = { firebaseAuthViewModel.createAccount() },
+                    onClick = createAccount,
                     modifier = Modifier
                         .height(55.dp)
                         .fillMaxWidth()

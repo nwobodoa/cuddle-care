@@ -10,7 +10,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -54,9 +53,10 @@ fun CuddleCareApp(
 ) {
     val userUIState by userViewModel.userUIState.collectAsState()
     val navHostController = rememberNavController()
+    val firebaseAuthUIState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
 
-    LaunchedEffect(Unit) {
-        userViewModel.loadUser(firebaseAuthViewModel.currentUser())
+    LaunchedEffect(firebaseAuthUIState.currentUser) {
+        userViewModel.loadUser(firebaseAuthUIState.currentUser)
     }
 
     if (userUIState.loading) {
@@ -72,17 +72,28 @@ fun CuddleCareApp(
     NavHost(navController = navHostController, startDestination = startDestination) {
         composable(Screen.Login.name) {
             LoginScreen(onBackNavigation = { navHostController.popBackStack() },
-                firebaseAuthViewModel = firebaseAuthViewModel,
+                signInWithEmailPassword = firebaseAuthViewModel::signInWithEmailAndPassword,
+                setEmail = firebaseAuthViewModel::setEmail,
+                setPassword = firebaseAuthViewModel::setPassword,
+                firebaseAuthUIState = firebaseAuthUIState,
                 onNavigation = { dest -> navHostController.navigate(dest) })
         }
+
         composable(Screen.Register.name) {
             RegisterScreen(
                 navigationController = navHostController,
-                firebaseAuthViewModel = firebaseAuthViewModel
+                reset = firebaseAuthViewModel::reset,
+                setPassword = firebaseAuthViewModel::setPassword,
+                setConfirmPassword = firebaseAuthViewModel::setConfirmPassword,
+                setFirstname = firebaseAuthViewModel::setFirstname,
+                setLastname = firebaseAuthViewModel::setLastname,
+                setEmail = firebaseAuthViewModel::setEmail,
+                firebaseAuthUiState = firebaseAuthUIState,
+                createAccount = firebaseAuthViewModel::createAccount
             )
         }
         composable(Screen.AuthenticatedLandingScreen.name) {
-            AuthenticatedScreens(userViewModel = userViewModel)
+            AuthenticatedScreens(user = userUIState.user!!)
         }
 
     }

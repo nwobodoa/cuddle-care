@@ -11,7 +11,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.TextUnit
@@ -24,22 +23,21 @@ fun AccountAvatar(
     firstName: String,
     modifier: Modifier = Modifier,
     size: Dp = 40.dp,
-    radius:Float,
+    radius: Float,
     font: TextUnit = 22.sp,
     textStyle: TextStyle = androidx.compose.material.MaterialTheme.typography.subtitle1,
 ) {
     Box(
-        modifier.size(size), contentAlignment = Alignment.Center
+        modifier = modifier.size(size), contentAlignment = Alignment.Center
     ) {
         val color = remember(firstName) {
-            val name = firstName
-                .uppercase()
+            val name = firstName.uppercase()
             Color("$id / $name".toHslColor())
         }
         val initials = (firstName.take(1).uppercase())
         Canvas(modifier = Modifier.fillMaxSize()) {
-            drawCircle(SolidColor(color),radius = radius)
+            drawCircle(SolidColor(color), radius = radius)
         }
-        Text(text = initials, style = textStyle, color = Color.White, fontSize= font)
+        Text(text = initials, style = textStyle, color = Color.White, fontSize = font)
     }
 }
