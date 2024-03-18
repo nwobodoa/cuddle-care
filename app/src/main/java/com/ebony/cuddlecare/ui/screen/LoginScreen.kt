@@ -1,14 +1,17 @@
 package com.ebony.cuddlecare.ui.screen
 
 import android.util.Patterns
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -21,7 +24,9 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
 import com.ebony.cuddlecare.ui.components.EmailField
@@ -29,11 +34,14 @@ import com.ebony.cuddlecare.ui.components.ErrorText
 import com.ebony.cuddlecare.ui.components.PasswordField
 import com.ebony.cuddlecare.ui.components.ScreenScaffold
 import com.ebony.cuddlecare.ui.components.TopBar
+import com.ebony.cuddlecare.ui.documents.UserViewModel
 
 @Composable
 fun LoginScreen(
-    navigationController: NavHostController,
-    firebaseAuthViewModel: FirebaseAuthViewModel
+    onBackNavigation: () -> Unit,
+    onNavigation: (String) -> Unit,
+    firebaseAuthViewModel: FirebaseAuthViewModel,
+
 ) {
 
     var enabledSignInButton by remember { mutableStateOf(false) }
@@ -50,12 +58,12 @@ fun LoginScreen(
 
     LaunchedEffect(key1 = firebaseAuthUIState.currentUser) {
         if (firebaseAuthUIState.currentUser != null) {
-            navigationController.navigate(Screen.AuthenticatedLandingScreen.name)
+            onNavigation(Screen.AuthenticatedLandingScreen.name)
         }
     }
 
     ScreenScaffold(
-        topBar = { TopBar(navigationController = navigationController, title = "Sign In") },
+        topBar = { TopBar(title = "Sign In") },
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Column(modifier = Modifier.padding(top = 32.dp)) {
@@ -81,26 +89,26 @@ fun LoginScreen(
             Button(onClick = {
                 firebaseAuthViewModel
                     .signInWithEmailAndPassword()
-            }, modifier = Modifier.fillMaxWidth(), enabled = enabledSignInButton) {
+            }, modifier = Modifier
+                .height(55.dp)
+                .fillMaxWidth(), enabled = enabledSignInButton
+            ) {
                 if (firebaseAuthUIState.loading) {
-                    CircularProgressIndicator(color = MaterialTheme.colorScheme.onPrimary)
+                    CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 } else {
-                    Text("Sign in")
+                    Text("Sign in", fontSize = 20.sp)
                 }
             }
             Spacer(modifier = Modifier.padding(bottom = 16.dp))
         }
         Row {
+            Text("Forgot Password?", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Spacer(modifier = Modifier.padding(end = 8.dp))
 
-            TextButton(onClick = { /*TODO*/ }) {
-                Text("Forgot Password?")
-            }
+            Text(text = "No Account? ")
 
-            TextButton(onClick = {
+                Text("Signup", color = Color.Blue, fontWeight = FontWeight.Bold, modifier= Modifier.clickable { onNavigation(Screen.Register.name) })
 
-            }) {
-                Text("No Account? Signup", color = Color.Blue)
-            }
         }
     }
 

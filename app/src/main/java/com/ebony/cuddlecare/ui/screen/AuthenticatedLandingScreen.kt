@@ -1,71 +1,86 @@
-//package com.ebony.cuddlecare.ui.screen
-//import android.app.Application
-//import androidx.compose.foundation.layout.Arrangement
-//import androidx.compose.foundation.layout.Column
-//import androidx.compose.foundation.layout.fillMaxSize
-//import androidx.compose.foundation.layout.padding
-//import androidx.compose.material3.CircularProgressIndicator
-//import androidx.compose.runtime.Composable
-//import androidx.compose.runtime.LaunchedEffect
-//import androidx.compose.ui.Alignment
-//import androidx.compose.ui.Modifier
-//import androidx.compose.ui.unit.dp
-//import androidx.lifecycle.viewmodel.compose.viewModel
-//import androidx.navigation.NavHostController
-//import androidx.navigation.compose.NavHost
-//import androidx.navigation.compose.composable
-//import androidx.navigation.compose.rememberNavController
-//import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
-//import com.ebony.cuddlecare.ui.viewmodel.ProfileViewModel
-//
-//enum class AuthenticatedLandingScreen {
-//    AddBaby,
-//    HomeScreen
-//}
-//@Composable
-//fun AuthenticatedLandingScreen(
-//    firebaseAuthViewModel: FirebaseAuthViewModel = viewModel(),
-//){
-//    //val profileUiState by ProfileViewModel.profileUiState.collectAsState()
-//    val navHostController = rememberNavController()
-//
-//    LaunchedEffect(Unit ) {
-//  //      ProfileViewModel.getUserProfile(firebaseAuthViewModel.currentUser()!!)
-//    }
-//    if (profileUiState.loading) {
-//        Column(modifier = Modifier.padding(start = 16.dp,end =16.dp)){
-//            Loading()
-//        }
-//        return
-//    }
-//    val startDestination =
-//        if (profileUiState.profile == null) AuthenticatedLandingScreen.setup.name else AuthenticatedLandingScreen.Application.name
-//
-//    NavHost(navController = navHostController, startDestination = startDestination ) {
-//        composable(AuthenticatedLandingScreen.setup.name){
-//            Column (modifier = Modifier.padding(start = 16.dp, end = 16.dp)){
-//                SetupScreen(
-//                    firebaseAuthViewModel = firebaseAuthViewModel,
-//                    topNavController = topNavHostController,
-//                    profileViewmodel = ProfileViewModel
-//                )
-//
-//            }
-//        }
-//        composable(AuthenticatedLandingScreen.Application.name){
-//            //Screen.ApplicationScreen()
-//        }
-//    }
-//}
-//
-//@Composable
-//private fun Loading(){
-//    Column(
-//    modifier = Modifier.fillMaxSize(),
-//    verticalArrangement = Arrangement.Center,
-//    horizontalAlignment = Alignment.CenterHorizontally
-//    ){
-//        CircularProgressIndicator()
-//    }
-//
-//}
+package com.ebony.cuddlecare.ui.screen
+
+import android.os.Build
+import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Modifier
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
+import com.ebony.cuddlecare.ui.documents.UserViewModel
+import drawable.MedicineScreen
+
+
+@RequiresApi(Build.VERSION_CODES.O)
+@Composable
+fun AuthenticatedScreens(
+    userViewModel: UserViewModel = viewModel(),
+    navController: NavHostController = rememberNavController()
+) {
+
+    val userUIState by userViewModel.userUIState.collectAsState()
+    Surface(
+        modifier = Modifier.fillMaxSize(),
+        color = MaterialTheme.colorScheme.background
+    ) {
+        val startDestination = if(userUIState.user!!.hasAtLeastABabyInCare()) Screen.HomeScreen.name else Screen.AddBabyScreen.name
+
+        NavHost(navController = navController, startDestination = startDestination) {
+
+            composable(Screen.HomeScreen.name) {
+                HomeScreen(onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
+                    onTopNavigation = { dest -> navController.navigate(dest) })
+            }
+            composable(Screen.SleepingScreen.name) {
+                SleepingScreen { navController.popBackStack() }
+            }
+
+            composable(Screen.BreastfeedingScreen.name) {
+                BreastfeedingScreen { navController.popBackStack() }
+            }
+
+            composable(Screen.VaccineScreen.name) {
+                VaccinationScreen { navController.popBackStack() }
+            }
+
+            composable(Screen.Bottle.name) {
+                BottleFeeding { navController.popBackStack() }
+            }
+
+            composable(Screen.AddBabyScreen.name) {
+                AddBaby(navController)
+            }
+            composable(Screen.Diaper.name) {
+                RecordDiaperStateScreen { navController.popBackStack() }
+            }
+            composable(Screen.MedicationScreen.name) {
+                MedicineScreen { navController.popBackStack() }
+            }
+            composable(Screen.ReminderScreen.name) {
+                ReminderScreen { navController.popBackStack() }
+            }
+            composable(Screen.CommunityScreen.name) {
+
+            }
+            composable(Screen.Profile.name) {
+                AccountScreen(onTopNavigation = { dest -> navController.navigate(dest) })
+            }
+            composable(Screen.Statistics.name) {
+
+            }
+            composable(Screen.Caregiver.name) {
+                Caregivers { navController.popBackStack() }
+            }
+        }
+    }
+
+}
+

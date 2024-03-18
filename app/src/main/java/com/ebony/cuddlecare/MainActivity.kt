@@ -5,41 +5,39 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.Surface
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.CircularProgressIndicator
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
-import com.ebony.cuddlecare.ui.screen.AccountScreen
-import com.ebony.cuddlecare.ui.screen.AddBaby
-import com.ebony.cuddlecare.ui.screen.BottleFeeding
-import com.ebony.cuddlecare.ui.screen.BreastfeedingScreen
-import com.ebony.cuddlecare.ui.screen.Caregivers
-import com.ebony.cuddlecare.ui.screen.HomeScreen
+import com.ebony.cuddlecare.ui.documents.UserViewModel
+import com.ebony.cuddlecare.ui.screen.AuthenticatedScreens
 import com.ebony.cuddlecare.ui.screen.LoginScreen
-import com.ebony.cuddlecare.ui.screen.RecordDiaperStateScreen
 import com.ebony.cuddlecare.ui.screen.RegisterScreen
-import com.ebony.cuddlecare.ui.screen.ReminderScreen
 import com.ebony.cuddlecare.ui.screen.Screen
-import com.ebony.cuddlecare.ui.screen.SleepingScreen
-import com.ebony.cuddlecare.ui.screen.VaccinationScreen
 import com.ebony.cuddlecare.ui.theme.CuddleCareTheme
 import com.google.firebase.FirebaseApp
-import drawable.MedicineScreen
 
 
 class MainActivity : ComponentActivity() {
     @RequiresApi(Build.VERSION_CODES.O)
     override fun onCreate(savedInstanceState: Bundle?) {
-           super.onCreate(savedInstanceState)
-       setContent {
+        super.onCreate(savedInstanceState)
+        setContent {
 
             FirebaseApp.initializeApp(LocalContext.current)
             CuddleCareTheme(content = { CuddleCareApp() })
@@ -52,71 +50,53 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CuddleCareApp(
     firebaseAuthViewModel: FirebaseAuthViewModel = viewModel(),
-    navController: NavHostController = rememberNavController()
-){
-    Surface(
-        modifier = Modifier.fillMaxSize(),
-        color = MaterialTheme.colorScheme.background
-    ){
-        val startDestination =
-            if (firebaseAuthViewModel.isAuthenticated()) Screen.HomeScreen.name else Screen.Login.name
+    userViewModel: UserViewModel = viewModel()
+) {
+    val userUIState by userViewModel.userUIState.collectAsState()
+    val navHostController = rememberNavController()
 
-        NavHost(navController = navController, startDestination=Screen.AddBabyScreen.name) {
+    LaunchedEffect(Unit) {
+        userViewModel.loadUser(firebaseAuthViewModel.currentUser())
+    }
 
-            composable(Screen.HomeScreen.name) {
-                HomeScreen(onNotificationClick = {navController.navigate(Screen.ReminderScreen.name)},
-                    onTopNavigation = { dest -> navController.navigate(dest) })
-            }
-            composable(Screen.SleepingScreen.name){
-                SleepingScreen{ navController.popBackStack()}
-            }
-
-            composable(Screen.BreastfeedingScreen.name){
-                BreastfeedingScreen { navController.popBackStack() }
-            }
-
-            composable(Screen.VaccineScreen.name) {
-                VaccinationScreen{navController.popBackStack()}
-            }
-            composable(Screen.Register.name){
-                RegisterScreen(
-                    navigationController = navController
-                )
-            }
-            composable(Screen.Bottle.name){
-                BottleFeeding {navController.popBackStack()}
-            }
-            composable(Screen.Login.name) {
-                LoginScreen(navController,
-                    firebaseAuthViewModel = firebaseAuthViewModel
-                )
-            }
-            composable(Screen.AddBabyScreen.name){
-                AddBaby(navController)
-            }
-            composable(Screen.Diaper.name){
-                RecordDiaperStateScreen{navController.popBackStack()}
-            }
-            composable(Screen.MedicationScreen.name){
-                MedicineScreen{navController.popBackStack()}
-            }
-            composable(Screen.ReminderScreen.name) {
-                ReminderScreen {navController.popBackStack()}
-            }
-            composable(Screen.CommunityScreen.name){
-
-            }
-            composable(Screen.Profile.name){
-                AccountScreen(onTopNavigation = { dest -> navController.navigate(dest)})
-            }
-            composable(Screen.Statistics.name){
-
-            }
-            composable (Screen.Caregiver.name){
-                Caregivers{navController.popBackStack()}
-            }
+    if (userUIState.loading) {
+        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+            Loading()
         }
+        return
+    }
+
+    val startDestination =
+        if (userUIState.user == null) Screen.Login.name else Screen.AuthenticatedLandingScreen.name
+
+    NavHost(navController = navHostController, startDestination = startDestination) {
+        composable(Screen.Login.name) {
+            LoginScreen(onBackNavigation = { navHostController.popBackStack() },
+                firebaseAuthViewModel = firebaseAuthViewModel,
+                onNavigation = { dest -> navHostController.navigate(dest) })
+        }
+        composable(Screen.Register.name) {
+            RegisterScreen(
+                navigationController = navHostController,
+                firebaseAuthViewModel = firebaseAuthViewModel
+            )
+        }
+        composable(Screen.AuthenticatedLandingScreen.name) {
+            AuthenticatedScreens(userViewModel = userViewModel)
+        }
+
+    }
+}
+
+@Composable
+private fun Loading() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        CircularProgressIndicator()
+
     }
 
 }
-

@@ -24,12 +24,12 @@ fun SaveButton(onClick: () -> Unit) {
         Button(
             onClick = onClick,
             modifier = Modifier
-                .height(60.dp)
+                .height(55.dp)
                 .fillMaxWidth()
 
 
         ) {
-            Text("save", fontSize = 28.sp)
+            Text("save", fontSize = 20.sp)
         }
     }
 }

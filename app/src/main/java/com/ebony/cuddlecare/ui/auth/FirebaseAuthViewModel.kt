@@ -11,6 +11,8 @@ import kotlinx.coroutines.flow.update
 data class FirebaseAuthUiState(
     val currentUser: FirebaseUser? = null,
     val loading: Boolean = false,
+    val firstname: String = "",
+    val lastname:String = "",
     val email: String = "",
     val password: String = "",
     val confirmPassword: String = "",
@@ -26,6 +28,13 @@ class FirebaseAuthViewModel : ViewModel(){
         setCurrentUser(firebaseAuth.currentUser)
     }
 
+    fun setFirstname(firstname: String) {
+        _firebaseAuthUIState.update { it.copy(firstname = firstname) }
+    }
+
+    fun setLastname(lastname: String) {
+        _firebaseAuthUIState.update { it.copy(lastname = lastname) }
+    }
     private fun clearErrors() {
         _firebaseAuthUIState.update { it.copy(errors = emptyList()) }
     }
@@ -84,6 +93,8 @@ class FirebaseAuthViewModel : ViewModel(){
         val mPassword = _firebaseAuthUIState.value.password.trim()
         val mEmail = _firebaseAuthUIState.value.email.trim()
         val mConfirmPassword = _firebaseAuthUIState.value.confirmPassword.trim()
+        val firstname = _firebaseAuthUIState.value.firstname.trim()
+        val lastname = _firebaseAuthUIState.value.lastname.trim()
 
         if (mConfirmPassword != mPassword) {
             addError("Password and Confirmation do not match")
@@ -97,6 +108,14 @@ class FirebaseAuthViewModel : ViewModel(){
 
         if (!isValidEmail(mEmail)) {
             addError("Email is not valid")
+        }
+
+        if(firstname.isBlank()) {
+            addError("Firstname cannot be empty")
+        }
+
+        if(lastname.isBlank()) {
+            addError("Lastname cannot be empty")
         }
         return _firebaseAuthUIState.value.errors.isEmpty()
     }

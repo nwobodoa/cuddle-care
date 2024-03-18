@@ -1,9 +1,11 @@
 package com.ebony.cuddlecare.ui.components
 
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.ColumnScope
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
@@ -28,28 +30,34 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavGraph.Companion.findStartDestination
+import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.screen.NavigationItem
 import com.ebony.cuddlecare.ui.screen.Screen
+import com.ebony.cuddlecare.ui.theme.backcolor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(navigationController: NavController, title: String) {
-    TopAppBar(title = { Text(title) }, navigationIcon = {
-        IconButton(
-            onClick = { navigationController.popBackStack() },
-            modifier = Modifier.padding(horizontal = 8.dp)
-        ) {
-            Icon(
-                imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                contentDescription = "Back"
-            )
+fun TopBar( title: String) {
+    TopAppBar(
+        title = {
+            Box (modifier= Modifier
+                .padding(top = 32.dp)
+                .background(colorResource(id = R.color.backcolor))
+                .fillMaxSize(), contentAlignment = Alignment.Center){
+
+                Text (title, color = colorResource(id = R.color.orange), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            }
+        },
+
+        )
         }
-    })
-}
 
 @Composable
 fun ScreenScaffold(
