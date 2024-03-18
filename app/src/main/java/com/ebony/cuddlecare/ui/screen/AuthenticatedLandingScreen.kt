@@ -57,7 +57,7 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.AddBabyScreen.name) {
-                AddBaby(navController)
+                AddBaby(navController,user = user)
             }
             composable(Screen.Diaper.name) {
                 RecordDiaperStateScreen { navController.popBackStack() }

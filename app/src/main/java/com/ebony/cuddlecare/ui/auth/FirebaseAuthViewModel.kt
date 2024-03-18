@@ -124,7 +124,7 @@ class FirebaseAuthViewModel : ViewModel() {
 
     fun saveProfile(uuid: String, user: UserProfile): Task<Void> {
         val userProfileRef = firestore.collection(Document.User.name).document(uuid)
-        return userProfileRef.set(user)
+        return userProfileRef.set(user.copy(uuid = uuid))
     }
 
     private fun isValidated(): Boolean {

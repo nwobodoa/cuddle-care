@@ -22,18 +22,18 @@ data class UserProfile(
     val careGiverTo: List<String> = listOf(),
 
     ) {
-//    constructor() : this("","","","",listOf(), listOf())
-
+    constructor() : this("","","","",listOf(), listOf())
     fun hasAtLeastABabyInCare() = primaryCareGiverTo.isNotEmpty() || careGiverTo.isNotEmpty()
 }
 
 data class UserUIState(
+    val uid: String = "",
     val user: UserProfile? = null,
     val loading: Boolean = true,
     val isSaved: Boolean = false,
 )
 
-class UserViewModel(firebaseAuthViewModel: FirebaseAuthViewModel = FirebaseAuthViewModel()): ViewModel() {
+class UserViewModel(): ViewModel() {
     private val db = Firebase.firestore
     private val _userUISate = MutableStateFlow(UserUIState())
     val userUIState = _userUISate.asStateFlow()

@@ -1,5 +1,7 @@
 package com.ebony.cuddlecare.ui.screen
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -84,8 +86,8 @@ fun LoginScreen(
             Spacer(modifier = Modifier.padding(bottom = 16.dp, top = 16.dp))
             Button(onClick = signInWithEmailPassword,
                 modifier = Modifier
-                .height(55.dp)
-                .fillMaxWidth(), enabled = enabledSignInButton
+                    .height(55.dp)
+                    .fillMaxWidth(), enabled = enabledSignInButton
             ) {
                 if (firebaseAuthUIState.loading) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
