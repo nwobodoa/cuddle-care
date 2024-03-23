@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
+//noinspection UsingMaterialAndMaterial3Libraries
 import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
@@ -38,7 +39,6 @@ import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun BreastfeedingScreen(onNavigateBack: () -> Unit = {}) {

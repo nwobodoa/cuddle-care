@@ -57,7 +57,9 @@ class ProfileViewModel : ViewModel() {
 
     fun setActiveBaby(babyId:String) {
         _userUISate.update { it.copy(user = it.user?.copy( activeBabyId = babyId)) }
+        persistProfile()
     }
+
     fun loadUser(user: FirebaseUser?) {
         if (user != null) {
             setLoading(true)

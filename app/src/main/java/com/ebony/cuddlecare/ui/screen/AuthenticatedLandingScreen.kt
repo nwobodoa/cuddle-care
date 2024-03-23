@@ -1,7 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,7 +10,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -32,8 +29,12 @@ fun AuthenticatedScreens(
     val babyUIState by babyViewModel.babyUIState.collectAsState()
 
 
-    LaunchedEffect(key1 = user.primaryCareGiverTo, key2 = user.careGiverTo, key3 = user.activeBabyId) {
-          babyViewModel.fetchBabies(user)
+    LaunchedEffect(
+        key1 = user.primaryCareGiverTo,
+        key2 = user.careGiverTo,
+        key3 = user.activeBabyId
+    ) {
+        babyViewModel.fetchBabies(user)
     }
 
 
@@ -42,16 +43,19 @@ fun AuthenticatedScreens(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
     ) {
-        val startDestination = if(user.hasAtLeastABabyInCare()) Screen.HomeScreen.name else Screen.AddBabyScreen.name
+        val startDestination =
+            if (user.hasAtLeastABabyInCare()) Screen.HomeScreen.name else Screen.AddBabyScreen.name
 
         NavHost(navController = navController, startDestination = startDestination) {
 
             composable(Screen.HomeScreen.name) {
-                HomeScreen(onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
+                HomeScreen(
+                    onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
                     onTopNavigation = { dest -> navController.navigate(dest) },
                     babies = babyUIState.listOfBabies,
                     activeBaby = babyUIState.activeBaby,
-                    setActiveBaby = setActiveBaby)
+                    setActiveBaby = setActiveBaby
+                )
             }
             composable(Screen.SleepingScreen.name) {
                 SleepingScreen { navController.popBackStack() }
@@ -66,20 +70,25 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.Bottle.name) {
-                BottleFeeding { navController.popBackStack() }
+                BottleFeeding(
+                    onNavigateBack = { navController.popBackStack() },
+                    activeBaby = babyUIState.activeBaby
+                )
             }
 
             composable(Screen.AddBabyScreen.name) {
-                AddBaby(navController,
+                AddBaby(
+                    navController,
                     babyUIState = babyUIState,
-                    createBaby =  {
-                        babyViewModel.createBaby(user,setUpdatedUser)
+                    createBaby = {
+                        babyViewModel.createBaby(user, setUpdatedUser)
                     },
                     setBabyName = babyViewModel::setBabyName,
                     setIsPremature = babyViewModel::setIsPremature,
                     setSelectedDate = babyViewModel::setSelectedDate,
                     setSelectedGender = babyViewModel::setSelectedGender,
-                    toggleDatePicker = babyViewModel::toggableDatePicker)
+                    toggleDatePicker = babyViewModel::toggableDatePicker
+                )
             }
             composable(Screen.Diaper.name) {
                 RecordDiaperStateScreen { navController.popBackStack() }

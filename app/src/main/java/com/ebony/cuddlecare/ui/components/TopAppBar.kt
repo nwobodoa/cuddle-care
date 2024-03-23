@@ -7,11 +7,15 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.material.Divider
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
@@ -19,7 +23,10 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -33,55 +40,74 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.documents.Baby
-import com.ebony.cuddlecare.ui.documents.Gender
-import java.time.LocalDate
-import java.time.ZoneOffset
+
+
+@Composable
+@Preview(showBackground = true)
+fun DropDown(
+    babies: List<Baby> = emptyList(),
+    setActiveBaby: (String) -> Unit = {},
+    expanded: Boolean = false,
+    setExpanded: (Boolean) -> Unit = {}
+) {
+
+    DropdownMenu(expanded = expanded, onDismissRequest = { setExpanded(false) }) {
+        babies.forEachIndexed { idx, baby ->
+            DropdownMenuItem(
+                text = { Text(text = baby.name, color = Color.Black) },
+                onClick = {
+                    setActiveBaby(baby.id)
+                    setExpanded(false)
+                })
+            if (idx != babies.lastIndex) {
+                Divider()
+            }
+        }
+    }
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Preview
+@Preview(showBackground = true)
 fun TopBar(
-    onNotificationClick: () -> Unit = {}, babies: List<Baby> = emptyList(),
-    activeBaby: Baby? = Baby(
-        id = "",
-        gender = Gender.GIRL,
-        name = "utaka",
-        dateOfBirth = LocalDate.of(1987, 4, 11).atStartOfDay().toEpochSecond(
-            ZoneOffset.UTC
-        ),
-        isPremature = false
-    ),
+    onNotificationClick: () -> Unit = {},
+    babies: List<Baby> = emptyList(),
+    activeBaby: Baby? = null,
     setActiveBaby: (String) -> Unit = {}
 ) {
-   activeBaby?.let {
-       TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
-           containerColor = colorResource(id = R.color.orange),
-           titleContentColor = Color.Black
-       ), navigationIcon = {
-           ProfileAvatarWithShowMore(
-               modifier = Modifier.padding(start = 8.dp),
-               id = activeBaby.id,
-               firstName = activeBaby.name,
-               showMore = babies.size > 1
-           )
-       },
-           title = { Text(text = activeBaby.name) },
-           actions = {
-               //search icon
-               IconButton(onClick = {
+    var expanded by remember { mutableStateOf(false) }
+    activeBaby?.let {
+        TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = colorResource(id = R.color.orange), titleContentColor = Color.Black
+        ), navigationIcon = {
+            ProfileAvatarWithShowMore(
+                modifier = Modifier.padding(start = 8.dp),
+                id = activeBaby.id,
+                firstName = activeBaby.name,
+                showMore = babies.size > 1,
+                openDropDown = { expanded = true }
+            )
+            DropDown(
+                babies = babies,
+                setActiveBaby = setActiveBaby,
+                expanded = expanded,
+                setExpanded = { expanded = it })
+        }, title = { Text(text = activeBaby.name) }, actions = {
+            //search icon
+            IconButton(onClick = {
 
-               }) {
-                   Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
-               }
+            }) {
+                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+            }
 
-               // lock icon
-               IconButton(onClick = onNotificationClick) {
-                   Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
-               }
-           }
+            // lock icon
+            IconButton(onClick = onNotificationClick) {
+                Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
+            }
+        }
 
-       )
-   }
+        )
+    }
 }
 
 @Composable
@@ -90,16 +116,19 @@ fun ProfileAvatarWithShowMore(
     id: String = "",
     firstName: String = "",
     size: Dp = 40.dp,
-    textStyle: TextStyle = androidx.compose.material.MaterialTheme.typography.subtitle1,
+    textStyle: TextStyle = MaterialTheme.typography.subtitle1,
     showMore: Boolean = true,
+    openDropDown: () -> Unit,
 ) {
     val color = remember(firstName) {
         val name = firstName.uppercase()
         Color("$id / $name".toHslColor())
     }
 
-    Row(modifier = Modifier.padding(end = if(showMore) 0.dp else 8.dp),
-        verticalAlignment = Alignment.CenterVertically) {
+    Row(
+        modifier = Modifier.padding(end = if (showMore) 0.dp else 8.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
         Box(
             modifier = modifier.size(size), contentAlignment = Alignment.Center
         ) {
@@ -115,7 +144,7 @@ fun ProfileAvatarWithShowMore(
             Text(text = initials, style = textStyle, color = Color.White, fontSize = 18.sp)
         }
         if (showMore) {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = openDropDown) {
                 Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "", tint = color)
             }
 
@@ -126,20 +155,17 @@ fun ProfileAvatarWithShowMore(
 
 @Composable
 fun ProfileAvatar(
-    id: String,
-    firstName: String,
     modifier: Modifier = Modifier,
+    id: String = "D",
+    firstName: String = "David",
     size: Dp = 40.dp,
-    textStyle: TextStyle = androidx.compose.material.MaterialTheme.typography.subtitle1,
+    textStyle: TextStyle = MaterialTheme.typography.subtitle1,
 ) {
+    val color = Color("$id / ${firstName.uppercase()}".toHslColor())
+    val initials = firstName.first().toString().uppercase()
     Box(
         modifier.size(size), contentAlignment = Alignment.Center
     ) {
-        val color = remember(firstName) {
-            val name = firstName.uppercase()
-            Color("$id / $name".toHslColor())
-        }
-        val initials = (firstName.take(1).uppercase())
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(SolidColor(color), radius = 70f, style = Stroke(width = 15f), alpha = 0.3f)
             drawCircle(SolidColor(color), radius = 55f)
@@ -151,12 +177,11 @@ fun ProfileAvatar(
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 @Preview
-fun MTopBar(onNavigateBack: () -> Unit = {}) {
+fun MTopBar(onNavigateBack: () -> Unit = {}, activeBaby: Baby? = null) {
     TopAppBar(modifier = Modifier.fillMaxWidth(), colors = TopAppBarDefaults.topAppBarColors(
         containerColor = colorResource(id = R.color.orange),
         titleContentColor = Color.Black,
     ),
-
         navigationIcon = {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 IconButton(
@@ -167,18 +192,23 @@ fun MTopBar(onNavigateBack: () -> Unit = {}) {
                         contentDescription = "Back"
                     )
                 }
-                ProfileAvatar(
-                    modifier = Modifier.padding(end = 8.dp, bottom = 8.dp, top = 8.dp),
-                    id = "D",
-                    firstName = "David"
-                )
+                activeBaby?.let {
+                    ProfileAvatar(
+                        modifier = Modifier.padding(end = 8.dp, bottom = 8.dp, top = 8.dp),
+                        id = activeBaby.id,
+                        firstName = activeBaby.name
+                    )
+                }
+
             }
         },
 
         title = {
-            Text(
-                text = "David"
-            )
+            if (activeBaby != null) {
+                Text(
+                    text = activeBaby.name
+                )
+            }
         })
 }
 

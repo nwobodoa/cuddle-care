@@ -32,12 +32,14 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
+import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
-fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(), onNavigateBack: () -> Unit = {}) {
+fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),
+                  onNavigateBack: () -> Unit = {},
+                  activeBaby:Baby? = null) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
         modifier = Modifier
@@ -45,7 +47,7 @@ fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(), onNavigateBack
             .background(color = colorResource(id = R.color.orange))
     )
     {
-        MTopBar(onNavigateBack = onNavigateBack)
+        MTopBar(onNavigateBack = onNavigateBack, activeBaby = activeBaby)
         Column(
             modifier = Modifier
                 .fillMaxHeight()
