@@ -2,12 +2,14 @@ package com.ebony.cuddlecare.ui.components
 
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.ExperimentalMaterial3Api
@@ -29,46 +31,97 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavHostController
-import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.documents.Gender
+import java.time.LocalDate
+import java.time.ZoneOffset
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar(onNotificationClick:() -> Unit = {}) {
-        TopAppBar(
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colorResource(id = R.color.orange),
-            titleContentColor = Color.Black,
+@Preview
+fun TopBar(
+    onNotificationClick: () -> Unit = {}, babies: List<Baby> = emptyList(),
+    activeBaby: Baby? = Baby(
+        id = "",
+        gender = Gender.GIRL,
+        name = "utaka",
+        dateOfBirth = LocalDate.of(1987, 4, 11).atStartOfDay().toEpochSecond(
+            ZoneOffset.UTC
         ),
+        isPremature = false
+    ),
+    setActiveBaby: (String) -> Unit = {}
+) {
+   activeBaby?.let {
+       TopAppBar(colors = TopAppBarDefaults.topAppBarColors(
+           containerColor = colorResource(id = R.color.orange),
+           titleContentColor = Color.Black
+       ), navigationIcon = {
+           ProfileAvatarWithShowMore(
+               modifier = Modifier.padding(start = 8.dp),
+               id = activeBaby.id,
+               firstName = activeBaby.name,
+               showMore = babies.size > 1
+           )
+       },
+           title = { Text(text = activeBaby.name) },
+           actions = {
+               //search icon
+               IconButton(onClick = {
 
-        navigationIcon = {
-            ProfileAvatar(
-                modifier = Modifier.padding(start = 16.dp), id = "D", firstName = "David"
-            )
-        },
+               }) {
+                   Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+               }
 
-        title = {
-            Text(
-                modifier = Modifier.padding(start = 24.dp),
-                text = "David"
-            )
-        },
-        actions = {
-            //search icon
-            IconButton(onClick = {
+               // lock icon
+               IconButton(onClick = onNotificationClick) {
+                   Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
+               }
+           }
 
-            }) {
-                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+       )
+   }
+}
+
+@Composable
+fun ProfileAvatarWithShowMore(
+    modifier: Modifier = Modifier,
+    id: String = "",
+    firstName: String = "",
+    size: Dp = 40.dp,
+    textStyle: TextStyle = androidx.compose.material.MaterialTheme.typography.subtitle1,
+    showMore: Boolean = true,
+) {
+    val color = remember(firstName) {
+        val name = firstName.uppercase()
+        Color("$id / $name".toHslColor())
+    }
+
+    Row(modifier = Modifier.padding(end = if(showMore) 0.dp else 8.dp),
+        verticalAlignment = Alignment.CenterVertically) {
+        Box(
+            modifier = modifier.size(size), contentAlignment = Alignment.Center
+        ) {
+
+            val initials = (firstName.take(1).uppercase())
+            Canvas(modifier = Modifier.fillMaxSize()) {
+                drawCircle(
+                    SolidColor(color), radius = 70f, style = Stroke(width = 15f), alpha = 0.3f
+                )
+                drawCircle(SolidColor(color), radius = 55f)
             }
 
-            // lock icon
-            IconButton(onClick = onNotificationClick) {
-                Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
+            Text(text = initials, style = textStyle, color = Color.White, fontSize = 18.sp)
+        }
+        if (showMore) {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "", tint = color)
             }
+
         }
 
-    )
+    }
 }
 
 @Composable
@@ -83,16 +136,15 @@ fun ProfileAvatar(
         modifier.size(size), contentAlignment = Alignment.Center
     ) {
         val color = remember(firstName) {
-            val name = firstName
-                .uppercase()
+            val name = firstName.uppercase()
             Color("$id / $name".toHslColor())
         }
         val initials = (firstName.take(1).uppercase())
         Canvas(modifier = Modifier.fillMaxSize()) {
             drawCircle(SolidColor(color), radius = 70f, style = Stroke(width = 15f), alpha = 0.3f)
-            drawCircle(SolidColor(color),radius = 55f)
+            drawCircle(SolidColor(color), radius = 55f)
         }
-        Text(text = initials, style = textStyle, color = Color.White, fontSize= 18.sp)
+        Text(text = initials, style = textStyle, color = Color.White, fontSize = 18.sp)
     }
 }
 
@@ -100,34 +152,33 @@ fun ProfileAvatar(
 @Composable
 @Preview
 fun MTopBar(onNavigateBack: () -> Unit = {}) {
-    TopAppBar(
-        modifier = Modifier.fillMaxWidth(),
-        colors = TopAppBarDefaults.topAppBarColors(
-            containerColor = colorResource(id = R.color.orange),
-            titleContentColor = Color.Black,
-        ),
+    TopAppBar(modifier = Modifier.fillMaxWidth(), colors = TopAppBarDefaults.topAppBarColors(
+        containerColor = colorResource(id = R.color.orange),
+        titleContentColor = Color.Black,
+    ),
 
         navigationIcon = {
-            IconButton(
-                onClick = onNavigateBack,
-            ) {
-                Icon(
-                    imageVector = Icons.AutoMirrored.Filled.ArrowBack,
-                    contentDescription = "Back"
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                IconButton(
+                    onClick = onNavigateBack,
+                ) {
+                    Icon(
+                        imageVector = Icons.AutoMirrored.Filled.ArrowBack,
+                        contentDescription = "Back"
+                    )
+                }
+                ProfileAvatar(
+                    modifier = Modifier.padding(end = 8.dp, bottom = 8.dp, top = 8.dp),
+                    id = "D",
+                    firstName = "David"
                 )
             }
-            ProfileAvatar(
-                modifier = Modifier.padding(start = 46.dp ,end=8.dp,bottom=8.dp,top=8.dp), id = "D", firstName = "David"
-            )
         },
 
         title = {
             Text(
                 text = "David"
             )
-        }
-
-
-    )
+        })
 }
 

@@ -117,6 +117,6 @@ fun getTabList(): List<Pair<String, ImageVector>> {
         "Group" to Icons.Default.Build,
         "Home" to Icons.Default.Home,
         "Notification" to Icons.Default.Notifications,
-        "Profile" to Icons.Default.Person,
+        "com.ebony.cuddlecare.ui.viewmodel.Profile" to Icons.Default.Person,
     )
 }

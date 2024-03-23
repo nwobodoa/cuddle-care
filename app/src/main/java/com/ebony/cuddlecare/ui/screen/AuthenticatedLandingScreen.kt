@@ -6,28 +6,38 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ebony.cuddlecare.ui.auth.FirebaseAuthUiState
-import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
-import com.ebony.cuddlecare.ui.documents.UserProfile
-import com.ebony.cuddlecare.ui.documents.UserUIState
-import com.ebony.cuddlecare.ui.documents.UserViewModel
+import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
+import com.ebony.cuddlecare.ui.viewmodel.Profile
 import drawable.MedicineScreen
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun AuthenticatedScreens(
-    user: UserProfile,
-    navController: NavHostController = rememberNavController()
+    user: Profile,
+    navController: NavHostController = rememberNavController(),
+    babyViewModel: BabyViewModel = viewModel(),
+    setActiveBaby: (String) -> Unit,
+    setUpdatedUser: (Profile) -> Unit
 ) {
+    val babyUIState by babyViewModel.babyUIState.collectAsState()
+
+
+    LaunchedEffect(key1 = user.primaryCareGiverTo, key2 = user.careGiverTo, key3 = user.activeBabyId) {
+          babyViewModel.fetchBabies(user)
+    }
+
+
+
     Surface(
         modifier = Modifier.fillMaxSize(),
         color = MaterialTheme.colorScheme.background
@@ -38,7 +48,10 @@ fun AuthenticatedScreens(
 
             composable(Screen.HomeScreen.name) {
                 HomeScreen(onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
-                    onTopNavigation = { dest -> navController.navigate(dest) })
+                    onTopNavigation = { dest -> navController.navigate(dest) },
+                    babies = babyUIState.listOfBabies,
+                    activeBaby = babyUIState.activeBaby,
+                    setActiveBaby = setActiveBaby)
             }
             composable(Screen.SleepingScreen.name) {
                 SleepingScreen { navController.popBackStack() }
@@ -57,7 +70,16 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.AddBabyScreen.name) {
-                AddBaby(navController,user = user)
+                AddBaby(navController,
+                    babyUIState = babyUIState,
+                    createBaby =  {
+                        babyViewModel.createBaby(user,setUpdatedUser)
+                    },
+                    setBabyName = babyViewModel::setBabyName,
+                    setIsPremature = babyViewModel::setIsPremature,
+                    setSelectedDate = babyViewModel::setSelectedDate,
+                    setSelectedGender = babyViewModel::setSelectedGender,
+                    toggleDatePicker = babyViewModel::toggableDatePicker)
             }
             composable(Screen.Diaper.name) {
                 RecordDiaperStateScreen { navController.popBackStack() }

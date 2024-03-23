@@ -58,6 +58,7 @@ fun RegisterScreen(
     val errors = firebaseAuthUiState.errors
     val hasError = errors.isNotEmpty()
     Scaffold(
+        //TODO:check why snackbar not showing up after registration is successful
         snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
         topBar = {
             TopBar(

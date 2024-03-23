@@ -1,7 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -31,7 +29,6 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -44,7 +41,6 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DropDownField
@@ -53,22 +49,24 @@ import com.ebony.cuddlecare.ui.components.SwitchWithIcon
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.components.epochMillisToDate
 import com.ebony.cuddlecare.ui.documents.Gender
-import com.ebony.cuddlecare.ui.documents.UserProfile
-import com.ebony.cuddlecare.ui.viewmodel.AddBabyUIState
-import com.ebony.cuddlecare.ui.viewmodel.AddBabyViewModel
+import com.ebony.cuddlecare.ui.viewmodel.BabyUIState
+import com.ebony.cuddlecare.ui.viewmodel.Profile
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun AddBaby(
     navController: NavController,
-    user: UserProfile,
-    addBabyViewModel: AddBabyViewModel = viewModel(),
+    babyUIState: BabyUIState,
+    setSelectedGender: (Gender) -> Unit,
+    setBabyName: (String) -> Unit,
+    toggleDatePicker: () -> Unit,
+    setSelectedDate: (Long) -> Unit,
+    createBaby: () -> Unit,
+    setIsPremature: (Boolean) -> Unit,
 ) {
-    val addBabyUIState by addBabyViewModel.addBabyUIState.collectAsState()
 
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -85,15 +83,15 @@ fun AddBaby(
             dragHandle = { BabyDetailsFormHeader() }
         ) {
             BabyDetailsForm(
-                addBabyViewModel = addBabyViewModel,
                 navigateToHomeScreen = { navController.navigate(Screen.HomeScreen.name) },
-                addBabyUIState = addBabyUIState,
-                setSelectedGender = addBabyViewModel::setSelectedGender,
-                setBabyName = addBabyViewModel::setBabyName,
-                toggleDatePicker = addBabyViewModel::toggableDatePicker,
-                setSelectedDate = addBabyViewModel::setSelectedDate,
-                isSaved = addBabyUIState.isSaved,
-                saveBaby = { addBabyViewModel.createBaby(user) }
+                babyUIState = babyUIState,
+                setSelectedGender = setSelectedGender,
+                setBabyName = setBabyName,
+                toggleDatePicker = toggleDatePicker,
+                setSelectedDate = setSelectedDate,
+                isSaved = babyUIState.addBabyUIFormState.isSaved,
+                setIsPremature = setIsPremature,
+                saveBaby = createBaby
             )
         }
     }
@@ -101,18 +99,17 @@ fun AddBaby(
 
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun BabyDetailsForm(
-    addBabyViewModel: AddBabyViewModel,
     navigateToHomeScreen: () -> Unit,
-    addBabyUIState: AddBabyUIState,
+    babyUIState: BabyUIState,
     setSelectedGender: (Gender) -> Unit,
     setBabyName: (String) -> Unit,
     toggleDatePicker: () -> Unit,
     setSelectedDate: (Long) -> Unit,
     saveBaby: () -> Unit,
-    isSaved: Boolean
+    setIsPremature: (Boolean) -> Unit,
+    isSaved: Boolean,
 ) {
     LaunchedEffect(key1 = isSaved) {
        if(isSaved) {
@@ -126,12 +123,12 @@ fun BabyDetailsForm(
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item { GenderSelector(
-            selectedGender = addBabyUIState.selectedGender,
+            selectedGender = babyUIState.addBabyUIFormState.selectedGender,
             setGender = setSelectedGender
         )}
         item {
             OutlinedTextField(
-                value = addBabyUIState.babyName,
+                value = babyUIState.addBabyUIFormState.babyName,
                 modifier = Modifier.fillMaxWidth(),
                 onValueChange = setBabyName,
                 shape = CircleShape,
@@ -146,8 +143,8 @@ fun BabyDetailsForm(
             Text(text = "Birth Date: ")
             DateInput1(
                 toggleDatePicker = toggleDatePicker,
-                isDateExpanded = addBabyUIState.isDateExpanded,
-                selectedDate = epochMillisToDate(addBabyUIState.selectedDate),
+                isDateExpanded = babyUIState.addBabyUIFormState.isDateExpanded,
+                selectedDate = epochMillisToDate(babyUIState.addBabyUIFormState.selectedDate),
                 setSelectedDate = setSelectedDate
             )
 
@@ -160,8 +157,8 @@ fun BabyDetailsForm(
         ) {
             Text("Premature?")
             SwitchWithIcon(
-                isChecked = addBabyUIState.isPremature,
-                onCheck =  addBabyViewModel::setIsPremature
+                isChecked = babyUIState.addBabyUIFormState.isPremature,
+                onCheck =  setIsPremature
             )
         }}
         item {
@@ -209,7 +206,6 @@ fun MainContent(onClick: () -> Unit) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun DateInput1(

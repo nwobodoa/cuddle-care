@@ -26,6 +26,7 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
+import com.ebony.cuddlecare.ui.documents.Baby
 
 
 data class NavigationItem(
@@ -69,11 +70,21 @@ fun NavigationIcon(
 
 
 @Composable
-fun HomeScreen(onNotificationClick: () -> Unit = {},
-               onTopNavigation: (String) -> Unit) {
+fun HomeScreen(
+    onNotificationClick: () -> Unit = {},
+    onTopNavigation: (String) -> Unit,
+    babies: List<Baby>,
+    setActiveBaby: (String) -> Unit,
+    activeBaby: Baby?
+) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     Scaffold(
-        topBar = { TopBar(onNotificationClick = onNotificationClick) },
+        topBar = { TopBar(onNotificationClick = onNotificationClick,
+            babies = babies,
+            setActiveBaby = setActiveBaby,
+            activeBaby = activeBaby
+
+        ) },
         bottomBar = { BottomNavBar(onTopNavigation) },
         ) { innerPadding ->
         Column(

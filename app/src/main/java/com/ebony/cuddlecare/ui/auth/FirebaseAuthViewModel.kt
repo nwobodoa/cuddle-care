@@ -2,9 +2,8 @@ package com.ebony.cuddlecare.ui.auth
 
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
-import com.ebony.cuddlecare.ui.documents.Document
-import com.ebony.cuddlecare.ui.documents.UserProfile
-import com.google.android.gms.tasks.Task
+import com.ebony.cuddlecare.ui.viewmodel.Profile
+import com.ebony.cuddlecare.ui.viewmodel.ProfileViewModel
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.FirebaseUser
 import com.google.firebase.firestore.FirebaseFirestore
@@ -26,9 +25,9 @@ data class FirebaseAuthUiState(
 
 class FirebaseAuthViewModel : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
-    private val firestore = FirebaseFirestore.getInstance()
     private val _firebaseAuthUIState = MutableStateFlow(FirebaseAuthUiState())
     val firebaseAuthUiState = _firebaseAuthUIState.asStateFlow()
+    val profileViewModel: ProfileViewModel = ProfileViewModel()
 
 
     init {
@@ -96,13 +95,14 @@ class FirebaseAuthViewModel : ViewModel() {
                 _firebaseAuthUIState.value.email.trim(),
                 _firebaseAuthUIState.value.password.trim()
             ).addOnSuccessListener {
-                val user = UserProfile(
+                val user = Profile(
                     uuid = it.user!!.uid,
                     email = _firebaseAuthUIState.value.email,
                     firstname = _firebaseAuthUIState.value.firstname,
                     lastname = _firebaseAuthUIState.value.lastname
                 )
-                saveProfile(it.user!!.uid, user)
+
+                profileViewModel.saveProfile(it.user!!.uid, user)
                     .addOnFailureListener { e ->
                         addError(e.message.toString())
                         it.user!!.delete()
@@ -122,10 +122,7 @@ class FirebaseAuthViewModel : ViewModel() {
 
 
 
-    fun saveProfile(uuid: String, user: UserProfile): Task<Void> {
-        val userProfileRef = firestore.collection(Document.User.name).document(uuid)
-        return userProfileRef.set(user.copy(uuid = uuid))
-    }
+
 
     private fun isValidated(): Boolean {
         clearErrors()

@@ -1,40 +1,29 @@
 package com.ebony.cuddlecare
 
-import android.os.Build
+import com.ebony.cuddlecare.ui.viewmodel.ProfileViewModel
 import android.os.Bundle
-import android.window.SplashScreen
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
-import androidx.annotation.RequiresApi
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
-import androidx.compose.material3.Button
 import androidx.compose.material3.CircularProgressIndicator
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
-import com.ebony.cuddlecare.ui.documents.UserViewModel
 import com.ebony.cuddlecare.ui.screen.AuthenticatedScreens
 import com.ebony.cuddlecare.ui.screen.LoginScreen
 import com.ebony.cuddlecare.ui.screen.RegisterScreen
@@ -58,14 +47,15 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun CuddleCareApp(
     firebaseAuthViewModel: FirebaseAuthViewModel = viewModel(),
-    userViewModel: UserViewModel = viewModel()
+    profileViewModel: ProfileViewModel = viewModel()
 ) {
-    val userUIState by userViewModel.userUIState.collectAsState()
+    val userUIState by profileViewModel.userUIState.collectAsState()
     val navHostController = rememberNavController()
     val firebaseAuthUIState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
+    val loadUser = { profileViewModel.loadUser(firebaseAuthUIState.currentUser) }
 
-    LaunchedEffect(firebaseAuthUIState.currentUser) {
-        userViewModel.loadUser(firebaseAuthUIState.currentUser)
+    LaunchedEffect(key1 = firebaseAuthUIState.currentUser) {
+        loadUser()
     }
 
     if (userUIState.loading) {
@@ -102,7 +92,10 @@ fun CuddleCareApp(
             )
         }
         composable(Screen.AuthenticatedLandingScreen.name) {
-            AuthenticatedScreens(user = userUIState.user!!)
+            AuthenticatedScreens(user = userUIState.user!!,
+                setActiveBaby = profileViewModel::setActiveBaby,
+                setUpdatedUser = profileViewModel::setUser
+            )
         }
 
     }
