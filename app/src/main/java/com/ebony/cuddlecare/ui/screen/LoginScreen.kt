@@ -1,7 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import android.util.Patterns
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
@@ -26,7 +24,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.ebony.cuddlecare.ui.auth.FirebaseAuthUiState
+import com.ebony.cuddlecare.ui.auth.UserAuthUIState
 import com.ebony.cuddlecare.ui.components.EmailField
 import com.ebony.cuddlecare.ui.components.ErrorText
 import com.ebony.cuddlecare.ui.components.PasswordField
@@ -35,9 +33,8 @@ import com.ebony.cuddlecare.ui.components.TopBar
 
 @Composable
 fun LoginScreen(
-    onBackNavigation: () -> Unit,
     onNavigation: (String) -> Unit,
-    firebaseAuthUIState: FirebaseAuthUiState,
+    userAuthUIState: UserAuthUIState,
     signInWithEmailPassword: () -> Unit,
     setEmail: (String) -> Unit,
     setPassword: (String) -> Unit
@@ -45,18 +42,18 @@ fun LoginScreen(
 ) {
 
     var enabledSignInButton by remember { mutableStateOf(false) }
-    val hasError = firebaseAuthUIState.errors.isNotEmpty()
+    val hasError = userAuthUIState.error?.isNotEmpty() ?: false
 
 
-    LaunchedEffect(key1 = firebaseAuthUIState.email, key2 = firebaseAuthUIState.password) {
+    LaunchedEffect(key1 = userAuthUIState.email, key2 = userAuthUIState.password) {
         val isValidEmail =
-            Patterns.EMAIL_ADDRESS.matcher(firebaseAuthUIState.email.trim()).matches()
-        val isValidPassword = firebaseAuthUIState.password.length >= 6
+            Patterns.EMAIL_ADDRESS.matcher(userAuthUIState.email.trim()).matches()
+        val isValidPassword = userAuthUIState.password.length >= 6
         enabledSignInButton = isValidEmail && isValidPassword
     }
 
-    LaunchedEffect(key1 = firebaseAuthUIState.currentUser) {
-        if (firebaseAuthUIState.currentUser != null) {
+    LaunchedEffect(key1 = userAuthUIState.user) {
+        if (userAuthUIState.user != null) {
             onNavigation(Screen.AuthenticatedLandingScreen.name)
         }
     }
@@ -68,28 +65,28 @@ fun LoginScreen(
         Column(modifier = Modifier.padding(top = 32.dp)) {
             EmailField(
                 modifier = Modifier.fillMaxWidth(),
-                email = firebaseAuthUIState.email,
+                email = userAuthUIState.email,
                 isError = hasError,
                 onChange = setEmail
             )
             Spacer(modifier = Modifier.padding(bottom = 16.dp))
             PasswordField(
                 modifier = Modifier.fillMaxWidth(),
-                password = firebaseAuthUIState.password,
+                password = userAuthUIState.password,
                 isError = hasError,
                 onChange = setPassword
             )
 
-            if (hasError) {
-                Column { firebaseAuthUIState.errors.forEach { e -> ErrorText(e) } }
-            }
+            userAuthUIState.error?.let { Column { ErrorText(it) } }
+
             Spacer(modifier = Modifier.padding(bottom = 16.dp, top = 16.dp))
-            Button(onClick = signInWithEmailPassword,
+            Button(
+                onClick = signInWithEmailPassword,
                 modifier = Modifier
                     .height(55.dp)
                     .fillMaxWidth(), enabled = enabledSignInButton
             ) {
-                if (firebaseAuthUIState.loading) {
+                if (userAuthUIState.loading) {
                     CircularProgressIndicator(color = MaterialTheme.colorScheme.primary)
                 } else {
                     Text("Sign in", fontSize = 20.sp)
@@ -98,12 +95,20 @@ fun LoginScreen(
             Spacer(modifier = Modifier.padding(bottom = 16.dp))
         }
         Row {
-            Text("Forgot Password?", color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Text(
+                "Forgot Password?",
+                color = MaterialTheme.colorScheme.primary,
+                fontWeight = FontWeight.Bold
+            )
             Spacer(modifier = Modifier.padding(end = 8.dp))
 
             Text(text = "No Account? ")
 
-                Text("Signup", color = Color.Blue, fontWeight = FontWeight.Bold, modifier= Modifier.clickable { onNavigation(Screen.Register.name) })
+            Text(
+                "Signup",
+                color = Color.Blue,
+                fontWeight = FontWeight.Bold,
+                modifier = Modifier.clickable { onNavigation(Screen.Register.name) })
 
         }
     }

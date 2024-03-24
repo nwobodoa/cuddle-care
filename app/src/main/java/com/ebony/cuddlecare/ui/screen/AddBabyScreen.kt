@@ -1,5 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
+import Profile
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -29,6 +30,7 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
@@ -41,6 +43,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DropDownField
@@ -50,7 +53,7 @@ import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.components.epochMillisToDate
 import com.ebony.cuddlecare.ui.documents.Gender
 import com.ebony.cuddlecare.ui.viewmodel.BabyUIState
-import com.ebony.cuddlecare.ui.viewmodel.Profile
+import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
@@ -59,14 +62,11 @@ import java.time.format.DateTimeFormatter
 @Composable
 fun AddBaby(
     navController: NavController,
-    babyUIState: BabyUIState,
-    setSelectedGender: (Gender) -> Unit,
-    setBabyName: (String) -> Unit,
-    toggleDatePicker: () -> Unit,
-    setSelectedDate: (Long) -> Unit,
-    createBaby: () -> Unit,
-    setIsPremature: (Boolean) -> Unit,
+    babyViewModel: BabyViewModel = viewModel(),
+    user:Profile,
+    setUpdatedUser:(Profile) -> Unit
 ) {
+    val babyUIState by babyViewModel.babyUIState.collectAsState()
 
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
@@ -85,13 +85,15 @@ fun AddBaby(
             BabyDetailsForm(
                 navigateToHomeScreen = { navController.navigate(Screen.HomeScreen.name) },
                 babyUIState = babyUIState,
-                setSelectedGender = setSelectedGender,
-                setBabyName = setBabyName,
-                toggleDatePicker = toggleDatePicker,
-                setSelectedDate = setSelectedDate,
+                setSelectedGender = babyViewModel::setSelectedGender,
+                setBabyName = babyViewModel::setBabyName,
+                toggleDatePicker = babyViewModel::toggableDatePicker,
+                setSelectedDate = babyViewModel::setSelectedDate,
                 isSaved = babyUIState.addBabyUIFormState.isSaved,
-                setIsPremature = setIsPremature,
-                saveBaby = createBaby
+                setIsPremature = babyViewModel::setIsPremature,
+                saveBaby = {
+                    babyViewModel.createBaby(user, setUpdatedUser = setUpdatedUser)
+                }
             )
         }
     }

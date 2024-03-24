@@ -1,6 +1,5 @@
 package com.ebony.cuddlecare
 
-import com.ebony.cuddlecare.ui.viewmodel.ProfileViewModel
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -12,7 +11,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -23,7 +21,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import com.ebony.cuddlecare.ui.auth.FirebaseAuthViewModel
+import com.ebony.cuddlecare.ui.auth.UserAuthViewModel
 import com.ebony.cuddlecare.ui.screen.AuthenticatedScreens
 import com.ebony.cuddlecare.ui.screen.LoginScreen
 import com.ebony.cuddlecare.ui.screen.RegisterScreen
@@ -46,19 +44,13 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun CuddleCareApp(
-    firebaseAuthViewModel: FirebaseAuthViewModel = viewModel(),
-    profileViewModel: ProfileViewModel = viewModel()
+    userAuthViewModel: UserAuthViewModel = viewModel()
 ) {
-    val userUIState by profileViewModel.userUIState.collectAsState()
     val navHostController = rememberNavController()
-    val firebaseAuthUIState by firebaseAuthViewModel.firebaseAuthUiState.collectAsState()
-    val loadUser = { profileViewModel.loadUser(firebaseAuthUIState.currentUser) }
+    val userAuthUIState by userAuthViewModel.userAuthUIState.collectAsState()
 
-    LaunchedEffect(key1 = firebaseAuthUIState.currentUser) {
-        loadUser()
-    }
 
-    if (userUIState.loading) {
+    if (userAuthUIState.loading) {
         Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
             Loading()
         }
@@ -66,36 +58,28 @@ fun CuddleCareApp(
     }
 
     val startDestination =
-        if (userUIState.user == null) Screen.Login.name else Screen.AuthenticatedLandingScreen.name
+        if (userAuthUIState.user == null) Screen.Login.name else Screen.AuthenticatedLandingScreen.name
 
     NavHost(navController = navHostController, startDestination = startDestination) {
         composable(Screen.Login.name) {
-            LoginScreen(onBackNavigation = { navHostController.popBackStack() },
-                signInWithEmailPassword = firebaseAuthViewModel::signInWithEmailAndPassword,
-                setEmail = firebaseAuthViewModel::setEmail,
-                setPassword = firebaseAuthViewModel::setPassword,
-                firebaseAuthUIState = firebaseAuthUIState,
+            LoginScreen(
+                signInWithEmailPassword = userAuthViewModel::signInWithEmailAndPassword,
+                setEmail = userAuthViewModel::setEmail,
+                setPassword = userAuthViewModel::setPassword,
+                userAuthUIState = userAuthUIState,
                 onNavigation = { dest -> navHostController.navigate(dest) })
         }
 
         composable(Screen.Register.name) {
-            RegisterScreen(
-                navigationController = navHostController,
-                reset = firebaseAuthViewModel::reset,
-                setPassword = firebaseAuthViewModel::setPassword,
-                setConfirmPassword = firebaseAuthViewModel::setConfirmPassword,
-                setFirstname = firebaseAuthViewModel::setFirstname,
-                setLastname = firebaseAuthViewModel::setLastname,
-                setEmail = firebaseAuthViewModel::setEmail,
-                firebaseAuthUiState = firebaseAuthUIState,
-                createAccount = firebaseAuthViewModel::createAccount
-            )
+            RegisterScreen(navigationController = navHostController)
         }
         composable(Screen.AuthenticatedLandingScreen.name) {
-            AuthenticatedScreens(user = userUIState.user!!,
-                setActiveBaby = profileViewModel::setActiveBaby,
-                setUpdatedUser = profileViewModel::setUser
-            )
+            userAuthUIState.user?.let { user ->
+                AuthenticatedScreens(user = user,
+                    setActiveBaby = userAuthViewModel::setActiveBaby,
+                    setUpdatedUser = userAuthViewModel::setUser
+                )
+            }
         }
 
     }

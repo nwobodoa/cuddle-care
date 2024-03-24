@@ -1,5 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
+import Profile
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -14,7 +15,6 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
-import com.ebony.cuddlecare.ui.viewmodel.Profile
 import drawable.MedicineScreen
 
 
@@ -77,19 +77,9 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.AddBabyScreen.name) {
-                AddBaby(
-                    navController,
-                    babyUIState = babyUIState,
-                    createBaby = {
-                        babyViewModel.createBaby(user, setUpdatedUser)
-                    },
-                    setBabyName = babyViewModel::setBabyName,
-                    setIsPremature = babyViewModel::setIsPremature,
-                    setSelectedDate = babyViewModel::setSelectedDate,
-                    setSelectedGender = babyViewModel::setSelectedGender,
-                    toggleDatePicker = babyViewModel::toggableDatePicker
-                )
+                AddBaby(navController = navController, user = user, setUpdatedUser = setUpdatedUser)
             }
+
             composable(Screen.Diaper.name) {
                 RecordDiaperStateScreen { navController.popBackStack() }
             }

@@ -1,9 +1,8 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
+import Profile
 import android.content.ContentValues.TAG
-import android.os.Build
 import android.util.Log
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.Document
