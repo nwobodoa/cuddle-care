@@ -1,5 +1,8 @@
 package com.ebony.cuddlecare.ui.screen
 
+import CareGiver
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -10,17 +13,16 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.PermIdentity
 import androidx.compose.material.icons.filled.Repeat
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.PeopleOutline
-import androidx.compose.material3.ButtonColors
-import androidx.compose.material3.Divider
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -39,20 +41,19 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.SolidColor
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.ui.components.AccountAvatar
 import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.ProfileAvatar
+import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.theme.backcolor
 import kotlinx.coroutines.launch
 
 
 @Composable
-fun AccountScreen(onTopNavigation: (String) -> Unit) {
+fun AccountScreen(user: CareGiver, babies: List<Baby>, onTopNavigation: (String) -> Unit) {
     var isAccountManagementOpen by remember { mutableStateOf(false) }
     Scaffold(
         bottomBar = { BottomNavBar(onTopNavigation) },
@@ -61,11 +62,19 @@ fun AccountScreen(onTopNavigation: (String) -> Unit) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(it),
+                .padding(it)
+                .padding(16.dp),
             Arrangement.Center
         ) {
-            MainPageContent(onClick = { isAccountManagementOpen = true }, onTopNavigation = onTopNavigation)
-            AccountManagement(isOpen = isAccountManagementOpen, onClose = { isAccountManagementOpen = false })
+            MainPageContent(
+                onClick = { isAccountManagementOpen = true },
+                onTopNavigation = onTopNavigation,
+                user = user,
+                babies = babies
+            )
+            AccountManagement(
+                isOpen = isAccountManagementOpen,
+                onClose = { isAccountManagementOpen = false })
         }
     }
 }
@@ -85,8 +94,14 @@ fun HeaderText(text: String) {
 }
 
 @Composable
-fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
+fun MainPageContent(
+    onClick: () -> Unit,
+    onTopNavigation: (String) -> Unit,
+    user: CareGiver,
+    babies: List<Baby>
+) {
 
+    Log.i(TAG, "MainPageContent: *** $babies")
     Column(
         modifier = Modifier
             .wrapContentSize()
@@ -102,10 +117,10 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            AccountAvatar(id = "C", firstName = "Chuka", radius = 75f)
+            AccountAvatar(id = user.uuid, firstName = user.firstname, radius = 75f)
             Column {
-                Text(text = "Adanwa Nwobodo")
-                Text(text = "adanwanwobodo85@gmail.com")
+                Text(text = "${user.firstname} ${user.lastname}")
+                Text(text = user.email)
 
             }
             Column(
@@ -150,13 +165,24 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
         Icon(imageVector = Icons.Default.AddCircle, contentDescription = null,
             modifier = Modifier.clickable { onTopNavigation(Screen.AddBabyScreen.name) })
     }
-    Column(
+    LazyColumn(
         modifier = Modifier
             .wrapContentSize()
-            .background(color = Color.White)
-            .fillMaxWidth()
-            .padding(16.dp)
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
+        items(babies.count()) { item ->
+            BabyDetails(onNavigate = { onTopNavigation(Screen.Caregiver.name) }, babies[item])
+        }
+    }
+}
+
+@Composable
+fun BabyDetails(onNavigate: () -> Unit, baby: Baby) {
+    val careGivers = baby.careGivers.plus(baby.primaryCareGivers)
+    Column(modifier = Modifier
+        .background(color = Color.White)
+        .padding(16.dp)) {
         Row(
             modifier = Modifier
                 .wrapContentSize()
@@ -165,9 +191,9 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
             verticalAlignment = Alignment.CenterVertically,
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
-            ProfileAvatar(id = "J", firstName = "JF")
+            ProfileAvatar(id = baby.id, firstName = baby.name)
             Column(modifier = Modifier.padding(end = 16.dp)) {
-                Text(text = "JF")
+                Text(text = baby.name)
                 Text(text = "0d (week 1)")
 
             }
@@ -186,12 +212,12 @@ fun MainPageContent(onClick: () -> Unit, onTopNavigation: (String) -> Unit) {
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            Row {
-                AccountAvatar(id = "A", firstName = "Adanwa", radius = 50f, font = 15.sp)
-                AccountAvatar(id = "C", firstName = "Chuka", radius = 50f, font = 15.sp)
+            LazyRow {
+                items(careGivers.count()) {
+                    AccountAvatar(id = careGivers[it].uuid, firstName = careGivers[it].firstname, radius = 50f, font = 15.sp)
+                }
             }
-
-            OutlinedButton(onClick = { onTopNavigation(Screen.Caregiver.name) }) {
+            OutlinedButton(onClick = onNavigate) {
                 Icon(imageVector = Icons.Outlined.PeopleOutline, contentDescription = null)
                 Text(text = "Caregivers")
 
@@ -216,7 +242,7 @@ fun SheetPageContent(onClick: () -> Unit) {
             horizontalAlignment = Alignment.CenterHorizontally
         )
         {
-            Row (modifier = Modifier.padding(bottom = 32.dp)){
+            Row(modifier = Modifier.padding(bottom = 32.dp)) {
 
                 AccountAvatar(id = "A9309404911", firstName = "Adanwa", radius = 140f)
             }
@@ -225,34 +251,48 @@ fun SheetPageContent(onClick: () -> Unit) {
                 Text(text = "adanwobodo84@gmail.com")
             }
         }
-        Row(modifier = Modifier.fillMaxWidth(),horizontalArrangement = Arrangement.SpaceBetween){
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Icon(imageVector = Icons.Default.PermIdentity, contentDescription = null)
-            Text(text = "Adanwa", modifier = Modifier.padding(start=8.dp))
-        Row (modifier = Modifier
-            .padding(end = 16.dp)
-            .fillMaxWidth(),verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.End){
+            Text(text = "Adanwa", modifier = Modifier.padding(start = 8.dp))
+            Row(
+                modifier = Modifier
+                    .padding(end = 16.dp)
+                    .fillMaxWidth(), verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.End
+            ) {
 
-            Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
-        }
+                Icon(imageVector = Icons.Outlined.Edit, contentDescription = null)
+            }
         }
         HorizontalDivider()
-        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
-            Text(text = "Sign out",modifier =Modifier.clickable { /*TODO:implement logout*/ })
+            Text(text = "Sign out", modifier = Modifier.clickable { /*TODO:implement logout*/ })
         }
         HorizontalDivider()
-        Row (modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(8.dp)){
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(8.dp)
+        ) {
             Icon(imageVector = Icons.Outlined.Delete, contentDescription = null, tint = Color.Red)
-            Text(text = "Delete account", color = Color.Red,modifier = Modifier.clickable { /*TODO:implement account deletion*/ })
+            Text(
+                text = "Delete account",
+                color = Color.Red,
+                modifier = Modifier.clickable { /*TODO:implement account deletion*/ })
         }
-            OutlinedButton(onClick = onClick, modifier = Modifier
+        OutlinedButton(
+            onClick = onClick,
+            modifier = Modifier
                 .height(40.dp)
                 .padding(start = 24.dp, end = 24.dp)
-                .fillMaxWidth(), )
-            {
-                Text(text = "Close", fontSize = 20.sp)
-            }
+                .fillMaxWidth(),
+        )
+        {
+            Text(text = "Close", fontSize = 20.sp)
+        }
     }
 }
 

@@ -1,6 +1,6 @@
 package com.ebony.cuddlecare.ui.auth
 
-import Profile
+import CareGiver
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth
@@ -59,7 +59,7 @@ class RegisterViewModel() : ViewModel() {
                 _registerUIState.value.email.trim(),
                 _registerUIState.value.password.trim()
             ).addOnSuccessListener {
-                val user = Profile(
+                val user = CareGiver(
                     uuid = it.user!!.uid,
                     email = _registerUIState.value.email,
                     firstname = _registerUIState.value.firstname,

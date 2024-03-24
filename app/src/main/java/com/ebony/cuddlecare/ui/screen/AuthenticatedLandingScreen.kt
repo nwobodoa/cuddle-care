@@ -1,6 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
-import Profile
+import CareGiver
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -20,20 +20,15 @@ import drawable.MedicineScreen
 
 @Composable
 fun AuthenticatedScreens(
-    user: Profile,
+    user: CareGiver,
     navController: NavHostController = rememberNavController(),
     babyViewModel: BabyViewModel = viewModel(),
     setActiveBaby: (String) -> Unit,
-    setUpdatedUser: (Profile) -> Unit
+    setUpdatedUser: (CareGiver) -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
 
-
-    LaunchedEffect(
-        key1 = user.primaryCareGiverTo,
-        key2 = user.careGiverTo,
-        key3 = user.activeBabyId
-    ) {
+    LaunchedEffect(key1 = user) {
         babyViewModel.fetchBabies(user)
     }
 
@@ -93,7 +88,11 @@ fun AuthenticatedScreens(
 
             }
             composable(Screen.Profile.name) {
-                AccountScreen(onTopNavigation = { dest -> navController.navigate(dest) })
+                AccountScreen(
+                    onTopNavigation = { dest -> navController.navigate(dest) },
+                    babies = babyUIState.listOfBabies,
+                    user = user
+                )
             }
             composable(Screen.Statistics.name) {
 

@@ -1,7 +1,8 @@
 package com.ebony.cuddlecare.ui.auth
 
-import Profile
+import CareGiver
 import android.content.ContentValues
+import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Document
@@ -13,9 +14,10 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.tasks.await
 
 data class UserAuthUIState(
-    val user: Profile? = null,
+    val user: CareGiver? = null,
     val loading: Boolean = false,
     val email: String = "",
     val password: String = "",
@@ -27,7 +29,7 @@ class UserAuthViewModel() : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val _userAuthUIState = MutableStateFlow(UserAuthUIState())
     val userAuthUIState = _userAuthUIState.asStateFlow()
-    private val db = Firebase.firestore
+    private val profileCollection = Firebase.firestore.collection(Document.Profile.name)
 
     init {
         firebaseAuth.addAuthStateListener {
@@ -81,13 +83,13 @@ class UserAuthViewModel() : ViewModel() {
     }
 
 
-    fun setUser(user: Profile?) {
+    fun setUser(user: CareGiver?) {
         _userAuthUIState.update { it.copy(user = user) }
         persistProfile()
     }
 
-    fun saveProfile(uuid: String, user: Profile): Task<Void> {
-        val profileProfileRef = db.collection(Document.Profile.name).document(uuid)
+    fun saveProfile(uuid: String, user: CareGiver): Task<Void> {
+        val profileProfileRef = profileCollection.document(uuid)
         return profileProfileRef.set(user.copy(uuid = uuid))
     }
 
@@ -108,11 +110,11 @@ class UserAuthViewModel() : ViewModel() {
     private fun loadUser(user: FirebaseUser?) {
         if (user != null) {
             setLoading(true)
-            db.collection(Document.Profile.name)
+            profileCollection
                 .document(user.uid)
                 .get()
                 .addOnSuccessListener {
-                    setUser(it.toObject(Profile::class.java))
+                    setUser(it.toObject(CareGiver::class.java))
                 }
                 .addOnCompleteListener {
                     setLoading(false)
@@ -124,6 +126,24 @@ class UserAuthViewModel() : ViewModel() {
         }
         setLoading(false)
 
+    }
+
+    sealed class Result<out T> {
+        data class Success<T>(val data: T) : Result<T>()
+        data class Error(val exception: Exception) : Result<Nothing>()
+    }
+
+
+    suspend fun loadUsers(userIds: List<String>): List<CareGiver> {
+        return try {
+            val querySnapshot = profileCollection
+                .whereIn("uuid", userIds).get().await()
+            querySnapshot.documents.mapNotNull { it.toObject(CareGiver::class.java) }
+
+        } catch (e: Exception) {
+            Log.e(TAG, "loadUsers: ", e)
+            emptyList()
+        }
     }
 
 }

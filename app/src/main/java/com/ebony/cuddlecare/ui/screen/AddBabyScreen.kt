@@ -1,6 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
-import Profile
+import CareGiver
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,8 +63,8 @@ import java.time.format.DateTimeFormatter
 fun AddBaby(
     navController: NavController,
     babyViewModel: BabyViewModel = viewModel(),
-    user:Profile,
-    setUpdatedUser:(Profile) -> Unit
+    user:CareGiver,
+    setUpdatedUser:(CareGiver) -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
 

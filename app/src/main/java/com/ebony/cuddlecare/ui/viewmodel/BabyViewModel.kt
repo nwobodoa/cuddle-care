@@ -1,9 +1,11 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
-import Profile
+import CareGiver
 import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.ebony.cuddlecare.ui.auth.UserAuthViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.ui.documents.Gender
@@ -13,6 +15,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.launch
 import java.time.LocalDate
 import java.time.LocalTime
 import java.time.ZoneId
@@ -41,6 +44,7 @@ class BabyViewModel : ViewModel() {
     val babyUIState: StateFlow<BabyUIState> = _babyUIState.asStateFlow()
     private val db = Firebase.firestore
     private val babyCollectionRef = db.collection(Document.Baby.name)
+    private val userAuthViewModel = UserAuthViewModel()
 
     fun setSelectedGender(gender: Gender) {
         _babyUIState.update { it.copy(addBabyUIFormState = it.addBabyUIFormState.copy(selectedGender = gender)) }
@@ -74,7 +78,7 @@ class BabyViewModel : ViewModel() {
         _babyUIState.update { it.copy(addBabyUIFormState = it.addBabyUIFormState.copy(isDateExpanded = !it.addBabyUIFormState.isDateExpanded)) }
     }
 
-    fun createBaby(user: Profile, setUpdatedUser: (Profile) -> Unit) {
+    fun createBaby(user: CareGiver, setUpdatedUser: (CareGiver) -> Unit) {
         val babyRef = babyCollectionRef.document()
         val baby = Baby(
             id = babyRef.id,
@@ -82,12 +86,12 @@ class BabyViewModel : ViewModel() {
             dateOfBirth = _babyUIState.value.addBabyUIFormState.selectedDate,
             gender = _babyUIState.value.addBabyUIFormState.selectedGender,
             isPremature = _babyUIState.value.addBabyUIFormState.isPremature,
-            primaryCareGivers = listOf(user.uuid)
+            primaryCareGiverIds = listOf(user.uuid)
 
         )
         val updatedUser = user.copy(
-                primaryCareGiverTo = user.primaryCareGiverTo + baby.id, activeBabyId = babyRef.id
-            )
+            primaryCareGiverTo = user.primaryCareGiverTo + baby.id, activeBabyId = babyRef.id
+        )
 
         Log.d(TAG, "createBaby: ${user.uuid}")
         val profileRef = db.collection(Document.Profile.name).document(user.uuid)
@@ -106,29 +110,46 @@ class BabyViewModel : ViewModel() {
 
     }
 
-    fun fetchBabies(user: Profile) {
+    private suspend fun updateCareGivers(baby: Baby): Baby {
+        val careGivers = userAuthViewModel.loadUsers(baby.careGiverIds)
+        val primaryCareGivers = userAuthViewModel.loadUsers(baby.primaryCareGiverIds)
+        return baby.copy(careGivers = careGivers, primaryCareGivers = primaryCareGivers)
+    }
+
+    fun fetchBabies(user: CareGiver) {
         val babyIds = user.careGiverTo + user.primaryCareGiverTo
-        val userId = user.uuid
         if (babyIds.isEmpty()) {
             return
         }
         setLoading(true)
         babyCollectionRef.whereIn("id", babyIds).addSnapshotListener { querySnapshot, exception ->
-                if (exception != null) {
-                    setLoading(false)
-                    return@addSnapshotListener
-                }
+            if (exception != null) {
+                setLoading(false)
+                return@addSnapshotListener
+            }
+            val babies = querySnapshot?.documents?.mapNotNull { it.toObject(Baby::class.java) }
 //                ensure that the user has the right to see baby
-                val babies =
-                    querySnapshot?.documents?.mapNotNull { doc -> doc.toObject(Baby::class.java) }
-                        ?.filter {
-                            it.careGivers.contains(userId) || it.primaryCareGivers.contains(userId)
-                        } ?: emptyList()
+            updateUIWithBabies(babies, user)
 
-                val activeBaby = babies.firstOrNull { it.id == user.activeBabyId }
+        }
+    }
 
-                _babyUIState.update { it.copy(listOfBabies = babies, activeBaby = activeBaby) }
+    private fun updateUIWithBabies(
+        babies: List<Baby>?,
+        user: CareGiver
+    ) {
+        viewModelScope.launch {
+            babies?.let {
+                val babiesWithCareGivers = babies.map { updateCareGivers(it) }
+                val activeBaby = babiesWithCareGivers.firstOrNull { it.id == user.activeBabyId }
+                _babyUIState.update {
+                    it.copy(
+                        listOfBabies = babiesWithCareGivers,
+                        activeBaby = activeBaby
+                    )
+                }
                 setLoading(false)
             }
+        }
     }
 }
