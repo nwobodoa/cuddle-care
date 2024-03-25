@@ -53,7 +53,12 @@ import kotlinx.coroutines.launch
 
 
 @Composable
-fun AccountScreen(user: CareGiver, babies: List<Baby>, onTopNavigation: (String) -> Unit) {
+fun AccountScreen(
+    user: CareGiver,
+    babies: List<Baby>,
+    onTopNavigation: (String) -> Unit,
+    setBabyToUpdate: (Baby) -> Unit
+) {
     var isAccountManagementOpen by remember { mutableStateOf(false) }
     Scaffold(
         bottomBar = { BottomNavBar(onTopNavigation) },
@@ -70,7 +75,8 @@ fun AccountScreen(user: CareGiver, babies: List<Baby>, onTopNavigation: (String)
                 onClick = { isAccountManagementOpen = true },
                 onTopNavigation = onTopNavigation,
                 user = user,
-                babies = babies
+                babies = babies,
+                setBabyToUpdate = setBabyToUpdate
             )
             AccountManagement(
                 isOpen = isAccountManagementOpen,
@@ -98,7 +104,8 @@ fun MainPageContent(
     onClick: () -> Unit,
     onTopNavigation: (String) -> Unit,
     user: CareGiver,
-    babies: List<Baby>
+    babies: List<Baby>,
+    setBabyToUpdate: (Baby) -> Unit
 ) {
 
     Log.i(TAG, "MainPageContent: *** $babies")
@@ -172,7 +179,9 @@ fun MainPageContent(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         items(babies.count()) { item ->
-            BabyDetails(onNavigate = { onTopNavigation(Screen.Caregiver.name) }, babies[item])
+            BabyDetails(onNavigate = {
+                setBabyToUpdate(babies[item])
+                onTopNavigation(Screen.Caregiver.name) }, babies[item])
         }
     }
 }

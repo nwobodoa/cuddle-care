@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
+import com.ebony.cuddlecare.ui.viewmodel.CareGiverViewModel
 
 
 @Composable
@@ -22,10 +23,12 @@ fun AuthenticatedScreens(
     user: CareGiver,
     navController: NavHostController = rememberNavController(),
     babyViewModel: BabyViewModel = viewModel(),
+    careGiverViewModel: CareGiverViewModel = viewModel(),
     setActiveBaby: (String) -> Unit,
     setUpdatedUser: (CareGiver) -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
+    val careGiverUIState by careGiverViewModel.careGiverUIState.collectAsState()
 
     LaunchedEffect(key1 = user) {
         babyViewModel.fetchBabies(user)
@@ -90,14 +93,15 @@ fun AuthenticatedScreens(
                 AccountScreen(
                     onTopNavigation = { dest -> navController.navigate(dest) },
                     babies = babyUIState.listOfBabies,
-                    user = user
+                    user = user,
+                    setBabyToUpdate = {baby -> careGiverViewModel.setBaby(baby)}
                 )
             }
             composable(Screen.Statistics.name) {
 
             }
             composable(Screen.Caregiver.name) {
-                Caregivers { navController.popBackStack() }
+                Caregivers(onNavigateBack = { navController.popBackStack() }, babyToUpdate = careGiverUIState.baby)
             }
         }
     }
