@@ -1,7 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -12,7 +10,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.ButtonDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -21,6 +18,7 @@ import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Timelapse
 import androidx.compose.material.icons.filled.Timer
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -38,7 +36,6 @@ import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Preview
 @Composable
 fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
@@ -163,7 +160,7 @@ fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
                 }
             }
             AttachmentRow()
-            SaveButton(onClick = {/*TODO*/})
+            SaveButton(onClick = {/*TODO*/ })
         }
     }
 }

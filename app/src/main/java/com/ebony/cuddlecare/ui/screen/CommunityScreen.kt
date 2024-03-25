@@ -43,8 +43,6 @@ import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.CommunityViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SelectedTab
 
-@OptIn(ExperimentalMaterial3Api::class, ExperimentalFoundationApi::class)
-
 @Composable
 fun CommunityScreen(
     onNavigateBack: () -> Unit = {},

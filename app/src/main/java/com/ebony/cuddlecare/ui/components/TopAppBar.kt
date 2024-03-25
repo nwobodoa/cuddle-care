@@ -7,8 +7,6 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.material.Divider
-import androidx.compose.material.MaterialTheme
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.ExpandMore
@@ -17,8 +15,10 @@ import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -50,7 +50,6 @@ fun DropDown(
     expanded: Boolean = false,
     setExpanded: (Boolean) -> Unit = {}
 ) {
-
     DropdownMenu(expanded = expanded, onDismissRequest = { setExpanded(false) }) {
         babies.forEachIndexed { idx, baby ->
             DropdownMenuItem(
@@ -60,7 +59,7 @@ fun DropDown(
                     setExpanded(false)
                 })
             if (idx != babies.lastIndex) {
-                Divider()
+                HorizontalDivider()
             }
         }
     }
@@ -92,19 +91,18 @@ fun TopBar(
                 setActiveBaby = setActiveBaby,
                 expanded = expanded,
                 setExpanded = { expanded = it })
-        }, title = { Text(text = activeBaby.name) }, actions = {
-            //search icon
-            IconButton(onClick = {
-
-            }) {
-                Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+        },
+            title = { Text(text = activeBaby.name) },
+            actions = {
+                //search icon
+                IconButton(onClick = {}) {
+                    Icon(imageVector = Icons.Outlined.Search, contentDescription = "Search")
+                }
+                // lock icon
+                IconButton(onClick = onNotificationClick) {
+                    Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
+                }
             }
-
-            // lock icon
-            IconButton(onClick = onNotificationClick) {
-                Icon(imageVector = Icons.Outlined.Notifications, contentDescription = "Lock")
-            }
-        }
 
         )
     }
@@ -116,23 +114,19 @@ fun ProfileAvatarWithShowMore(
     id: String = "",
     firstName: String = "",
     size: Dp = 40.dp,
-    textStyle: TextStyle = MaterialTheme.typography.subtitle1,
+    textStyle: TextStyle = MaterialTheme.typography.labelSmall,
     showMore: Boolean = true,
     openDropDown: () -> Unit,
 ) {
-    val color = remember(firstName) {
-        val name = firstName.uppercase()
-        Color("$id / $name".toHslColor())
-    }
-
+    val color = remember(firstName) { Color("$id / ${firstName.uppercase()}".toHslColor()) }
     Row(
         modifier = Modifier.padding(end = if (showMore) 0.dp else 8.dp),
         verticalAlignment = Alignment.CenterVertically
     ) {
         Box(
-            modifier = modifier.size(size), contentAlignment = Alignment.Center
+            modifier = modifier.size(size),
+            contentAlignment = Alignment.Center
         ) {
-
             val initials = (firstName.take(1).uppercase())
             Canvas(modifier = Modifier.fillMaxSize()) {
                 drawCircle(
@@ -140,26 +134,24 @@ fun ProfileAvatarWithShowMore(
                 )
                 drawCircle(SolidColor(color), radius = 55f)
             }
-
             Text(text = initials, style = textStyle, color = Color.White, fontSize = 18.sp)
         }
         if (showMore) {
             IconButton(onClick = openDropDown) {
                 Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "", tint = color)
             }
-
         }
-
     }
 }
 
 @Composable
+@Preview
 fun ProfileAvatar(
     modifier: Modifier = Modifier,
     id: String = "D",
     firstName: String = "David",
     size: Dp = 40.dp,
-    textStyle: TextStyle = MaterialTheme.typography.subtitle1,
+    textStyle: TextStyle = MaterialTheme.typography.labelSmall,
 ) {
     val color = Color("$id / ${firstName.uppercase()}".toHslColor())
     val initials = firstName.first().toString().uppercase()
@@ -178,15 +170,15 @@ fun ProfileAvatar(
 @Composable
 @Preview
 fun MTopBar(onNavigateBack: () -> Unit = {}, activeBaby: Baby? = null) {
-    TopAppBar(modifier = Modifier.fillMaxWidth(), colors = TopAppBarDefaults.topAppBarColors(
-        containerColor = colorResource(id = R.color.orange),
-        titleContentColor = Color.Black,
-    ),
+    TopAppBar(
+        modifier = Modifier.fillMaxWidth(),
+        colors = TopAppBarDefaults.topAppBarColors(
+            containerColor = colorResource(id = R.color.orange),
+            titleContentColor = Color.Black,
+        ),
         navigationIcon = {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                IconButton(
-                    onClick = onNavigateBack,
-                ) {
+                IconButton(onClick = onNavigateBack) {
                     Icon(
                         imageVector = Icons.AutoMirrored.Filled.ArrowBack,
                         contentDescription = "Back"
@@ -202,13 +194,6 @@ fun MTopBar(onNavigateBack: () -> Unit = {}, activeBaby: Baby? = null) {
 
             }
         },
-
-        title = {
-            if (activeBaby != null) {
-                Text(
-                    text = activeBaby.name
-                )
-            }
-        })
+        title = { activeBaby?.let { Text(text = activeBaby.name) } })
 }
 

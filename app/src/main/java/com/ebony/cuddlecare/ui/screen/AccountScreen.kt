@@ -180,9 +180,11 @@ fun MainPageContent(
 @Composable
 fun BabyDetails(onNavigate: () -> Unit, baby: Baby) {
     val careGivers = baby.careGivers.plus(baby.primaryCareGivers)
-    Column(modifier = Modifier
-        .background(color = Color.White)
-        .padding(16.dp)) {
+    Column(
+        modifier = Modifier
+            .background(color = Color.White)
+            .padding(16.dp)
+    ) {
         Row(
             modifier = Modifier
                 .wrapContentSize()
@@ -214,7 +216,12 @@ fun BabyDetails(onNavigate: () -> Unit, baby: Baby) {
         ) {
             LazyRow {
                 items(careGivers.count()) {
-                    AccountAvatar(id = careGivers[it].uuid, firstName = careGivers[it].firstname, radius = 50f, font = 15.sp)
+                    AccountAvatar(
+                        id = careGivers[it].uuid,
+                        firstName = careGivers[it].firstname,
+                        radius = 50f,
+                        font = 15.sp
+                    )
                 }
             }
             OutlinedButton(onClick = onNavigate) {
@@ -323,9 +330,7 @@ fun AccountManagement(isOpen: Boolean, onClose: () -> Unit) {
                         onClose()
                     }
                 }
-
-            }
-            )
+            })
         }
     }
 }

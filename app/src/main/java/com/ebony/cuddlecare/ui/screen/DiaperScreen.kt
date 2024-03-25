@@ -1,7 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -14,23 +12,23 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material.ButtonDefaults
-import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
-import androidx.compose.material.TextFieldDefaults
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Folder
-import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.BasicAlertDialog
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
+import androidx.compose.material3.TextField
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.material3.TimePicker
 import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberTimePickerState
@@ -65,7 +63,6 @@ import java.time.LocalTime
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
 fun RecordDiaperStateScreen(
@@ -138,7 +135,6 @@ private fun DiaperCount(count: Int) {
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @Preview(showBackground = true)
 fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
@@ -242,7 +238,6 @@ fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
 }
 
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
 fun DateInput(
@@ -299,8 +294,8 @@ fun AttachmentRow() {
                 if (it.length <= maxLength) inputValue = it
             },
 
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = colorResource(id = R.color.backcolor),
+            colors = TextFieldDefaults.colors(
+                focusedContainerColor = colorResource(id = R.color.backcolor),
                 unfocusedIndicatorColor = Color.Gray,
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
@@ -337,7 +332,6 @@ fun AttachmentRow() {
 
 
 @OptIn(ExperimentalMaterial3Api::class)
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 fun TimeInput(
     modifier: Modifier = Modifier,
@@ -354,11 +348,11 @@ fun TimeInput(
     )
 
     if (showTimeDialog) {
-        AlertDialog(
+        BasicAlertDialog(
             onDismissRequest = { setTimePicker(false) },
             modifier = Modifier
                 .fillMaxWidth()
-                .background(color = MaterialTheme.colors.background)
+                .background(color = MaterialTheme.colorScheme.background)
         ) {
             Column(
                 modifier = Modifier

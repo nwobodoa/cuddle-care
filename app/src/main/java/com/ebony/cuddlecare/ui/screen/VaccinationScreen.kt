@@ -12,8 +12,8 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material.Icon
-import androidx.compose.material.Text
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -37,7 +37,7 @@ import com.ebony.cuddlecare.ui.viewmodel.VaccinationViewModel
 import com.ebony.cuddlecare.ui.viewmodel.VaccineUIState
 
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 @Preview(showBackground = true)
 fun VaccinationScreen(
@@ -64,13 +64,12 @@ fun VaccinationScreen(
             LastUpdated(title = "Vaccination", "Last: Never")
             TimeTypeSegment(vaccinationViewModel, vaccineUIState)
             AttachmentRow()
-            SaveButton(onClick = {/*TODO*/})
+            SaveButton(onClick = {/*TODO*/ })
             //TODO disable save button if nothing is entered
         }
     }
 }
 
-@RequiresApi(Build.VERSION_CODES.O)
 @Composable
 private fun TimeTypeSegment(
     vaccinationViewModel: VaccinationViewModel,

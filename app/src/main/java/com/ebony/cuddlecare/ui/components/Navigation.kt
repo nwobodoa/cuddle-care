@@ -44,20 +44,24 @@ import com.ebony.cuddlecare.ui.theme.backcolor
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun TopBar( title: String) {
+fun TopBar(title: String) {
     TopAppBar(
         title = {
-            Box (modifier= Modifier
-                .padding(top = 32.dp)
-                .background(colorResource(id = R.color.backcolor))
-                .fillMaxSize(), contentAlignment = Alignment.Center){
-
-                Text (title, color = colorResource(id = R.color.orange), fontWeight = FontWeight.Bold, fontSize = 24.sp)
+            Box(
+                modifier = Modifier
+                    .padding(top = 32.dp)
+                    .background(colorResource(id = R.color.backcolor))
+                    .fillMaxSize(), contentAlignment = Alignment.Center
+            ) {
+                Text(
+                    title,
+                    color = colorResource(id = R.color.orange),
+                    fontWeight = FontWeight.Bold,
+                    fontSize = 24.sp
+                )
             }
-        },
-
-        )
-        }
+        })
+}
 
 @Composable
 fun ScreenScaffold(
@@ -84,14 +88,26 @@ fun ScreenScaffold(
 
 
 @Composable
-fun BottomNavBar(onTopNavigation: (String) -> Unit){
+fun BottomNavBar(onTopNavigation: (String) -> Unit) {
 
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf(
-        NavigationItem(title = "Home",icon = Icons.Default.Home,destination = Screen.HomeScreen),
-        NavigationItem(title = "Community",icon = Icons.Default.Diversity3,destination = Screen.CommunityScreen),
-        NavigationItem(title = "Statistics",icon = Icons.Outlined.Analytics, destination = Screen.Statistics),
-        NavigationItem(title = "Account",icon = Icons.Default.PermIdentity, destination = Screen.Profile)
+        NavigationItem(title = "Home", icon = Icons.Default.Home, destination = Screen.HomeScreen),
+        NavigationItem(
+            title = "Community",
+            icon = Icons.Default.Diversity3,
+            destination = Screen.CommunityScreen
+        ),
+        NavigationItem(
+            title = "Statistics",
+            icon = Icons.Outlined.Analytics,
+            destination = Screen.Statistics
+        ),
+        NavigationItem(
+            title = "Account",
+            icon = Icons.Default.PermIdentity,
+            destination = Screen.Profile
+        )
     )
 
     NavigationBar {

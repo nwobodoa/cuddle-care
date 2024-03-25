@@ -26,43 +26,45 @@ fun PasswordField(
     label: String = "Password",
     isError: Boolean = false,
     onChange: (String) -> Unit,
-){
+) {
     var visible by remember { mutableStateOf(false) }
     OutlinedTextField(
-         value = password,
-         visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
-         onValueChange = {newPassword -> onChange(newPassword) },
-         modifier = modifier,
-         label = {Text(label) },
-         trailingIcon = {
-             IconButton(onClick = { visible = !visible }, modifier = Modifier.padding(4.dp)) {
-                 Icon(
-                     imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
-                     contentDescription = if (visible) "Hide Password" else "Show Password"
-                 )
+        value = password,
+        visualTransformation = if (visible) VisualTransformation.None else PasswordVisualTransformation(),
+        onValueChange = { newPassword -> onChange(newPassword) },
+        modifier = modifier,
+        label = { Text(label) },
+        trailingIcon = {
+            IconButton(onClick = { visible = !visible }, modifier = Modifier.padding(4.dp)) {
+                Icon(
+                    imageVector = if (visible) Icons.Filled.VisibilityOff else Icons.Filled.Visibility,
+                    contentDescription = if (visible) "Hide Password" else "Show Password"
+                )
 
-             }
-         },
-         isError = isError
-     )
-    }
+            }
+        },
+        isError = isError
+    )
+}
+
 @Composable
 fun EmailField(
     modifier: Modifier = Modifier,
     email: String,
     isError: Boolean,
     onChange: (String) -> Unit
-){
+) {
     OutlinedTextField(
         value = email,
-        onValueChange = {onChange(it)},
-        label = {Text("email")},
+        onValueChange = { onChange(it) },
+        label = { Text("email") },
         modifier = modifier,
         isError = isError
     )
 }
+
 @Composable
-fun ErrorText(e:String){
+fun ErrorText(e: String) {
     Text(
         text = e,
         style = MaterialTheme.typography.labelSmall,

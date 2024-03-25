@@ -1,8 +1,6 @@
-package drawable
+package com.ebony.cuddlecare.ui.screen
 
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
@@ -32,19 +30,13 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
-import com.ebony.cuddlecare.ui.screen.AttachmentRow
-import com.ebony.cuddlecare.ui.screen.DateInput
-import com.ebony.cuddlecare.ui.screen.LastUpdated
-import com.ebony.cuddlecare.ui.screen.ScreenMainIcon
-import com.ebony.cuddlecare.ui.screen.TimeInput
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 @Preview(showBackground = true)
 fun MedicineScreen(
-    diaperViewModel: DiaperViewModel = viewModel(),
-    onNavigateBack: () -> Unit = {}
+    diaperViewModel: DiaperViewModel = viewModel(), onNavigateBack: () -> Unit = {}
 ) {
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     Column(
@@ -60,8 +52,7 @@ fun MedicineScreen(
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),
             verticalArrangement = Arrangement.spacedBy(16.dp)
-        )
-        {
+        ) {
 
             ScreenMainIcon(R.drawable.medicine_logo)
             LastUpdated("Medication", "Last: Never")
@@ -86,8 +77,7 @@ fun MedicineScreen(
                         contentDescription = "Time"
                     )
                     Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)
                     ) {
                         DateInput(
                             toggleDatePicker = { diaperViewModel.toggleDatePicker() },
@@ -117,8 +107,7 @@ fun MedicineScreen(
                         contentDescription = "Time"
                     )
                     Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)
                     ) {
                         Text(text = "0 oz ")
                     }
@@ -128,7 +117,7 @@ fun MedicineScreen(
 
 
             AttachmentRow()
-            SaveButton(onClick = {/*TODO*/})
+            SaveButton(onClick = {/*TODO*/ })
             //TODO disable save button if nothing is entered
 
         }

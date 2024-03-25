@@ -6,7 +6,6 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -15,7 +14,6 @@ import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
@@ -24,9 +22,7 @@ import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
-import java.io.FileInputStream
 import java.io.FileNotFoundException
-import java.io.InputStream
 import kotlin.random.Random
 
 data class TipItem(val tipHeader: String, val tipBody: String)
@@ -34,24 +30,24 @@ data class TipItem(val tipHeader: String, val tipBody: String)
 @Composable
 
 fun TipsCard(onDismiss: () -> Unit) {
-    val random = remember{ Random.Default}
+    val random = remember { Random.Default }
     val tipsList = readHealthTips(context = LocalContext.current)
-    val randomIndex = remember {random.nextInt(tipsList.size)}
-    val randomTip = remember{tipsList[randomIndex]}
+    val randomIndex = remember { random.nextInt(tipsList.size) }
+    val randomTip = remember { tipsList[randomIndex] }
     ElevatedCard(
         colors = CardDefaults.cardColors(containerColor = colorResource(id = R.color.tipBack)),
         elevation = CardDefaults.cardElevation(
             defaultElevation = 10.dp,
 
-        ),
+            ),
         modifier = Modifier
             .wrapContentSize()
             .fillMaxWidth()
             .padding(16.dp)
     ) {
-        Column (
+        Column(
             modifier = Modifier.padding(16.dp)
-        ){
+        ) {
             Text(
                 text = randomTip.tipHeader, fontWeight = FontWeight.Bold,
                 modifier = Modifier
@@ -67,7 +63,7 @@ fun TipsCard(onDismiss: () -> Unit) {
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.End
             ) {
-                 Button(
+                Button(
                     modifier = Modifier.padding(top = 8.dp),
                     onClick = onDismiss, colors = ButtonDefaults
                         .buttonColors(containerColor = colorResource(id = R.color.tipBtn))

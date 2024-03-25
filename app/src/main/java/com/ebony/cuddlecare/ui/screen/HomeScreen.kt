@@ -38,14 +38,46 @@ data class NavigationItem(
 
 
 val screens = listOf(
-    NavigationItem(iconDrawableId = R.drawable.bf, title = "Breastfeeding", destination = Screen.BreastfeedingScreen),
-    NavigationItem(iconDrawableId = R.drawable.bottle, title = "Bottle", destination = Screen.Bottle),
-    NavigationItem(iconDrawableId = R.drawable.diaper, title = "Diaper", destination = Screen.Diaper),
-    NavigationItem(iconDrawableId = R.drawable.crib, title = "Sleeping", destination = Screen.SleepingScreen),
-    NavigationItem(iconDrawableId = R.drawable.medicine, title = "Medication", destination = Screen.MedicationScreen),
-    NavigationItem(iconDrawableId = R.drawable.vaccine, title = "Vaccination", destination = Screen.VaccineScreen),
-    NavigationItem(iconDrawableId = R.drawable.doc, title = "Doctor Visit", destination = Screen.VaccineScreen),
-    NavigationItem(iconDrawableId = R.drawable.potty, title = "Potty", destination = Screen.VaccineScreen),
+    NavigationItem(
+        iconDrawableId = R.drawable.bf,
+        title = "Breastfeeding",
+        destination = Screen.BreastfeedingScreen
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.bottle,
+        title = "Bottle",
+        destination = Screen.Bottle
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.diaper,
+        title = "Diaper",
+        destination = Screen.Diaper
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.crib,
+        title = "Sleeping",
+        destination = Screen.SleepingScreen
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.medicine,
+        title = "Medication",
+        destination = Screen.MedicationScreen
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.vaccine,
+        title = "Vaccination",
+        destination = Screen.VaccineScreen
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.doc,
+        title = "Doctor Visit",
+        destination = Screen.VaccineScreen
+    ),
+    NavigationItem(
+        iconDrawableId = R.drawable.potty,
+        title = "Potty",
+        destination = Screen.VaccineScreen
+    ),
 )
 
 @Composable
@@ -79,14 +111,17 @@ fun HomeScreen(
 ) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     Scaffold(
-        topBar = { TopBar(onNotificationClick = onNotificationClick,
-            babies = babies,
-            setActiveBaby = setActiveBaby,
-            activeBaby = activeBaby
+        topBar = {
+            TopBar(
+                onNotificationClick = onNotificationClick,
+                babies = babies,
+                setActiveBaby = setActiveBaby,
+                activeBaby = activeBaby
 
-        ) },
+            )
+        },
         bottomBar = { BottomNavBar(onTopNavigation) },
-        ) { innerPadding ->
+    ) { innerPadding ->
         Column(
             modifier = Modifier.padding(innerPadding)
         ) {
