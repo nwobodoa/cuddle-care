@@ -1,6 +1,6 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
-import CareGiver
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
@@ -9,6 +9,9 @@ import com.ebony.cuddlecare.ui.auth.UserAuthViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.ui.documents.Gender
+import com.google.android.gms.tasks.Task
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -43,14 +46,14 @@ class BabyViewModel : ViewModel() {
     private val _babyUIState: MutableStateFlow<BabyUIState> = MutableStateFlow(BabyUIState())
     val babyUIState: StateFlow<BabyUIState> = _babyUIState.asStateFlow()
     private val db = Firebase.firestore
-    private val babyCollectionRef = db.collection(Document.Baby.name)
+    val babyCollectionRef = db.collection(Document.Baby.name)
     private val userAuthViewModel = UserAuthViewModel()
 
     fun setSelectedGender(gender: Gender) {
         _babyUIState.update { it.copy(addBabyUIFormState = it.addBabyUIFormState.copy(selectedGender = gender)) }
     }
 
-    fun setIsSaved(state: Boolean) {
+    private fun setIsSaved(state: Boolean) {
         _babyUIState.update { it.copy(addBabyUIFormState = it.addBabyUIFormState.copy(isSaved = state)) }
     }
 
@@ -70,7 +73,7 @@ class BabyViewModel : ViewModel() {
         _babyUIState.update { it.copy(addBabyUIFormState = it.addBabyUIFormState.copy(selectedDate = l)) }
     }
 
-    fun setLoading(loading: Boolean) {
+    private fun setLoading(loading: Boolean) {
         _babyUIState.update { it.copy(loading = loading) }
     }
 
@@ -151,5 +154,9 @@ class BabyViewModel : ViewModel() {
                 setLoading(false)
             }
         }
+    }
+
+    fun babyById(id:String): Task<DocumentSnapshot> {
+       return babyCollectionRef.document(id).get()
     }
 }

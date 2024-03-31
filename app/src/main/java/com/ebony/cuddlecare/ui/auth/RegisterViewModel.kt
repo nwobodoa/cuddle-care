@@ -1,6 +1,6 @@
 package com.ebony.cuddlecare.ui.auth
 
-import CareGiver
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import android.util.Patterns
 import androidx.lifecycle.ViewModel
 import com.google.firebase.auth.FirebaseAuth

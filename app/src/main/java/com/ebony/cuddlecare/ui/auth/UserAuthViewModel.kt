@@ -1,11 +1,12 @@
 package com.ebony.cuddlecare.ui.auth
 
-import CareGiver
-import android.content.ContentValues
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Document
+import com.ebony.cuddlecare.ui.documents.Invite
+import com.ebony.cuddlecare.ui.documents.InviteStatus
 import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -25,16 +26,18 @@ data class UserAuthUIState(
     val isRegistrationSuccessful: Boolean = false
 )
 
-class UserAuthViewModel() : ViewModel() {
+class UserAuthViewModel : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val _userAuthUIState = MutableStateFlow(UserAuthUIState())
     val userAuthUIState = _userAuthUIState.asStateFlow()
-    private val profileCollection = Firebase.firestore.collection(Document.Profile.name)
+    val profileCollection = Firebase.firestore.collection(Document.Profile.name)
 
     init {
         firebaseAuth.addAuthStateListener {
             if (it.currentUser == null) {
                 setUser(null)
+            } else {
+                loadUser(it.currentUser)
             }
         }
 
@@ -45,12 +48,8 @@ class UserAuthViewModel() : ViewModel() {
     }
 
 
-    fun reset() {
-        _userAuthUIState.value = UserAuthUIState()
-    }
-
-    fun isAuthenticated(): Boolean {
-        return _userAuthUIState.value.user != null
+    private fun reset() {
+        _userAuthUIState.update { UserAuthUIState() }
     }
 
 
@@ -72,6 +71,7 @@ class UserAuthViewModel() : ViewModel() {
 
     fun signOut() {
         firebaseAuth.signOut()
+        reset()
     }
 
     fun setEmail(email: String) {
@@ -81,7 +81,6 @@ class UserAuthViewModel() : ViewModel() {
     fun setPassword(password: String) {
         _userAuthUIState.update { it.copy(password = password) }
     }
-
 
     fun setUser(user: CareGiver?) {
         _userAuthUIState.update { it.copy(user = user) }
@@ -111,16 +110,17 @@ class UserAuthViewModel() : ViewModel() {
         if (user != null) {
             setLoading(true)
             profileCollection
-                .document(user.uid)
-                .get()
-                .addOnSuccessListener {
-                    setUser(it.toObject(CareGiver::class.java))
-                }
-                .addOnCompleteListener {
+                .whereEqualTo("uuid", user.uid)
+                .addSnapshotListener { snap, ex ->
                     setLoading(false)
-                }
-                .addOnFailureListener {
-                    Log.e(ContentValues.TAG, "loadUser: ${it.message}")
+                    if (ex != null) {
+                        Log.e(TAG, "loadUser: error loading user", ex)
+                        return@addSnapshotListener
+                    }
+                    snap?.documents?.firstNotNullOfOrNull { it.toObject(CareGiver::class.java) }
+                        ?.let {
+                            setUser(it)
+                        }
                 }
             return
         }
@@ -128,13 +128,8 @@ class UserAuthViewModel() : ViewModel() {
 
     }
 
-    sealed class Result<out T> {
-        data class Success<T>(val data: T) : Result<T>()
-        data class Error(val exception: Exception) : Result<Nothing>()
-    }
-
-
     suspend fun loadUsers(userIds: List<String>): List<CareGiver> {
+        if (userIds.isEmpty()) return emptyList()
         return try {
             val querySnapshot = profileCollection
                 .whereIn("uuid", userIds).get().await()
@@ -145,5 +140,6 @@ class UserAuthViewModel() : ViewModel() {
             emptyList()
         }
     }
+
 
 }

@@ -92,7 +92,9 @@ fun BottomNavBar(onTopNavigation: (String) -> Unit) {
 
     var selectedItem by remember { mutableIntStateOf(0) }
     val items = listOf(
-        NavigationItem(title = "Home", icon = Icons.Default.Home, destination = Screen.HomeScreen),
+        NavigationItem(title = "Home",
+            icon = Icons.Default.Home,
+            destination = Screen.HomeScreen),
         NavigationItem(
             title = "Community",
             icon = Icons.Default.Diversity3,
@@ -115,7 +117,7 @@ fun BottomNavBar(onTopNavigation: (String) -> Unit) {
             NavigationBarItem(
                 icon = { Icon(item.icon!!, contentDescription = item.title) },
                 label = { Text(item.title) },
-                selected = selectedItem == index,
+                selected = index == selectedItem,
                 onClick = {
                     selectedItem = index
                     onTopNavigation(item.destination.name)

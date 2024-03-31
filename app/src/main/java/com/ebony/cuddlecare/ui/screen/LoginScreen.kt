@@ -52,11 +52,6 @@ fun LoginScreen(
         enabledSignInButton = isValidEmail && isValidPassword
     }
 
-    LaunchedEffect(key1 = userAuthUIState.user) {
-        if (userAuthUIState.user != null) {
-            onNavigation(Screen.AuthenticatedLandingScreen.name)
-        }
-    }
 
     ScreenScaffold(
         topBar = { TopBar(title = "Sign In") },

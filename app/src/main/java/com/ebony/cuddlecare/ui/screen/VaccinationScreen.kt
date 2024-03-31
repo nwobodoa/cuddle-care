@@ -1,8 +1,10 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.os.Build
-import androidx.annotation.RequiresApi
+import android.content.ContentValues.TAG
+import android.util.Log
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -11,23 +13,39 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Folder
+import androidx.compose.material.icons.outlined.Search
+import androidx.compose.material3.FloatingActionButton
+import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
@@ -37,9 +55,7 @@ import com.ebony.cuddlecare.ui.viewmodel.VaccinationViewModel
 import com.ebony.cuddlecare.ui.viewmodel.VaccineUIState
 
 
-
 @Composable
-@Preview(showBackground = true)
 fun VaccinationScreen(
     vaccinationViewModel: VaccinationViewModel = viewModel(),
     onNavigateBack: () -> Unit = {}
@@ -128,7 +144,7 @@ private fun TimeTypeSegment(
                 imageVector = Icons.Outlined.Folder,
                 contentDescription = "Time"
             )
-            Row {
+            Row(modifier = Modifier.clickable { /*onClick*/ }) {
                 Text(text = "Select Type")
                 Icon(Icons.Outlined.ArrowDropDown, contentDescription = "Arrow down icon")
             }
@@ -136,21 +152,101 @@ private fun TimeTypeSegment(
     }
 }
 
+@OptIn(ExperimentalFoundationApi::class)
+@Preview(showBackground = true)
 @Composable
-fun VaccineType() {
-    val vaccineType = listOf(
-        "Chickenpox (Var)",
-        "Diphtheria, tetanus, & whooping cough (DTap)",
-        "Haemophilus Influenzae type b(Hib)",
-        "Hepatitis A (Hep A)",
-        "Hepatitis B (Hep B)",
-        "Influenza (Flu)",
-        "Measles, mumps, rubella (MMR)",
-        "Meningococcal (MenB)",
-        "Pneumococcal (PCV)",
-        "Polio (IPV)",
-        "Rotavirus (RV)",
-        "Tuberculosis (BCG)"
-    )
+fun VaccineList() {
+    val vaccineTypes =
+        listOf(
+            "Chickenpox (Var)",
+            "Diphtheria, tetanus, & whooping cough (DTap)",
+            "Haemophilus Influenzae type b(Hib)",
+            "Hepatitis A (Hep A)",
+            "Hepatitis B (Hep B)",
+            "Influenza (Flu)",
+            "Measles, mumps, rubella (MMR)",
+            "Meningococcal (MenB)",
+            "Pneumococcal (PCV)",
+            "Polio (IPV)",
+            "Rotavirus (RV)",
+            "Tuberculosis (BCG)"
+
+        )
+
+    val filteredList = remember { mutableStateOf(vaccineTypes) }
+    val searchTerm = remember { mutableStateOf("") }
+
+    LaunchedEffect(key1 = searchTerm.value) {
+        if (searchTerm.value.isEmpty()) {
+            filteredList.value = vaccineTypes
+            return@LaunchedEffect
+        }
+        filteredList.value = vaccineTypes.filter { it.contains(searchTerm.value, ignoreCase = true) }
+    }
+
+    Column(modifier = Modifier.fillMaxWidth()) {
+        Scaffold(
+            topBar = { MTopBar(onNavigateBack = {}) },
+            floatingActionButton = {
+                FloatingActionButton(
+                    onClick = {},
+                    containerColor = colorResource(id = R.color.myRed),
+                    contentColor = Color.White, shape = CircleShape
+                ) {
+                    Icon(imageVector = Icons.Filled.Add, contentDescription = null)
+                }
+            }) {
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxWidth()
+            ) {
+                
+                LazyColumn(
+                    modifier = Modifier.background(Color.White),
+                    verticalArrangement = Arrangement.spacedBy(8.dp)
+                )
+                {
+                    stickyHeader {
+                        Text(
+                            modifier = Modifier.padding(8.dp),
+                            text = "Select Vaccine", fontWeight = FontWeight.Bold, fontSize = 18.sp
+                        )
+                        Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                            Text(text = "Vaccination")
+                            IconButton(onClick = { /*TODO*/ }) {
+                                Icons.Filled.AddCircle
+                            }
+                        }
+                    }
+                    item {
+                        OutlinedTextField(
+                            modifier = Modifier.fillMaxWidth(),
+                            label = { Text(text = "Search") },
+                            leadingIcon = { Icons.Outlined.Search },
+                            value = searchTerm.value,
+                            onValueChange = { c -> searchTerm.value = c })
+                    }
+
+                    items(filteredList.value) { vaccine ->
+                        VaccineItem(vaccine = vaccine)
+                    }
+
+                }
+            }
+        }
+    }
 }
+
+
+@Composable
+fun VaccineItem(vaccine: String) {
+    Text(text = vaccine)
+    HorizontalDivider()
+}
+
+
+
+
+
 

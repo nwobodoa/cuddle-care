@@ -1,6 +1,8 @@
 package com.ebony.cuddlecare
 
+import android.content.ContentValues.TAG
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.Arrangement
@@ -56,7 +58,7 @@ fun CuddleCareApp(
         }
         return
     }
-
+    Log.i(TAG, "CuddleCareApp: recomposed $userAuthUIState")
     val startDestination =
         if (userAuthUIState.user == null) Screen.Login.name else Screen.AuthenticatedLandingScreen.name
 
@@ -77,7 +79,8 @@ fun CuddleCareApp(
             userAuthUIState.user?.let { user ->
                 AuthenticatedScreens(user = user,
                     setActiveBaby = userAuthViewModel::setActiveBaby,
-                    setUpdatedUser = userAuthViewModel::setUser
+                    setUpdatedUser = userAuthViewModel::setUser,
+                    onSignOut = userAuthViewModel::signOut
                 )
             }
         }

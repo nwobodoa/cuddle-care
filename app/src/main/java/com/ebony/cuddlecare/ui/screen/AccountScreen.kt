@@ -1,8 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
-import CareGiver
-import android.content.ContentValues.TAG
-import android.util.Log
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -32,11 +30,10 @@ import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -44,11 +41,17 @@ import androidx.compose.ui.graphics.SolidColor
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.ui.components.AccountAvatar
 import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.ProfileAvatar
+import com.ebony.cuddlecare.ui.components.ReceivedInvite
 import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.documents.Invite
+import com.ebony.cuddlecare.ui.documents.InviteStatus
 import com.ebony.cuddlecare.ui.theme.backcolor
+import com.ebony.cuddlecare.ui.viewmodel.AccountUIState
+import com.ebony.cuddlecare.ui.viewmodel.AccountViewModel
 import kotlinx.coroutines.launch
 
 
@@ -57,9 +60,16 @@ fun AccountScreen(
     user: CareGiver,
     babies: List<Baby>,
     onTopNavigation: (String) -> Unit,
-    setBabyToUpdate: (Baby) -> Unit
+    setBabyToUpdate: (Baby) -> Unit,
+    onSignOut: () -> Unit,
+    accountViewModel: AccountViewModel = viewModel()
 ) {
-    var isAccountManagementOpen by remember { mutableStateOf(false) }
+    val accountUIState by accountViewModel.accountUIState.collectAsState()
+
+    LaunchedEffect(key1 = user) {
+        accountViewModel.checkInvites(user)
+    }
+
     Scaffold(
         bottomBar = { BottomNavBar(onTopNavigation) },
         topBar = { HeaderText(text = "Account") }
@@ -72,15 +82,21 @@ fun AccountScreen(
             Arrangement.Center
         ) {
             MainPageContent(
-                onClick = { isAccountManagementOpen = true },
+                onClick = { accountViewModel.setIsAccountManagementOpen(true) },
                 onTopNavigation = onTopNavigation,
                 user = user,
                 babies = babies,
-                setBabyToUpdate = setBabyToUpdate
+                setBabyToUpdate = setBabyToUpdate,
+                accountUIState = accountUIState,
+                onHandleInvite = { invite -> accountViewModel.processInvite(user, invite) }
             )
             AccountManagement(
-                isOpen = isAccountManagementOpen,
-                onClose = { isAccountManagementOpen = false })
+                user = user,
+                accountUIState = accountUIState,
+                isOpen = accountUIState.isAccountManagementOpen,
+                onClose = { accountViewModel.setIsAccountManagementOpen(false) },
+                onSignOut = onSignOut,
+            )
         }
     }
 }
@@ -94,7 +110,7 @@ fun HeaderText(text: String) {
             .background(color = backcolor)
             .padding(16.dp)
     ) {
-        Text(text = text, fontWeight = FontWeight.Bold, fontSize = 28.sp)
+        Text(text = text, fontWeight = FontWeight.Bold, fontSize = 24.sp)
     }
 
 }
@@ -105,10 +121,50 @@ fun MainPageContent(
     onTopNavigation: (String) -> Unit,
     user: CareGiver,
     babies: List<Baby>,
-    setBabyToUpdate: (Baby) -> Unit
+    setBabyToUpdate: (Baby) -> Unit,
+    accountUIState: AccountUIState,
+    onHandleInvite: (Invite) -> Unit
 ) {
+    val onNavigate: (Baby, String) -> Unit = { baby, dest ->
+        setBabyToUpdate(baby)
+        onTopNavigation(dest)
+    }
 
-    Log.i(TAG, "MainPageContent: *** $babies")
+    CurrentUserRow(user, onClick)
+    PendingReceivedInvites(accountUIState = accountUIState, onHandleInvite = onHandleInvite)
+
+    Row(
+        modifier = Modifier
+            .padding(16.dp)
+            .fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+
+        Text(text = "Babies", fontSize = 18.sp)
+        Icon(imageVector = Icons.Default.AddCircle, contentDescription = null,
+            modifier = Modifier.clickable { onTopNavigation(Screen.AddBabyScreen.name) })
+    }
+    LazyColumn(
+        modifier = Modifier
+            .wrapContentSize()
+            .fillMaxWidth(),
+        verticalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(babies.count()) { item ->
+            val baby = babies[item]
+            BabyDetails(
+                onNavigate = { onNavigate(babies[item], Screen.Caregiver.name) },
+                baby = baby
+            )
+        }
+    }
+}
+
+@Composable
+private fun CurrentUserRow(
+    user: CareGiver,
+    onClick: () -> Unit
+) {
     Column(
         modifier = Modifier
             .wrapContentSize()
@@ -161,27 +217,26 @@ fun MainPageContent(
             Icon(imageVector = Icons.Default.Repeat, contentDescription = null)
         }
     }
-    Row(
-        modifier = Modifier
-            .padding(16.dp)
-            .fillMaxWidth(),
-        horizontalArrangement = Arrangement.SpaceBetween
-    ) {
+}
 
-        Text(text = "Babies", fontSize = 18.sp)
-        Icon(imageVector = Icons.Default.AddCircle, contentDescription = null,
-            modifier = Modifier.clickable { onTopNavigation(Screen.AddBabyScreen.name) })
+@Composable
+private fun PendingReceivedInvites(
+    accountUIState: AccountUIState,
+    onHandleInvite: (Invite) -> Unit
+) {
+    if (accountUIState.pendingInvites.isNotEmpty()) {
+        Text(modifier = Modifier.padding(top = 8.dp), text = "Pending Invites")
     }
-    LazyColumn(
-        modifier = Modifier
-            .wrapContentSize()
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        items(babies.count()) { item ->
-            BabyDetails(onNavigate = {
-                setBabyToUpdate(babies[item])
-                onTopNavigation(Screen.Caregiver.name) }, babies[item])
+
+    LazyColumn {
+        items(accountUIState.pendingInvites.size) {
+            val invite = accountUIState.pendingInvites[it]
+            ReceivedInvite(
+                invite = invite,
+                onAccept = { onHandleInvite(invite.copy(status = InviteStatus.ACCEPTED)) },
+                onReject = { onHandleInvite(invite.copy(status = InviteStatus.REJECTED)) }
+            )
+
         }
     }
 }
@@ -233,17 +288,17 @@ fun BabyDetails(onNavigate: () -> Unit, baby: Baby) {
                     )
                 }
             }
+
             OutlinedButton(onClick = onNavigate) {
                 Icon(imageVector = Icons.Outlined.PeopleOutline, contentDescription = null)
                 Text(text = "Caregivers")
-
             }
         }
     }
 }
 
 @Composable
-fun SheetPageContent(onClick: () -> Unit) {
+fun SheetPageContent(onClick: () -> Unit, user: CareGiver, onSignOut: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
@@ -260,16 +315,19 @@ fun SheetPageContent(onClick: () -> Unit) {
         {
             Row(modifier = Modifier.padding(bottom = 32.dp)) {
 
-                AccountAvatar(id = "A9309404911", firstName = "Adanwa", radius = 140f)
+                AccountAvatar(id = user.uuid, firstName = user.firstname, radius = 140f)
             }
             Row {
 
-                Text(text = "adanwobodo84@gmail.com")
+                Text(text = user.email)
             }
         }
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Icon(imageVector = Icons.Default.PermIdentity, contentDescription = null)
-            Text(text = "Adanwa", modifier = Modifier.padding(start = 8.dp))
+            Text(
+                text = "${user.firstname} ${user.lastname}",
+                modifier = Modifier.padding(start = 8.dp)
+            )
             Row(
                 modifier = Modifier
                     .padding(end = 16.dp)
@@ -282,11 +340,13 @@ fun SheetPageContent(onClick: () -> Unit) {
         }
         HorizontalDivider()
         Row(
-            modifier = Modifier.fillMaxWidth(),
+            modifier = Modifier
+                .fillMaxWidth()
+                .clickable { onSignOut() },
             horizontalArrangement = Arrangement.spacedBy(8.dp)
         ) {
             Icon(imageVector = Icons.AutoMirrored.Filled.ExitToApp, contentDescription = null)
-            Text(text = "Sign out", modifier = Modifier.clickable { /*TODO:implement logout*/ })
+            Text(text = "Sign out")
         }
         HorizontalDivider()
         Row(
@@ -315,9 +375,23 @@ fun SheetPageContent(onClick: () -> Unit) {
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun AccountManagement(isOpen: Boolean, onClose: () -> Unit) {
+fun AccountManagement(
+    user: CareGiver,
+    isOpen: Boolean,
+    onClose: () -> Unit,
+    onSignOut: () -> Unit,
+    accountUIState: AccountUIState
+) {
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
     val scope = rememberCoroutineScope()
+    val onClick = {
+        scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
+            if (!bottomSheetState.isVisible) {
+                onClose()
+            }
+        }
+    }
+
     if (isOpen) {
         ModalBottomSheet(
             sheetState = bottomSheetState,
@@ -333,13 +407,7 @@ fun AccountManagement(isOpen: Boolean, onClose: () -> Unit) {
                 }
             }) {
 
-            SheetPageContent(onClick = {
-                scope.launch { bottomSheetState.hide() }.invokeOnCompletion {
-                    if (!bottomSheetState.isVisible) {
-                        onClose()
-                    }
-                }
-            })
+            SheetPageContent(user = user, onClick = { onClick() }, onSignOut = onSignOut)
         }
     }
 }

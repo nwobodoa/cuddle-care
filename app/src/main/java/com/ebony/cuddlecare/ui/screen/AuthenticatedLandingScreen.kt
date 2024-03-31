@@ -1,6 +1,6 @@
 package com.ebony.cuddlecare.ui.screen
 
-import CareGiver
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
 import com.ebony.cuddlecare.ui.viewmodel.CareGiverViewModel
 
+//TODO What are we doing with names
 
 @Composable
 fun AuthenticatedScreens(
@@ -25,7 +26,8 @@ fun AuthenticatedScreens(
     babyViewModel: BabyViewModel = viewModel(),
     careGiverViewModel: CareGiverViewModel = viewModel(),
     setActiveBaby: (String) -> Unit,
-    setUpdatedUser: (CareGiver) -> Unit
+    setUpdatedUser: (CareGiver) -> Unit,
+    onSignOut: () -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
     val careGiverUIState by careGiverViewModel.careGiverUIState.collectAsState()
@@ -94,14 +96,28 @@ fun AuthenticatedScreens(
                     onTopNavigation = { dest -> navController.navigate(dest) },
                     babies = babyUIState.listOfBabies,
                     user = user,
-                    setBabyToUpdate = {baby -> careGiverViewModel.setBaby(baby)}
+                    setBabyToUpdate = { baby -> careGiverViewModel.setBaby(baby) },
+                    onSignOut = onSignOut
                 )
             }
             composable(Screen.Statistics.name) {
 
             }
             composable(Screen.Caregiver.name) {
-                Caregivers(onNavigateBack = { navController.popBackStack() }, babyToUpdate = careGiverUIState.baby)
+                CareGiverScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    careGiverUIState = careGiverUIState,
+                    currentUser = user,
+                    onSendInvite = { inviteeEmail ->
+                        careGiverViewModel.sendInvite(
+                            inviteeEmail,
+                            user.uuid
+                        )
+                    },
+                    resetResponse = {careGiverViewModel::resetResponse},
+                    fetchPendingSentInvites = careGiverViewModel::fetchPendingSentInvites,
+                    pendingSentInvites = careGiverUIState.pendingSentInvites
+                )
             }
         }
     }

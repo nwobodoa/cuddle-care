@@ -5,11 +5,14 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.offset
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
+import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Notifications
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.DropdownMenu
@@ -36,6 +39,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
+import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
@@ -53,6 +57,9 @@ fun DropDown(
     DropdownMenu(expanded = expanded, onDismissRequest = { setExpanded(false) }) {
         babies.forEachIndexed { idx, baby ->
             DropdownMenuItem(
+                leadingIcon = { ProfileAvatar(id = baby.id, firstName = baby.name, fontSize = 14.sp,
+                    radiusOuter = 50f,
+                    radiusInner = 40f) },
                 text = { Text(text = baby.name, color = Color.Black) },
                 onClick = {
                     setActiveBaby(baby.id)
@@ -136,10 +143,14 @@ fun ProfileAvatarWithShowMore(
             }
             Text(text = initials, style = textStyle, color = Color.White, fontSize = 18.sp)
         }
-        if (showMore) {
-            IconButton(onClick = openDropDown) {
-                Icon(imageVector = Icons.Default.ExpandMore, contentDescription = "", tint = color)
-            }
+    }
+    if (showMore) {
+        IconButton(modifier = Modifier
+            .offset(23.dp, 12.dp)
+            .padding(end = 16.dp)
+            ,
+            onClick = openDropDown) {
+            Icon(imageVector = Icons.Default.ArrowDropDown, contentDescription = "", tint = color)
         }
     }
 }
@@ -151,6 +162,9 @@ fun ProfileAvatar(
     id: String = "D",
     firstName: String = "David",
     size: Dp = 40.dp,
+    radiusOuter:Float = 70f,
+    radiusInner: Float = 60f,
+    fontSize: TextUnit = 16.sp,
     textStyle: TextStyle = MaterialTheme.typography.labelSmall,
 ) {
     val color = Color("$id / ${firstName.uppercase()}".toHslColor())
