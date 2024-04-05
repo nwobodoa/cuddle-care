@@ -280,18 +280,20 @@ fun DateInput(
 
 
 @Composable
-fun AttachmentRow() {
+fun AttachmentRow(value: String = "", onValueChange: (String) -> Unit = {}) {
     Column(
         verticalArrangement = Arrangement.spacedBy(8.dp)
     ) {
         val maxLength = 3000
-        var inputValue by remember { mutableStateOf("") }
+
 
         TextField(
             modifier = Modifier.fillMaxWidth(),
-            value = inputValue,
+            value = value,
             onValueChange = {
-                if (it.length <= maxLength) inputValue = it
+                if (value.length <= maxLength) {
+                    onValueChange(it)
+                }
             },
 
             colors = TextFieldDefaults.colors(
@@ -305,7 +307,7 @@ fun AttachmentRow() {
 
             )
         Text(
-            text = "${inputValue.length}/$maxLength",
+            text = "${value.length}/$maxLength",
             textAlign = TextAlign.End,
             color = Color.Gray,
             modifier = Modifier

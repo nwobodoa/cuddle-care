@@ -15,6 +15,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
+import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.CareGiverViewModel
 
 //TODO What are we doing with names
@@ -25,12 +26,16 @@ fun AuthenticatedScreens(
     navController: NavHostController = rememberNavController(),
     babyViewModel: BabyViewModel = viewModel(),
     careGiverViewModel: CareGiverViewModel = viewModel(),
+    breastfeedingViewModel: BreastfeedingViewModel = viewModel(),
     setActiveBaby: (String) -> Unit,
     setUpdatedUser: (CareGiver) -> Unit,
     onSignOut: () -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
     val careGiverUIState by careGiverViewModel.careGiverUIState.collectAsState()
+    val breastfeedingUIState by breastfeedingViewModel.breastfeedingUIState.collectAsState()
+    val leftBreastUIState by breastfeedingViewModel.leftBreastUIState.collectAsState()
+    val rightBreastUIState by breastfeedingViewModel.rightBreastUIState.collectAsState()
 
     LaunchedEffect(key1 = user) {
         babyViewModel.fetchBabies(user)
@@ -61,7 +66,18 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.BreastfeedingScreen.name) {
-                BreastfeedingScreen { navController.popBackStack() }
+                BreastfeedingScreen(
+                    onNavigateBack = { navController.popBackStack() },
+                    breastfeedingUIState = breastfeedingUIState,
+                    rightBreastUIState = rightBreastUIState,
+                    leftBreastUIState = leftBreastUIState,
+                    toggleRightButton = breastfeedingViewModel::toggleRightBtnActiveState,
+                    toggleLeftButton = breastfeedingViewModel::toggleLeftBtnActiveState,
+                    increaseLeftTimer = breastfeedingViewModel::incrementLeftTimer,
+                    increaseRightTimer = breastfeedingViewModel::incrementRightTimer,
+                    incrementPauseTimer = breastfeedingViewModel::incrementPauseTimer,
+                    onNotesValueChange = breastfeedingViewModel::onNotesValueChange
+                )
             }
 
             composable(Screen.VaccineScreen.name) {
@@ -114,7 +130,7 @@ fun AuthenticatedScreens(
                             user.uuid
                         )
                     },
-                    resetResponse = {careGiverViewModel::resetResponse},
+                    resetResponse = careGiverViewModel::resetResponse,
                     fetchPendingSentInvites = careGiverViewModel::fetchPendingSentInvites,
                     pendingSentInvites = careGiverUIState.pendingSentInvites
                 )

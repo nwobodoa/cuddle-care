@@ -181,7 +181,9 @@ fun VaccineList() {
             filteredList.value = vaccineTypes
             return@LaunchedEffect
         }
-        filteredList.value = vaccineTypes.filter { it.contains(searchTerm.value, ignoreCase = true) }
+        filteredList.value =
+            vaccineTypes.filter { it.contains(searchTerm.value, ignoreCase = true) }
+
     }
 
     Column(modifier = Modifier.fillMaxWidth()) {
@@ -196,44 +198,46 @@ fun VaccineList() {
                     Icon(imageVector = Icons.Filled.Add, contentDescription = null)
                 }
             }) {
-            Column(
+            LazyColumn(
                 modifier = Modifier
+                    .background(Color.White)
                     .padding(it)
-                    .fillMaxWidth()
-            ) {
-                
-                LazyColumn(
-                    modifier = Modifier.background(Color.White),
-                    verticalArrangement = Arrangement.spacedBy(8.dp)
-                )
-                {
-                    stickyHeader {
-                        Text(
-                            modifier = Modifier.padding(8.dp),
-                            text = "Select Vaccine", fontWeight = FontWeight.Bold, fontSize = 18.sp
-                        )
-                        Row(horizontalArrangement = Arrangement.SpaceBetween) {
-                            Text(text = "Vaccination")
-                            IconButton(onClick = { /*TODO*/ }) {
-                                Icons.Filled.AddCircle
-                            }
+                    .padding(16.dp),
+                verticalArrangement = Arrangement.spacedBy(8.dp)
+            )
+            {
+                stickyHeader {
+                    Text(
+                        text = "Select Vaccine", fontWeight = FontWeight.Bold, fontSize = 18.sp
+                    )
+                    Row(horizontalArrangement = Arrangement.SpaceBetween) {
+                        Text(text = "Vaccination")
+                        IconButton(onClick = { /*TODO*/ }) {
+                            Icons.Filled.AddCircle
                         }
                     }
-                    item {
-                        OutlinedTextField(
-                            modifier = Modifier.fillMaxWidth(),
-                            label = { Text(text = "Search") },
-                            leadingIcon = { Icons.Outlined.Search },
-                            value = searchTerm.value,
-                            onValueChange = { c -> searchTerm.value = c })
-                    }
-
-                    items(filteredList.value) { vaccine ->
-                        VaccineItem(vaccine = vaccine)
-                    }
-
                 }
+                item {
+                    OutlinedTextField(
+                        modifier = Modifier.fillMaxWidth(),
+                        label = { Text(text = "Search") },
+                        leadingIcon = {
+                            Icon(
+                                imageVector = Icons.Outlined.Search,
+                                contentDescription = null
+                            )
+                        },
+                        value = searchTerm.value,
+                        onValueChange = { c -> searchTerm.value = c })
+                }
+
+                items(filteredList.value) { vaccine ->
+                    VaccineItem(vaccine = vaccine)
+                    HorizontalDivider()
+                }
+
             }
+
         }
     }
 }
@@ -241,11 +245,10 @@ fun VaccineList() {
 
 @Composable
 fun VaccineItem(vaccine: String) {
-    Text(text = vaccine)
-    HorizontalDivider()
+    Row(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)) {
+        Text(text = vaccine)
+    }
 }
-
-
 
 
 
