@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
+import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
@@ -31,14 +33,25 @@ import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.documents.Baby
-import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
+import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
 
 @Preview
 @Composable
-fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),
-                  onNavigateBack: () -> Unit = {},
-                  activeBaby:Baby? = null) {
-    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+fun BottleFeeding(
+    bottleFeedingViewModel: BottleFeedViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {},
+    activeBaby: Baby? = null
+) {
+
+
+    val bottleFeedingUIState by bottleFeedingViewModel.bottleFeedingUIState.collectAsState()
+
+    LaunchedEffect(key1 = bottleFeedingUIState.canNavigateBack) {
+        if (bottleFeedingUIState.canNavigateBack) {
+            onNavigateBack()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -89,40 +102,51 @@ fun BottleFeeding(diaperViewModel: DiaperViewModel = viewModel(),
                         modifier = Modifier.weight(1f)
                     ) {
                         DateInput(
-                            toggleDatePicker = { diaperViewModel.toggleDatePicker() },
-                            isTimeExpanded = diaperUIState.isTimeExpanded,
-                            selectedDate = diaperUIState.selectedDate,
-                            setSelectedDate = diaperViewModel::setSelectedDate
+                            toggleDatePicker = bottleFeedingViewModel::toggleDatePicker,
+                            isTimeExpanded = bottleFeedingUIState.isTimeExpanded,
+                            selectedDate = bottleFeedingUIState.selectedDate,
+                            setSelectedDate = bottleFeedingViewModel::setSelectedDate
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         TimeInput(
-                            setTimePicker = diaperViewModel::setShowTimePicker,
+                            setTimePicker = bottleFeedingViewModel::setShowTimePicker,
                             label = "",
-                            showTimeDialog = diaperUIState.showTimePicker,
-                            selectedTime = diaperUIState.selectedTime,
-                            onValueChange = diaperViewModel::setSelectedTime,
+                            showTimeDialog = bottleFeedingUIState.showTimePicker,
+                            selectedTime = bottleFeedingUIState.selectedTime,
+                            onValueChange = bottleFeedingViewModel::setSelectedTime,
                         )
 
                     }
                 }
-                Row(modifier = Modifier.fillMaxWidth()) {
+                Row(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalArrangement = Arrangement.SpaceAround
+                ) {
 
-                    Image(
-                        painter = painterResource(id = R.drawable.minusbtn),
-                        contentDescription = "minus button"
-                    )
-                    Text(text = "0")
-                    Text(text = "ml")
-                    Image(
-                        painter = painterResource(id = R.drawable.plusbtn),
-                        contentDescription = "plus button"
-                    )
+                    IconButton(onClick = bottleFeedingViewModel::decrementQty) {
+                        Image(
+                            painter = painterResource(id = R.drawable.minusbtn),
+                            contentDescription = "minus button"
+                        )
+                    }
 
-
+                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+                        Text(text = "${bottleFeedingUIState.quantityMl}")
+                        Text(text = "ml")
+                    }
+                    IconButton(onClick = bottleFeedingViewModel::incrementQty) {
+                        Image(
+                            painter = painterResource(id = R.drawable.plusbtn),
+                            contentDescription = "plus button"
+                        )
+                    }
                 }
             }
-            AttachmentRow()
-            SaveButton(onClick = {})
+            AttachmentRow(
+                value = bottleFeedingUIState.notes,
+                onValueChange = bottleFeedingViewModel::setNotes
+            )
+            SaveButton(onClick = { bottleFeedingViewModel.save(activeBaby) })
         }
 
     }

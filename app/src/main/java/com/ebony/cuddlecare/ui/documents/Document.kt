@@ -4,5 +4,6 @@ enum class Document {
     Profile,
     Baby,
     Invite,
-    BreastFeeding
+    BreastFeeding,
+    BottleFeeding
 }

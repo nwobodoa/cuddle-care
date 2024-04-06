@@ -50,12 +50,10 @@ class DiaperViewModel : ViewModel() {
         _diaperUIState.update { it.copy(showDatePicker = isVisible) }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun setSelectedTime(localTime: LocalTime) {
         _diaperUIState.update { it.copy(selectedTime = localTime) }
     }
 
-    @RequiresApi(Build.VERSION_CODES.O)
     fun setSelectedDate(dateEpochMilli: Long) {
         _diaperUIState.update { it.copy(selectedDate = epochMillisToDate(dateEpochMilli)) }
 
