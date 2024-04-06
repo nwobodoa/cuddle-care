@@ -122,7 +122,12 @@ fun AuthenticatedScreens(
                 )
             }
             composable(Screen.Statistics.name) {
-
+                StatisticsScreen(
+                onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
+                onTopNavigation = { dest -> navController.navigate(dest) },
+                babies = babyUIState.listOfBabies,
+                activeBaby = babyUIState.activeBaby,
+                setActiveBaby = setActiveBaby)
             }
             composable(Screen.Caregiver.name) {
                 CareGiverScreen(

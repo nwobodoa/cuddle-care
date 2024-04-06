@@ -14,7 +14,6 @@ enum class Screen {
     SleepingScreen,
     MedicationScreen,
     CommunityScreen,
-    Splash,
     Profile,
     Statistics,
     Caregiver
