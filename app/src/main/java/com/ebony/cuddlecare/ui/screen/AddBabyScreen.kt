@@ -50,10 +50,10 @@ import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.SwitchWithIcon
 import com.ebony.cuddlecare.ui.components.ToggableButton
-import com.ebony.cuddlecare.ui.components.epochMillisToDate
 import com.ebony.cuddlecare.ui.documents.Gender
 import com.ebony.cuddlecare.ui.viewmodel.BabyUIState
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
+import com.ebony.cuddlecare.util.epochMillisToDate
 import java.time.LocalDate
 import java.time.ZoneId
 import java.time.format.DateTimeFormatter

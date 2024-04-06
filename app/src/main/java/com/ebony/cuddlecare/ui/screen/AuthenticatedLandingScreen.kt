@@ -17,6 +17,7 @@ import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.CareGiverViewModel
+import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
 
 //TODO What are we doing with names
 
@@ -27,6 +28,7 @@ fun AuthenticatedScreens(
     babyViewModel: BabyViewModel = viewModel(),
     careGiverViewModel: CareGiverViewModel = viewModel(),
     breastfeedingViewModel: BreastfeedingViewModel = viewModel(),
+    sleepingViewModel: SleepingViewModel = viewModel(),
     setActiveBaby: (String) -> Unit,
     setUpdatedUser: (CareGiver) -> Unit,
     onSignOut: () -> Unit
@@ -36,6 +38,7 @@ fun AuthenticatedScreens(
     val breastfeedingUIState by breastfeedingViewModel.breastfeedingUIState.collectAsState()
     val leftBreastUIState by breastfeedingViewModel.leftBreastUIState.collectAsState()
     val rightBreastUIState by breastfeedingViewModel.rightBreastUIState.collectAsState()
+    val sleepingUIState by sleepingViewModel.sleepingUIState.collectAsState()
 
     LaunchedEffect(key1 = user) {
         babyViewModel.fetchBabies(user)
@@ -66,7 +69,16 @@ fun AuthenticatedScreens(
                 )
             }
             composable(Screen.SleepingScreen.name) {
-                SleepingScreen { navController.popBackStack() }
+                SleepingScreen(
+                    onNavigateBack = navController::popBackStack,
+                    sleepingUIState = sleepingUIState,
+                    incrementTimer = sleepingViewModel::incrementTimer,
+                    incrementPauseTimer = sleepingViewModel::incrementPauseTimer,
+                    toggleTimerState = sleepingViewModel::toggleTimerState,
+                    saveSleep = { sleepingViewModel.save(babyUIState.activeBaby)},
+                    setNotes = sleepingViewModel::setNotes
+                )
+
             }
 
             composable(Screen.BreastfeedingScreen.name) {
@@ -123,11 +135,12 @@ fun AuthenticatedScreens(
             }
             composable(Screen.Statistics.name) {
                 StatisticsScreen(
-                onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
-                onTopNavigation = { dest -> navController.navigate(dest) },
-                babies = babyUIState.listOfBabies,
-                activeBaby = babyUIState.activeBaby,
-                setActiveBaby = setActiveBaby)
+                    onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
+                    onTopNavigation = { dest -> navController.navigate(dest) },
+                    babies = babyUIState.listOfBabies,
+                    activeBaby = babyUIState.activeBaby,
+                    setActiveBaby = setActiveBaby
+                )
             }
             composable(Screen.Caregiver.name) {
                 CareGiverScreen(

@@ -1,18 +1,12 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
-import android.os.Build
-import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
-import com.ebony.cuddlecare.ui.components.epochMillisToDate
+import com.ebony.cuddlecare.util.epochMillisToDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
-import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
-import java.time.ZoneOffset
-import java.time.ZoneOffset.UTC
 
 data class DiaperUIState(
     val isWetDiaper: Boolean = false,

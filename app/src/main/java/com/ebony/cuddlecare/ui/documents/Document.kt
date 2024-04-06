@@ -5,5 +5,6 @@ enum class Document {
     Baby,
     Invite,
     BreastFeeding,
-    BottleFeeding
+    BottleFeeding,
+    Sleeping
 }

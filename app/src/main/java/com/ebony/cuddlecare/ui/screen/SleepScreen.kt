@@ -22,23 +22,81 @@ import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
+import com.ebony.cuddlecare.ui.viewmodel.SleepingUIState
+import com.ebony.cuddlecare.util.localDateTimeToDate
+import com.ebony.cuddlecare.util.localDateTimeToEpoch
+import com.ebony.cuddlecare.util.localDateTimeToTime
+import com.ebony.cuddlecare.util.secondsToFormattedString
+import kotlinx.coroutines.delay
+import kotlin.reflect.KFunction0
+import kotlin.time.Duration.Companion.seconds
 
 
-@Preview
 @Composable
-fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
+fun SleepingScreen(
+    onNavigateBack: () -> Unit = {},
+    sleepingUIState: SleepingUIState,
+    setNotes: (String) -> Unit,
+    incrementPauseTimer: KFunction0<Unit>,
+    incrementTimer: KFunction0<Unit>,
+    saveSleep: () -> Unit,
+    toggleTimerState: () -> Unit
+) {
+    @Composable
+    fun ButtonIcon() {
+        when (sleepingUIState.timerState) {
+            TimerState.STARTED ->
+                Icon(
+                    imageVector = Icons.Default.Pause,
+                    contentDescription = "play icon"
+                )
+
+            TimerState.STOPPED, TimerState.PAUSED ->
+                Icon(
+                    imageVector = Icons.Default.PlayArrow,
+                    contentDescription = "play icon"
+                )
+        }
+    }
+
+    val buttonTxt = when (sleepingUIState.timerState) {
+        TimerState.STARTED -> "Pause"
+        TimerState.STOPPED -> "Start"
+        TimerState.PAUSED -> "Resume"
+    }
+
+    LaunchedEffect(key1 = sleepingUIState.savedSuccess) {
+        if (sleepingUIState.savedSuccess) {
+            onNavigateBack()
+        }
+    }
+
+    LaunchedEffect(key1 = sleepingUIState.timerState) {
+        while (sleepingUIState.timerState == TimerState.PAUSED) {
+            delay(1.seconds)
+            incrementPauseTimer()
+        }
+
+        while (sleepingUIState.timerState == TimerState.STARTED) {
+            delay(1.seconds)
+            incrementTimer()
+        }
+    }
+
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -83,14 +141,13 @@ fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
                     modifier = Modifier
                         .fillMaxWidth(), horizontalArrangement = Arrangement.Center
                 ) {
-                    ToggableButton(activated = false, onClick = { /*TODO*/ }) {
-                        Icon(
-                            imageVector = Icons.Default.PlayArrow,
-                            contentDescription = "play icon"
-                        )
-                        Icon(imageVector = Icons.Default.Pause, contentDescription = "play icon")
+                    ToggableButton(
+                        activated = sleepingUIState.timerState == TimerState.STARTED,
+                        onClick = toggleTimerState
+                    ) {
+                        ButtonIcon()
                         Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                        Text(text = "Resume")
+                        Text(text = buttonTxt)
                     }
                 }
             }
@@ -117,7 +174,7 @@ fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "1 min 50 s")
+                        Text(text = secondsToFormattedString(sleepingUIState.durationSecs))
                     }
                 }
                 Row {
@@ -129,7 +186,7 @@ fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "0 s")
+                        Text(text = secondsToFormattedString(sleepingUIState.pauseSecs))
                     }
                 }
                 Row {
@@ -141,8 +198,9 @@ fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "9 Nov ")
-                        Text(text = " 2:44 AM")
+                        Text(text = localDateTimeToDate(localDateTimeToEpoch(sleepingUIState.startTime)))
+                        Spacer(modifier = Modifier.size(5.dp))
+                        Text(text = localDateTimeToTime(localDateTimeToEpoch(sleepingUIState.startTime)))
                     }
                 }
                 Row {
@@ -154,13 +212,13 @@ fun SleepingScreen(onNavigateBack: () -> Unit = {}) {
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = "9 Nov ")
-                        Text(text = " 2:44 AM")
+                        Text(text = localDateTimeToDate(localDateTimeToEpoch(sleepingUIState.endTime)))
+                        Text(text = localDateTimeToTime(localDateTimeToEpoch(sleepingUIState.endTime)))
                     }
                 }
             }
-            AttachmentRow()
-            SaveButton(onClick = {/*TODO*/ })
+            AttachmentRow(value = sleepingUIState.notes, onValueChange = setNotes)
+            SaveButton(onClick = saveSleep)
         }
     }
 }

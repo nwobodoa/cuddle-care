@@ -41,6 +41,12 @@ fun localDateTimeToDate(epochSeconds: Long?): String {
     )
 }
 
+fun localDateTimeToEpoch(localDateTime: LocalDateTime?): Long? {
+    if (localDateTime == null) return null
+    return localDateTime.toEpochSecond(ZoneOffset.UTC)
+}
+
+
 fun localDateTimeToTime(epochSeconds: Long?): String {
     if (epochSeconds == null) {
         return "__:__ __"
@@ -61,4 +67,17 @@ fun localTimeToEpochUTC(localTime: LocalTime): Long {
     val localDateTime = LocalDateTime.of(today, localTime)
     val zonedDateTime = ZonedDateTime.of(localDateTime, ZoneOffset.UTC)
     return zonedDateTime.toEpochSecond()
+}
+
+
+fun epochMillisToDate(epochMillis: Long): LocalDate {
+    return Instant.ofEpochMilli(epochMillis)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
+}
+
+fun epochSecondsToDate(epochSeconds: Long): LocalDate {
+    return Instant.ofEpochSecond(epochSeconds)
+        .atZone(ZoneOffset.UTC)
+        .toLocalDate()
 }
