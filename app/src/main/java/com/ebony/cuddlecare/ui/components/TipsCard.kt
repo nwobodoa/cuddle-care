@@ -50,8 +50,6 @@ fun TipsCard(onDismiss: () -> Unit) {
         ) {
             Text(
                 text = randomTip.tipHeader, fontWeight = FontWeight.Bold,
-                modifier = Modifier
-                    .padding(bottom = 8.dp),
                 textAlign = TextAlign.Center,
             )
             Text(
@@ -64,7 +62,6 @@ fun TipsCard(onDismiss: () -> Unit) {
                 horizontalArrangement = Arrangement.End
             ) {
                 Button(
-                    modifier = Modifier.padding(top = 8.dp),
                     onClick = onDismiss, colors = ButtonDefaults
                         .buttonColors(containerColor = colorResource(id = R.color.tipBtn))
                 ) {

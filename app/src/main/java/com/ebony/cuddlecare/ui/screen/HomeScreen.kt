@@ -265,7 +265,7 @@ fun HomeScreen(
                             )
                             Text(text = "Pee")
                             Image(modifier = Modifier.padding(start = 8.dp, end =8.dp),
-                                painter = painterResource(id = R.drawable.poop2),
+                                painter = painterResource(id = R.drawable.poop),
                                 contentDescription = null
                             )
                             Text(text = "Poo")
