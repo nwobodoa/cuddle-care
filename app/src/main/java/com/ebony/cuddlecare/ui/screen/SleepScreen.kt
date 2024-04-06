@@ -198,9 +198,9 @@ fun SleepingScreen(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = localDateTimeToDate(localDateTimeToEpoch(sleepingUIState.startTime)))
+                        Text(text = localDateTimeToDate(sleepingUIState.startTime))
                         Spacer(modifier = Modifier.size(5.dp))
-                        Text(text = localDateTimeToTime(localDateTimeToEpoch(sleepingUIState.startTime)))
+                        Text(text = localDateTimeToTime(sleepingUIState.startTime))
                     }
                 }
                 Row {
@@ -212,8 +212,8 @@ fun SleepingScreen(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = localDateTimeToDate(localDateTimeToEpoch(sleepingUIState.endTime)))
-                        Text(text = localDateTimeToTime(localDateTimeToEpoch(sleepingUIState.endTime)))
+                        Text(text = localDateTimeToDate(sleepingUIState.endTime))
+                        Text(text = localDateTimeToTime(sleepingUIState.endTime))
                     }
                 }
             }

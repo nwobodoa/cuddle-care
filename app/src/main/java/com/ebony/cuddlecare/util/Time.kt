@@ -25,13 +25,10 @@ fun secondsToFormattedString(ticks: Long): String {
     return "$hoursPart$minutesPart$seconds s"
 }
 
-fun localDateTimeToDate(epochSeconds: Long?): String {
-    if (epochSeconds == null) {
+fun localDateTimeToDate(localDateTime: LocalDateTime?): String {
+    if (localDateTime == null) {
         return "_ __"
     }
-
-    val localDateTime =
-        LocalDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault())
 
     return localDateTime.format(
         DateTimeFormatter.ofPattern(
@@ -47,13 +44,10 @@ fun localDateTimeToEpoch(localDateTime: LocalDateTime?): Long? {
 }
 
 
-fun localDateTimeToTime(epochSeconds: Long?): String {
-    if (epochSeconds == null) {
+fun localDateTimeToTime(localDateTime: LocalDateTime?): String {
+    if (localDateTime == null) {
         return "__:__ __"
     }
-
-    val localDateTime =
-        LocalDateTime.ofInstant(Instant.ofEpochSecond(epochSeconds), ZoneId.systemDefault())
     return localDateTime.format(
         DateTimeFormatter.ofPattern(
             "h:mm a",
@@ -76,8 +70,8 @@ fun epochMillisToDate(epochMillis: Long): LocalDate {
         .toLocalDate()
 }
 
-fun epochSecondsToDate(epochSeconds: Long): LocalDate {
+fun epochSecondsToLocalDateTime(epochSeconds: Long): LocalDateTime? {
     return Instant.ofEpochSecond(epochSeconds)
         .atZone(ZoneOffset.UTC)
-        .toLocalDate()
+        .toLocalDateTime()
 }
