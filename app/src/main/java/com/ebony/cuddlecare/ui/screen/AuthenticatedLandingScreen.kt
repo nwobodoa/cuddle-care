@@ -41,6 +41,10 @@ fun AuthenticatedScreens(
         babyViewModel.fetchBabies(user)
     }
 
+    LaunchedEffect(key1 = babyUIState.activeBaby) {
+        breastfeedingViewModel.reset()
+    }
+
 
 
     Surface(
@@ -76,7 +80,8 @@ fun AuthenticatedScreens(
                     increaseLeftTimer = breastfeedingViewModel::incrementLeftTimer,
                     increaseRightTimer = breastfeedingViewModel::incrementRightTimer,
                     incrementPauseTimer = breastfeedingViewModel::incrementPauseTimer,
-                    onNotesValueChange = breastfeedingViewModel::onNotesValueChange
+                    onNotesValueChange = breastfeedingViewModel::onNotesValueChange,
+                    saveBreastFeeding = { breastfeedingViewModel.save(babyUIState.activeBaby) }
                 )
             }
 

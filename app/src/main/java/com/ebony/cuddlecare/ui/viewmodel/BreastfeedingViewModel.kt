@@ -1,12 +1,20 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.ViewModel
+import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.ui.screen.TimerState
+import com.google.firebase.Firebase
+import com.google.firebase.firestore.Exclude
+import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import java.time.LocalDateTime
+import java.time.ZoneOffset
 
 data class BreastSideState(
     val activeSeconds: Long = 0,
@@ -16,11 +24,15 @@ data class BreastSideState(
 )
 
 data class BreastfeedingUIState(
-    val startTime: LocalDateTime = LocalDateTime.now(),
-    val endTime: LocalDateTime? = null,
+    val startTime: Long = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+    val endTime: Long? = null,
     val notes: String = "",
     val attachmentLink: String = "",
     val pauseSeconds: Long = 0,
+    val leftBreast: BreastSideState? = null,
+    val rightBreast: BreastSideState? = null,
+    val saved: Boolean = false,
+    @Exclude val loading: Boolean = false
 )
 
 
@@ -34,9 +46,18 @@ class BreastfeedingViewModel : ViewModel() {
         BreastSideState(side = "R")
     )
 
+    fun reset() {
+        _breastfeedingState.update { BreastfeedingUIState() }
+        _leftBreastState.update { BreastSideState(side = "L") }
+        _rightBreastState.update { BreastSideState(side = "R") }
+    }
+
     val breastfeedingUIState: StateFlow<BreastfeedingUIState> = _breastfeedingState.asStateFlow()
     val leftBreastUIState = _leftBreastState.asStateFlow()
     val rightBreastUIState = _rightBreastState.asStateFlow()
+
+    private val db = Firebase.firestore
+    private val breastfeedingCollection = db.collection(Document.BreastFeeding.name)
 
 
     fun incrementLeftTimer() {
@@ -96,6 +117,33 @@ class BreastfeedingViewModel : ViewModel() {
                 l.copy(timerState = leftState)
             }
             r.copy(timerState = rightState)
+        }
+    }
+
+    fun save(activeBaby: Baby?) {
+        Log.i(TAG, "save: $activeBaby")
+        if (activeBaby == null) return
+
+        Log.i(TAG, "save after null: $activeBaby")
+
+        _breastfeedingState.update {
+            it.copy(
+                rightBreast = _rightBreastState.value,
+                leftBreast = _leftBreastState.value,
+                saved = true,
+                endTime = LocalDateTime.now().toEpochSecond(ZoneOffset.UTC),
+                loading = true
+            )
+        }
+
+        breastfeedingCollection.document(activeBaby.id).set(
+            _breastfeedingState.value
+        ).addOnSuccessListener {
+            reset()
+        }.addOnFailureListener {
+            Log.e(TAG, "breastfeeding save: ", it)
+        }.addOnCompleteListener{
+            Log.e(TAG, "breastfeeding save complete: ")
         }
     }
 

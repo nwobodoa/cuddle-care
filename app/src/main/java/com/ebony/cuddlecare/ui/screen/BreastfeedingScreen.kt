@@ -14,6 +14,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Flag
+import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Timelapse
@@ -37,21 +38,12 @@ import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.BreastSideState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
+import com.ebony.cuddlecare.util.localDateTimeToDate
+import com.ebony.cuddlecare.util.localDateTimeToTime
+import com.ebony.cuddlecare.util.secondsToFormattedString
 import kotlinx.coroutines.delay
-import java.time.LocalDateTime
-import java.time.format.DateTimeFormatter
-import java.util.Locale
-import java.util.concurrent.TimeUnit
 import kotlin.time.Duration.Companion.seconds
 
-fun secondsToFormattedString(ticks: Long): String {
-    val hours = TimeUnit.SECONDS.toHours(ticks)
-    val minutes = TimeUnit.SECONDS.toMinutes(ticks) % 60
-    val seconds = TimeUnit.SECONDS.toSeconds(ticks) % 60
-    val hoursPart = if (hours > 0) "$hours h " else ""
-    val minutesPart = if (minutes > 0) "$minutes m " else ""
-    return "$hoursPart$minutesPart$seconds s"
-}
 
 fun buttonImageVector(timerState: TimerState): ImageVector {
     return when (timerState) {
@@ -59,32 +51,6 @@ fun buttonImageVector(timerState: TimerState): ImageVector {
         TimerState.STOPPED -> Icons.Default.PlayArrow
         TimerState.PAUSED -> Icons.Default.PlayArrow
     }
-}
-
-fun localDateTimeToDate(localDateTime: LocalDateTime?): String {
-    if (localDateTime == null) {
-        return "_ __"
-    }
-
-    return localDateTime.format(
-        DateTimeFormatter.ofPattern(
-            "d MMM",
-            Locale.ENGLISH
-        )
-    )
-}
-
-fun localDateTimeToTime(localDateTime: LocalDateTime?): String {
-    if (localDateTime == null) {
-        return "__:__ __"
-    }
-
-    return localDateTime.format(
-        DateTimeFormatter.ofPattern(
-            "h:mm a",
-            Locale.ENGLISH
-        )
-    )
 }
 
 fun buttonText(breastSideState: BreastSideState): String {
@@ -108,7 +74,8 @@ fun BreastfeedingScreen(
     increaseRightTimer: () -> Unit,
     increaseLeftTimer: () -> Unit,
     incrementPauseTimer: () -> Unit,
-    onNotesValueChange:(String) -> Unit
+    onNotesValueChange: (String) -> Unit,
+    saveBreastFeeding: () -> Unit
 ) {
     LaunchedEffect(key1 = rightBreastUIState.timerState, key2 = leftBreastUIState.timerState) {
         while (rightBreastUIState.timerState == TimerState.PAUSED && leftBreastUIState.timerState == TimerState.PAUSED) {
@@ -252,7 +219,7 @@ fun BreastfeedingScreen(
                 }
             }
             AttachmentRow(value = breastfeedingUIState.notes, onValueChange = onNotesValueChange)
-            SaveButton(onClick = {})
+            SaveButton(onClick = saveBreastFeeding)
         }
     }
 }
