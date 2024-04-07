@@ -184,7 +184,7 @@ private fun DiaperCount(count: Int,
             }
         }
     }
-    if (count <= 20 ) {
+    if (count < 20 ) {
         openAlertDialog.value = true
 
         RefillAlertDialog(
@@ -606,6 +606,7 @@ fun DiaperDialog(
             )
         }
     }
+
 }
 
 

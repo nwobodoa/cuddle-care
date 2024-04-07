@@ -18,7 +18,9 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ExpandMore
@@ -50,7 +52,10 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.BarGraph
+import com.ebony.cuddlecare.ui.components.BarType
 import com.ebony.cuddlecare.ui.components.BottomNavBar
+import com.ebony.cuddlecare.ui.components.Chart
 import com.ebony.cuddlecare.ui.components.TopBar
 import com.ebony.cuddlecare.ui.documents.Baby
 import kotlin.math.min
@@ -75,8 +80,10 @@ fun StatisticsScreen(
         },
         bottomBar = { BottomNavBar(onTopNavigation) },
     ) { innerPadding ->
+        val scrollState = rememberScrollState()
         Column(
             modifier = Modifier
+                .verticalScroll(state = scrollState)
                 .padding(innerPadding)
                 .padding(16.dp)
         ) {
@@ -141,6 +148,8 @@ fun StatisticsScreen(
 
                 }
             }
+
+
             Column(modifier = Modifier
                 .fillMaxWidth()
                 .padding(top = 16.dp)
@@ -148,34 +157,63 @@ fun StatisticsScreen(
                 .background(Color.White, shape = RoundedCornerShape(10.dp)))
             {
 
-                Row(modifier = Modifier.padding(top=16.dp)) {
+                Row(modifier = Modifier.padding(top = 16.dp)) {
                     Text(
-                        text = "Detailed", modifier = Modifier.padding(bottom = 16.dp,start=16.dp),
-                        fontWeight = FontWeight.Bold, fontSize = 20.sp
+                        text = "Detailed",
+                        modifier = Modifier.padding(bottom = 16.dp, start = 16.dp),
+                        fontWeight = FontWeight.Bold,
+                        fontSize = 20.sp
                     )
                 }
 
 
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .height(300.dp)
-                    .background(Color.White, shape = RoundedCornerShape(10.dp)),
-                verticalArrangement = Arrangement.Center
-            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .height(300.dp)
+                        .background(Color.White, shape = RoundedCornerShape(10.dp)),
+                    verticalArrangement = Arrangement.Center
+                ) {
 
-                // Preview with sample data
-                PieChart(
-                    data = mapOf(
-                        Pair("Sample-1", 150),
-                        Pair("Sample-2", 120),
-                        Pair("Sample-3", 110),
+                    // Preview with sample data
+                    PieChart(
+                        data = mapOf(
+                            Pair("Sample-1", 150),
+                            Pair("Sample-2", 120),
+                            Pair("Sample-3", 110),
 
-                        )
+                            )
+                    )
+                }
+            }
+
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal=8.dp, vertical = 16.dp)
+                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            {
+                val datalist = mutableListOf(30, 60, 90, 50, 70)
+                val floatValue = mutableListOf<Float>()
+                val datesList = mutableListOf(2,3,4,5,6)
+                datalist.forEachIndexed { index , value ->
+                floatValue.add(index = index, element = value.toFloat()/datalist.max().toFloat())
+                }
+                BarGraph(
+                    graphBarData = floatValue,
+                    xAxisScaleData = datesList,
+                    barData_ = datalist,
+
+                    height = 300.dp,
+                    roundType = BarType.TOP_CURVED,
+                    barWidth = 20.dp,
+                    barColor = Color.Blue,
+                    barArrangement = Arrangement.SpaceEvenly
                 )
             }
-        }
 
         }
         }

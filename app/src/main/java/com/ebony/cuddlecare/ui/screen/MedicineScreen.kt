@@ -3,6 +3,7 @@ package com.ebony.cuddlecare.ui.screen
 
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
@@ -111,36 +112,41 @@ fun MedicineScreen(
                         imageVector = Icons.Default.Medication,
                         contentDescription = "Time"
                     )
-                    Row(
-                        horizontalArrangement = Arrangement.End,
-                        modifier = Modifier.weight(1f),
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(text = medicineUIState.qty.toString())
-                        Spacer(modifier = Modifier.size(8.dp))
-                        DropDownField(
-                            value = medicineUIState.selectedUnit,
-                            onClick = { medicineViewModel.setIsUnitDropdownExpanded(true) })
-                        DropdownMenu(
-                            expanded = medicineUIState.isUnitDropdownExpanded,
-                            onDismissRequest = {
-                                medicineViewModel.setIsUnitDropdownExpanded(false)
-                            }) {
-                            medicineUIState.units.forEachIndexed { idx, unit ->
-                                DropdownMenuItem(
-                                    text = { Text(text = unit, color = Color.Black) },
-                                    onClick = {
-                                        medicineViewModel.setSelectedUnit(unit)
-                                        medicineViewModel.setIsUnitDropdownExpanded(false)
-                                    })
-                                if (idx != medicineUIState.units.lastIndex) {
-                                    HorizontalDivider()
+                    Box {
+
+                        Row(
+                            horizontalArrangement = Arrangement.End,
+                           // modifier = Modifier.weight(1f),
+                            verticalAlignment = Alignment.CenterVertically
+                        ) {
+                            Text(text = medicineUIState.qty.toString())
+                            Spacer(modifier = Modifier.size(8.dp))
+                            DropDownField(
+                                value = medicineUIState.selectedUnit,
+                                onClick = { medicineViewModel.setIsUnitDropdownExpanded(true) })
+                            DropdownMenu(
+                                expanded = medicineUIState.isUnitDropdownExpanded,
+                                onDismissRequest = {
+                                    medicineViewModel.setIsUnitDropdownExpanded(false)
+                                }) {
+                                medicineUIState.units.forEachIndexed { idx, unit ->
+                                    DropdownMenuItem(
+                                        text = { Text(text = unit, color = Color.Black) },
+                                        onClick = {
+                                            medicineViewModel.setSelectedUnit(unit)
+                                            medicineViewModel.setIsUnitDropdownExpanded(false)
+                                        })
+                                    if (idx != medicineUIState.units.lastIndex) {
+                                        HorizontalDivider()
+                                    }
                                 }
                             }
-                        }
 
+                        }
                     }
+
                 }
+
             }
 
 
@@ -152,6 +158,7 @@ fun MedicineScreen(
         }
     }
 }
+
 
 
 
