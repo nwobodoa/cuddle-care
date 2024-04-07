@@ -14,6 +14,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Medication
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
@@ -27,18 +30,20 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
-import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
+import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
 
 
 @Composable
 @Preview(showBackground = true)
 fun MedicineScreen(
-    diaperViewModel: DiaperViewModel = viewModel(), onNavigateBack: () -> Unit = {}
+    medicineViewModel: MedicineViewModel = viewModel(),
+    onNavigateBack: () -> Unit = {}
 ) {
-    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+    val medicineUIState by medicineViewModel.medicineUIState.collectAsState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -80,18 +85,18 @@ fun MedicineScreen(
                         horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)
                     ) {
                         DateInput(
-                            toggleDatePicker = { diaperViewModel.toggleDatePicker() },
-                            isTimeExpanded = diaperUIState.isTimeExpanded,
-                            selectedDate = diaperUIState.selectedDate,
-                            setSelectedDate = diaperViewModel::setSelectedDate
+                            toggleDatePicker = { medicineViewModel.toggleDatePicker() },
+                            isTimeExpanded = medicineUIState.isTimeExpanded,
+                            selectedDate = medicineUIState.selectedDate,
+                            setSelectedDate = medicineViewModel::setSelectedDate
                         )
                         Spacer(modifier = Modifier.size(8.dp))
                         TimeInput(
-                            setTimePicker = diaperViewModel::setShowTimePicker,
+                            setTimePicker = medicineViewModel::setShowTimePicker,
                             label = "",
-                            showTimeDialog = diaperUIState.showTimePicker,
-                            selectedTime = diaperUIState.selectedTime,
-                            onValueChange = diaperViewModel::setSelectedTime,
+                            showTimeDialog = medicineUIState.showTimePicker,
+                            selectedTime = medicineUIState.selectedTime,
+                            onValueChange = medicineViewModel::setSelectedTime,
                         )
 
                     }
@@ -107,9 +112,33 @@ fun MedicineScreen(
                         contentDescription = "Time"
                     )
                     Row(
-                        horizontalArrangement = Arrangement.End, modifier = Modifier.weight(1f)
+                        horizontalArrangement = Arrangement.End,
+                        modifier = Modifier.weight(1f),
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(text = "0 oz ")
+                        Text(text = medicineUIState.qty.toString())
+                        Spacer(modifier = Modifier.size(8.dp))
+                        DropDownField(
+                            value = medicineUIState.selectedUnit,
+                            onClick = { medicineViewModel.setIsUnitDropdownExpanded(true) })
+                        DropdownMenu(
+                            expanded = medicineUIState.isUnitDropdownExpanded,
+                            onDismissRequest = {
+                                medicineViewModel.setIsUnitDropdownExpanded(false)
+                            }) {
+                            medicineUIState.units.forEachIndexed { idx, unit ->
+                                DropdownMenuItem(
+                                    text = { Text(text = unit, color = Color.Black) },
+                                    onClick = {
+                                        medicineViewModel.setSelectedUnit(unit)
+                                        medicineViewModel.setIsUnitDropdownExpanded(false)
+                                    })
+                                if (idx != medicineUIState.units.lastIndex) {
+                                    HorizontalDivider()
+                                }
+                            }
+                        }
+
                     }
                 }
             }

@@ -50,6 +50,5 @@ class DiaperViewModel : ViewModel() {
 
     fun setSelectedDate(dateEpochMilli: Long) {
         _diaperUIState.update { it.copy(selectedDate = epochMillisToDate(dateEpochMilli)) }
-
     }
 }

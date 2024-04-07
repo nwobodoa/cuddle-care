@@ -17,7 +17,6 @@ fun DropDownField(
     value: String? = "some-val",
     onClick: () -> Unit = {}
 ) {
-
     Text(
         modifier = modifier.clickable { onClick() }, text = value ?: "",
         textAlign = TextAlign.End,

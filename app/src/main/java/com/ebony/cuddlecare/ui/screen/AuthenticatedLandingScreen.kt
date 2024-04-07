@@ -75,8 +75,11 @@ fun AuthenticatedScreens(
                     incrementTimer = sleepingViewModel::incrementTimer,
                     incrementPauseTimer = sleepingViewModel::incrementPauseTimer,
                     toggleTimerState = sleepingViewModel::toggleTimerState,
-                    saveSleep = { sleepingViewModel.save(babyUIState.activeBaby)},
-                    setNotes = sleepingViewModel::setNotes
+                    saveSleep = {
+                        sleepingViewModel.save(babyUIState.activeBaby)
+                    },
+                    setNotes = sleepingViewModel::setNotes,
+                    reset = sleepingViewModel::reset
                 )
 
             }

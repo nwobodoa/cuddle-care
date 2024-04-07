@@ -54,7 +54,8 @@ fun SleepingScreen(
     incrementPauseTimer: KFunction0<Unit>,
     incrementTimer: KFunction0<Unit>,
     saveSleep: () -> Unit,
-    toggleTimerState: () -> Unit
+    toggleTimerState: () -> Unit,
+    reset: () -> Unit
 ) {
     @Composable
     fun ButtonIcon() {
@@ -81,6 +82,7 @@ fun SleepingScreen(
 
     LaunchedEffect(key1 = sleepingUIState.savedSuccess) {
         if (sleepingUIState.savedSuccess) {
+            reset()
             onNavigateBack()
         }
     }
