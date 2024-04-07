@@ -75,12 +75,20 @@ fun BreastfeedingScreen(
     increaseLeftTimer: () -> Unit,
     incrementPauseTimer: () -> Unit,
     onNotesValueChange: (String) -> Unit,
-    saveBreastFeeding: () -> Unit
+    saveBreastFeeding: () -> Unit,
+    resetSaved: () -> Unit
 ) {
     LaunchedEffect(key1 = rightBreastUIState.timerState, key2 = leftBreastUIState.timerState) {
         while (rightBreastUIState.timerState == TimerState.PAUSED && leftBreastUIState.timerState == TimerState.PAUSED) {
             delay(1.seconds)
             incrementPauseTimer()
+        }
+    }
+
+    LaunchedEffect(breastfeedingUIState.saved) {
+        if (breastfeedingUIState.saved) {
+            onNavigateBack()
+            resetSaved()
         }
     }
 

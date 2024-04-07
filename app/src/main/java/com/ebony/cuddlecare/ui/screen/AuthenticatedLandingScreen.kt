@@ -96,7 +96,8 @@ fun AuthenticatedScreens(
                     increaseRightTimer = breastfeedingViewModel::incrementRightTimer,
                     incrementPauseTimer = breastfeedingViewModel::incrementPauseTimer,
                     onNotesValueChange = breastfeedingViewModel::onNotesValueChange,
-                    saveBreastFeeding = { breastfeedingViewModel.save(babyUIState.activeBaby) }
+                    saveBreastFeeding = { breastfeedingViewModel.save(babyUIState.activeBaby) },
+                    resetSaved = { breastfeedingViewModel.setSaved(false) }
                 )
             }
 

@@ -8,12 +8,16 @@ import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.ui.screen.TimerState
 import com.ebony.cuddlecare.util.localDateTimeToEpoch
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.LocalTime
+import java.time.ZoneOffset
 
 data class BreastSideState(
     val activeSeconds: Long = 0,
@@ -28,15 +32,17 @@ data class BreastSideRecord(
 )
 
 data class BreastFeedingRecord(
+    val id: String = "",
     val startTime: Long = 0,
     val endTime: Long? = null,
     val notes: String = "",
     val attachmentLink: String = "",
     val pauseSeconds: Long = 0,
     val leftBreast: BreastSideRecord? = null,
-    val rightBreast: BreastSideRecord? = null,
-
-    )
+    val rightBreast: BreastSideRecord? = null
+) {
+    constructor() : this("", 0, null, "", "", 0, null, null)
+}
 
 fun breastFeedingUIStateToRecord(uiState: BreastfeedingUIState): BreastFeedingRecord {
     return BreastFeedingRecord(
@@ -71,11 +77,14 @@ data class BreastfeedingUIState(
     val leftBreast: BreastSideState? = null,
     val rightBreast: BreastSideState? = null,
     val saved: Boolean = false,
-    val loading: Boolean = false
+    val loading: Boolean = false,
+    val breastfeedingRecords: List<BreastFeedingRecord> = emptyList()
 )
 
 
 class BreastfeedingViewModel : ViewModel() {
+    private val db = Firebase.firestore
+    private val breastfeedingCollection = db.collection(Document.BreastFeeding.name)
     private val _breastfeedingState: MutableStateFlow<BreastfeedingUIState> = MutableStateFlow(
         BreastfeedingUIState()
     )
@@ -84,19 +93,46 @@ class BreastfeedingViewModel : ViewModel() {
     private val _rightBreastState: MutableStateFlow<BreastSideState> = MutableStateFlow(
         BreastSideState(side = "R")
     )
+    val breastfeedingUIState: StateFlow<BreastfeedingUIState> = _breastfeedingState.asStateFlow()
+    val leftBreastUIState = _leftBreastState.asStateFlow()
+    val rightBreastUIState = _rightBreastState.asStateFlow()
+
+
+    fun fetchRecords(activeBaby: Baby, day: LocalDate) {
+        val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        activeBabyCollection(activeBaby)
+            .whereLessThanOrEqualTo("endTime", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("endTime", startOfDayEpoch)
+            .addSnapshotListener { snap, ex ->
+                if (ex != null) {
+                    Log.e(TAG, "fetchRecords: ", ex)
+                    return@addSnapshotListener
+                }
+                snap?.documents
+                    ?.mapNotNull { it.toObject(BreastFeedingRecord::class.java) }
+                    ?.let { records ->
+                        _breastfeedingState.update {
+                            it.copy(
+                                breastfeedingRecords = records
+                            )
+                        }
+                    }
+            }
+    }
+
+    private fun activeBabyCollection(activeBaby: Baby): CollectionReference {
+        return breastfeedingCollection
+            .document(activeBaby.id)
+            .collection(activeBaby.id)
+    }
 
     fun reset() {
         _breastfeedingState.update { BreastfeedingUIState() }
         _leftBreastState.update { BreastSideState(side = "L") }
         _rightBreastState.update { BreastSideState(side = "R") }
     }
-
-    val breastfeedingUIState: StateFlow<BreastfeedingUIState> = _breastfeedingState.asStateFlow()
-    val leftBreastUIState = _leftBreastState.asStateFlow()
-    val rightBreastUIState = _rightBreastState.asStateFlow()
-
-    private val db = Firebase.firestore
-    private val breastfeedingCollection = db.collection(Document.BreastFeeding.name)
 
 
     fun incrementLeftTimer() {
@@ -159,6 +195,10 @@ class BreastfeedingViewModel : ViewModel() {
         }
     }
 
+    fun setSaved(saved: Boolean) {
+        _breastfeedingState.update { it.copy(saved = saved) }
+    }
+
     fun save(activeBaby: Baby?) {
         Log.i(TAG, "save: $activeBaby")
         if (activeBaby == null) return
@@ -175,10 +215,14 @@ class BreastfeedingViewModel : ViewModel() {
             )
         }
 
-        breastfeedingCollection.document(activeBaby.id).set(
-            breastFeedingUIStateToRecord(_breastfeedingState.value)
+        val ref = activeBabyCollection(activeBaby).document()
+        val record = breastFeedingUIStateToRecord(_breastfeedingState.value)
+
+        ref.set(
+            record.copy(id = ref.id)
         ).addOnSuccessListener {
             reset()
+            _breastfeedingState.update { it.copy(saved = true) }
         }.addOnFailureListener {
             Log.e(TAG, "breastfeeding save: ", it)
         }.addOnCompleteListener {

@@ -69,8 +69,8 @@ import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.TimeInput
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.documents.Baby
-import com.ebony.cuddlecare.ui.viewmodel.DiaperSoilType
-import com.ebony.cuddlecare.ui.viewmodel.DiaperType
+import com.ebony.cuddlecare.ui.documents.DiaperSoilType
+import com.ebony.cuddlecare.ui.documents.DiaperType
 import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import kotlinx.coroutines.launch

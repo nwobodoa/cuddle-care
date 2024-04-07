@@ -1,10 +1,14 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
+import android.content.ContentValues.TAG
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.documents.BottleFeed
 import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.util.epochMillisToDate
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -25,14 +29,9 @@ data class BottleFeedingUIState(
     val selectedTime: LocalTime = LocalTime.now(),
     val selectedDate: LocalDate = LocalDate.now(),
     val loading: Boolean = false,
-    val canNavigateBack: Boolean = false
-)
-
-data class BottleFeedRecord(
-    val quantityMl: Long = 0,
-    val notes: String = "",
-    val attachmentURL: String = "",
-    val selectedDateTimeEpoch: Long = 0,
+    val canNavigateBack: Boolean = false,
+    val todayBottleFeed: List<BottleFeed> = emptyList(),
+    val breastFeedingRecords: List<BreastFeedingRecord> = emptyList()
 )
 
 class BottleFeedViewModel : ViewModel() {
@@ -42,7 +41,7 @@ class BottleFeedViewModel : ViewModel() {
     val bottleFeedingUIState = _bottleFeedingUIState.asStateFlow()
 
     private val db = Firebase.firestore
-    val bottleFeedCollection = db.collection(Document.BottleFeeding.name)
+    private val bottleFeedCollection = db.collection(Document.BottleFeeding.name)
 
     fun incrementQty() {
         _bottleFeedingUIState.update { it.copy(quantityMl = it.quantityMl + quantitySteps) }
@@ -56,18 +55,44 @@ class BottleFeedViewModel : ViewModel() {
         _bottleFeedingUIState.update { it.copy(isTimeExpanded = !it.isTimeExpanded) }
     }
 
-    fun uIStateToRecord(): BottleFeedRecord {
+    private fun uIStateToRecord(): BottleFeed {
         val state = _bottleFeedingUIState.value
-        return BottleFeedRecord(
+        return BottleFeed(
+
             quantityMl = state.quantityMl,
             notes = state.notes,
             attachmentURL = state.attachmentURL,
-            selectedDateTimeEpoch = LocalDateTime.of(state.selectedDate, state.selectedTime)
+            timestamp = LocalDateTime.of(state.selectedDate, state.selectedTime)
                 .toEpochSecond(
                     ZoneOffset.UTC
                 )
         )
     }
+
+    fun fetchRecords(activeBaby: Baby?, day: LocalDate) {
+        if (activeBaby == null) return
+        val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        activeBabyCollection(activeBaby)
+            .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
+            .addSnapshotListener { doc, ex ->
+                if (ex != null) {
+                    Log.e(TAG, "fetchBottleFeed: ", ex)
+                    return@addSnapshotListener
+                }
+                val bottleFeeds: List<BottleFeed>? = doc?.documents?.mapNotNull {
+                    it.toObject(
+                        BottleFeed::class.java
+                    )
+                }
+                _bottleFeedingUIState.update {
+                    it.copy(todayBottleFeed = bottleFeeds ?: emptyList())
+                }
+            }
+    }
+
 
     fun setSelectedDate(dateEpochMilli: Long) {
         _bottleFeedingUIState.update { it.copy(selectedDate = epochMillisToDate(dateEpochMilli)) }
@@ -94,16 +119,23 @@ class BottleFeedViewModel : ViewModel() {
         _bottleFeedingUIState.update { it.copy(canNavigateBack = canNavigateBack) }
     }
 
+    private fun activeBabyCollection(activeBaby: Baby): CollectionReference {
+        return bottleFeedCollection
+            .document(activeBaby.id)
+            .collection(activeBaby.id)
+    }
+
     fun save(activeBaby: Baby?) {
         val recordToSave = uIStateToRecord()
-        if (recordToSave == BottleFeedRecord() || activeBaby == null) {
+        if (recordToSave == BottleFeed() || activeBaby == null) {
             TODO("Handle empty record")
             return
         }
 
         setLoading(true)
-        bottleFeedCollection.document(activeBaby.id)
-            .set(recordToSave)
+        val ref = activeBabyCollection(activeBaby).document()
+
+        ref.set(recordToSave.copy(id = ref.id))
             .addOnSuccessListener {
                 setCanNavigateBack(true)
                 // TODO Handle success

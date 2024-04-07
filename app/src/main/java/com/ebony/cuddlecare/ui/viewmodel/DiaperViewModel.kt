@@ -4,6 +4,10 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.documents.DiaperCount
+import com.ebony.cuddlecare.ui.documents.DiaperRecord
+import com.ebony.cuddlecare.ui.documents.DiaperSoilType
+import com.ebony.cuddlecare.ui.documents.DiaperType
 import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.util.epochMillisToDate
 import com.ebony.cuddlecare.util.localDateTimeToEpoch
@@ -40,33 +44,6 @@ data class DiaperUIState(
 )
 
 
-data class DiaperRecord(
-    val diaperType: DiaperType,
-    val soilState: List<DiaperSoilType>,
-    val createdAtEpoch: Long,
-    val notes: String,
-    val attachmentURL: String,
-    val babyId: String
-) {
-    constructor() : this(DiaperType.NONE, emptyList(), 0, "", "", "")
-}
-
-enum class DiaperType {
-    CLOTH, DISPOSABLE, NONE
-}
-
-enum class DiaperSoilType {
-    WET, DRY, DIRTY
-}
-
-
-data class DiaperCount(
-    val babyId: String,
-    val count: Long,
-    val lastRefillEpoch: Long
-) {
-    constructor() : this("", 0L, 0L)
-}
 
 data class DiaperCountUI(
     val babyId: String,
