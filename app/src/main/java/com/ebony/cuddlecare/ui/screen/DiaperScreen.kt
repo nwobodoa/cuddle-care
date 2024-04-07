@@ -3,7 +3,6 @@ package com.ebony.cuddlecare.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -19,7 +18,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.CameraAlt
-import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -48,13 +46,10 @@ import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableIntStateOf
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
-import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -86,13 +81,18 @@ import java.time.format.DateTimeFormatter
 
 @Composable
 @Preview(showBackground = true)
-fun RecordDiaperStateScreen(
+fun DiaperScreen(
     diaperViewModel: DiaperViewModel = viewModel(),
+    activeBaby: Baby? = null,
     onNavigateBack: () -> Unit = {}
 ) {
+    LaunchedEffect(key1 = activeBaby) {
+        diaperViewModel.fetchDiaperCount(activeBaby)
+    }
+
+
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
-    var diaperCount by remember { mutableIntStateOf(0) }
-    var showBottomSheet by remember { mutableStateOf(false) }
+
 
     Scaffold(topBar = { MTopBar(onNavigateBack = onNavigateBack) })
     {
@@ -114,18 +114,39 @@ fun RecordDiaperStateScreen(
             {
 
                 ScreenMainIcon(R.drawable.diaper_logo)
-                LastUpdated("Diaper", "Last: 20mins ago")
+                LastUpdated("Diaper", "Last: 20 mins ago")
                 TimeTypeSegment()
-                DiaperCount(diaperUIState.diaperCount, onClick = {showBottomSheet = true})
+                DiaperCount(
+                    count = diaperUIState.diaperCount?.count ?: "0",
+                    onClick = { diaperViewModel.setShowDiaperRefill(true) },
+                )
                 AttachmentRow()
                 SaveButton(onClick = {})
 
-                DiaperDialog(
-                    isOpen = showBottomSheet,
-                    onClose = { showBottomSheet = false},
+                RefillAlertDialog(
+                    onDismissRequest = { diaperViewModel.setDiaperCountWarning(false) },
+                    onConfirmation = {
+                        diaperViewModel.setDiaperCountWarning(false)
+                        diaperViewModel.setShowDiaperRefill(true)
+                    },
+                    showDialog = diaperUIState.showDiaperWarning,
+                    dialogTitle = "Diapers Running low!",
+                    dialogText = "Diaper count is less than 20. The total number of diapers left is ${diaperUIState.diaperCount?.count ?: 0}",
+                    icon = Icons.Default.WarningAmber
+                )
+
+                UpdateDiaperCountDialog(
+                    isOpen = diaperUIState.showDiaperRefill,
+                    onClose = { diaperViewModel.setShowDiaperRefill(false) },
                     onConfirm = { /*TODO*/ },
-                    newDiaperCount = diaperCount.toString(),
-                    setNewDiaperCount = {/*TODO*/}
+                    diaperCount = diaperUIState.diaperCount?.count ?: "0",
+                    setDiaperCount = { count ->
+                        diaperViewModel.setDiaperCount(
+                            activeBaby,
+                            count
+                        )
+                    },
+                    loading = diaperUIState.loading
                 )
             }
         }
@@ -159,9 +180,10 @@ fun LastUpdated(title: String, text: String) {
 }
 
 @Composable
-private fun DiaperCount(count: Int,
-                        onClick:()-> Unit = {}) {
-    val openAlertDialog = remember { mutableStateOf(false) }
+private fun DiaperCount(
+    count: String,
+    onClick: () -> Unit = {},
+) {
     Row(
         modifier = Modifier.fillMaxWidth(),
         verticalAlignment = Alignment.CenterVertically,
@@ -170,7 +192,9 @@ private fun DiaperCount(count: Int,
     {
         Row {
             Text(
-                text = "Diaper Count : $count", fontSize = 14.sp, fontWeight = FontWeight.Bold
+                text = "Diaper Count : $count",
+                fontSize = 14.sp,
+                fontWeight = FontWeight.Bold
             )
             Spacer(modifier = Modifier.size(6.dp))
         }
@@ -184,22 +208,6 @@ private fun DiaperCount(count: Int,
             }
         }
     }
-    if (count < 20 ) {
-        openAlertDialog.value = true
-
-        RefillAlertDialog(
-            onDismissRequest = { openAlertDialog.value = false },
-            onConfirmation = {
-                openAlertDialog.value = false
-                onClick()
-            },
-            dialogTitle = "Diapers Running low!",
-            dialogText = "Diaper count is less than 20. The total number of diapers left is $count",
-            icon = Icons.Default.WarningAmber
-        )
-
-    }
-
 }
 
 
@@ -467,41 +475,39 @@ fun RefillAlertDialog(
     onConfirmation: () -> Unit,
     dialogTitle: String,
     dialogText: String,
-    icon: ImageVector
+    icon: ImageVector,
+    showDialog: Boolean
 ) {
-    AlertDialog(
-        icon = {
-            Icon(icon, contentDescription = null)
-        },
-        title = {
-            Text(text = dialogTitle)
-        },
-        text = {
-            Text(text = dialogText)
-        },
-        onDismissRequest = {
-            onDismissRequest()
-        },
-        confirmButton = {
-            Button(
-                onClick = {
-                    onConfirmation()
+
+    if (showDialog) {
+        AlertDialog(
+            icon = {
+                Icon(icon, contentDescription = null)
+            },
+            title = {
+                Text(text = dialogTitle)
+            },
+            text = {
+                Text(text = dialogText)
+            },
+            onDismissRequest = onDismissRequest,
+            confirmButton = {
+                Button(
+                    onClick = onConfirmation
+                ) {
+                    Text("Refill Diaper")
                 }
-            ) {
-                Text("Refill Diaper")
-            }
-        },
-        dismissButton = {
-            OutlinedButton(
-                border = BorderStroke(1.dp, colorResource(id = R.color.orange)),
-                onClick = {
-                    onDismissRequest()
+            },
+            dismissButton = {
+                OutlinedButton(
+                    border = BorderStroke(1.dp, colorResource(id = R.color.orange)),
+                    onClick = onDismissRequest
+                ) {
+                    Text("Dismiss", fontWeight = FontWeight.Bold)
                 }
-            ) {
-                Text("Dismiss", fontWeight = FontWeight.Bold)
             }
-        }
-    )
+        )
+    }
 }
 
 
@@ -511,10 +517,12 @@ fun DiaperRefillSheet(
     bottomSheetState: SheetState,
     onClose: () -> Unit,
     onConfirm: () -> Unit,
-    newDiaperCount: Int,
-    setNewDiaperCount: (Int) -> Unit
+    diaperCount: String,
+    setDiaperCount: (String) -> Unit,
+    loading: Boolean
 ) {
     val scope = rememberCoroutineScope()
+
 
     Column(
         modifier = Modifier
@@ -532,13 +540,15 @@ fun DiaperRefillSheet(
                 }
             }
         }
-Row (modifier = Modifier
-    .fillMaxWidth(),
-    horizontalArrangement = Arrangement.Center) {
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.Center
+        ) {
 
 
-    Text(text = "Refill Diaper", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-}
+            Text(text = "Refill Diaper", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+        }
 
         TextField(
             colors = TextFieldDefaults.colors(
@@ -548,10 +558,10 @@ Row (modifier = Modifier
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
             ),
-            prefix = { Text(text = "Enter new Diaper Count: ")},
+            prefix = { Text(text = "Enter new Diaper Count: ") },
             modifier = Modifier.fillMaxWidth(),
-            value = newDiaperCount.toString(),
-            onValueChange = { setNewDiaperCount(it.toInt())},
+            value = diaperCount,
+            onValueChange = { setDiaperCount(it) },
             label = { Text(text = "") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
@@ -581,32 +591,36 @@ Row (modifier = Modifier
 
 
 }
+
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun DiaperDialog(
+fun UpdateDiaperCountDialog(
     isOpen: Boolean,
     onClose: () -> Unit,
     onConfirm: () -> Unit,
-    setNewDiaperCount: (Int) -> Unit,
-    newDiaperCount: String
-){
+    setDiaperCount: (String) -> Unit,
+    diaperCount: String,
+    loading: Boolean
+) {
     val bottomSheetState = rememberModalBottomSheetState(skipPartiallyExpanded = true)
-    if (isOpen){
+    if (isOpen) {
         ModalBottomSheet(
             onDismissRequest = onClose,
             sheetState = bottomSheetState,
-            dragHandle = null)
+            dragHandle = null
+        )
         {
             DiaperRefillSheet(
                 bottomSheetState,
                 onClose,
                 onConfirm,
-                newDiaperCount = newDiaperCount.toInt(),
-                setNewDiaperCount = setNewDiaperCount
+                diaperCount = diaperCount,
+                setDiaperCount = setDiaperCount,
+                loading = loading
+
             )
         }
     }
-
 }
 
 

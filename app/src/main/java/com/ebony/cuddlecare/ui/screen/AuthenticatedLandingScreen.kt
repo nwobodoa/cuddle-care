@@ -116,8 +116,12 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.Diaper.name) {
-                RecordDiaperStateScreen { navController.popBackStack() }
+                DiaperScreen(
+                    onNavigateBack = navController::popBackStack,
+                    activeBaby = babyUIState.activeBaby
+                )
             }
+
             composable(Screen.MedicationScreen.name) {
                 MedicineScreen { navController.popBackStack() }
             }

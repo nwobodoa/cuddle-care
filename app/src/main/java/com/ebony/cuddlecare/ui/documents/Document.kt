@@ -6,5 +6,6 @@ enum class Document {
     Invite,
     BreastFeeding,
     BottleFeeding,
-    Sleeping
+    Sleeping,
+    DiaperCount;
 }
