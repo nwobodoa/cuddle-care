@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Timelapse
 import androidx.compose.material3.HorizontalDivider
@@ -33,7 +35,6 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
-import com.ebony.cuddlecare.ui.components.AccountAvatar
 import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
@@ -41,6 +42,7 @@ import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.BottleFeed
 import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
+import com.ebony.cuddlecare.ui.documents.SortableActivity
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
@@ -48,7 +50,8 @@ import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
-import com.ebony.cuddlecare.util.secondsToFormattedString
+import com.ebony.cuddlecare.util.secondsToFormattedTime
+import com.ebony.cuddlecare.util.timestampToString
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -62,8 +65,7 @@ data class NavigationItem(
 )
 
 fun formatDate(date: LocalDate): String {
-    val formatter = DateTimeFormatter.ofPattern("EEE, d MMM", Locale.US) // Define the formatter pattern
-    return date.format(formatter)
+    return date.format(DateTimeFormatter.ofPattern("EEE, d MMM", Locale.US))
 }
 
 val screens = listOf(
@@ -144,6 +146,7 @@ fun HomeScreen(
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
     val breastfeedingUIState by breastFeedingViewModel.breastfeedingUIState.collectAsState()
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = activeBaby) {
         if (activeBaby != null) {
@@ -168,8 +171,12 @@ fun HomeScreen(
         },
         bottomBar = { BottomNavBar(onTopNavigation) },
     ) { innerPadding ->
+
         Column(
-            modifier = Modifier.padding(innerPadding)
+            modifier = Modifier
+                .padding(innerPadding)
+                .padding(top = 8.dp)
+
         ) {
             LazyRow(
                 modifier = Modifier.padding(start = 8.dp, end = 8.dp),
@@ -184,115 +191,131 @@ fun HomeScreen(
                         })
                 }
             }
-            Row(modifier = Modifier.padding(top = 8.dp)) {
-                if (isTipsCardVisible) {
 
-                    TipsCard(onDismiss = { isTipsCardVisible = false })
-                }
+            Column(modifier = Modifier.verticalScroll(scrollState)) {
+                TipsCard(show = isTipsCardVisible, onDismiss = { isTipsCardVisible = false })
+                TodayDateDisplay()
+                ActivityDailySummary(breastfeedingUIState, bottleFeedingUIState, diaperUIState)
+                DetailedActivityList(
+                    sortableActivities = breastfeedingUIState.breastfeedingRecords + diaperUIState.diaperRecords
+                )
             }
-            Row(modifier = Modifier.padding(top = 16.dp, start = 8.dp)) {
-                Text(text = "Today, ${formatDate(LocalDate.now())}")
+        }
+    }
+}
+
+@Composable
+private fun DetailedActivityList(sortableActivities: List<SortableActivity>) {
+    val sortedActivities = sortableActivities.sortedBy { -it.rank() }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(16.dp)
+            .background(color = Color.White, shape = RoundedCornerShape(10)),
+        verticalArrangement = Arrangement.Center
+    )
+    {
+        sortedActivities.mapIndexed { idx, record ->
+            when (record) {
+                is DiaperRecord -> DiaperDetailRow(diaperRecord = record)
+                is BreastFeedingRecord -> BreastfeedingDetailRow(record = record)
+                else -> Text(text = "Unknown")
             }
 
-            ActivityDailySummary(breastfeedingUIState, bottleFeedingUIState, diaperUIState)
-
-
-            Column(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
-                    .background(color = Color.White, shape = RoundedCornerShape(10)),
-                verticalArrangement = Arrangement.Center
-            )
-            {
-                Row(
-                    modifier = Modifier.padding(start = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Image(
-                        modifier = Modifier.size(35.dp),
-                        painter = painterResource(id = R.drawable.potty), contentDescription = null
-                    )
-                    Column(
-                        modifier = Modifier.padding(16.dp),
-                    ) {
-                        Text(text = "4:33 PM")
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                modifier = Modifier
-                                    .size(30.dp)
-                                    .padding(end = 8.dp),
-                                painter = painterResource(id = R.drawable.pee),
-                                contentDescription = null
-                            )
-                            Text(text = "Pee")
-                            Image(
-                                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                                painter = painterResource(id = R.drawable.poop),
-                                contentDescription = null
-                            )
-                            Text(text = "Poo")
-                        }
-
-                    }
-                    Row(
-                        modifier = Modifier
-                            .padding(end = 16.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        AccountAvatar(
-                            id = "iamredemmed", firstName = "Adanwa",
-                            font = 13.sp,
-                            radius = 45f
-                        )
-                    }
-                }
+            if (idx != sortableActivities.lastIndex) {
                 HorizontalDivider()
+            }
+        }
+    }
+}
 
-                Row(
-                    modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
+@Composable
+private fun DiaperDetailRow(diaperRecord: DiaperRecord) {
+    Row(
+        modifier = Modifier.padding(start = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier.size(35.dp),
+            painter = painterResource(id = R.drawable.diaper), contentDescription = null
+        )
+        Column(
+            modifier = Modifier.padding(16.dp),
+        ) {
+            Text(text = diaperRecord.timestampToString())
+
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                if (diaperRecord.soilState.contains(DiaperSoilType.DIRTY)) {
                     Image(
-                        modifier = Modifier.size(35.dp),
-                        painter = painterResource(id = R.drawable.bf), contentDescription = null
-                    )
-                    Column(
-                        modifier = Modifier.padding(start = 16.dp),
-                    ) {
-                        Text(text = "4:29 PM - 4:31 PM")
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(
-                                modifier = Modifier.padding(end = 8.dp),
-                                imageVector = Icons.Outlined.Timelapse,
-                                contentDescription = null
-                            )
-                            Text(text = "1min 14s Left: 46s Right: 27s")
-
-                        }
-
-                    }
-                    Row(
                         modifier = Modifier
-                            .padding(end = 16.dp)
-                            .fillMaxWidth(),
-                        horizontalArrangement = Arrangement.End
-                    ) {
-                        AccountAvatar(
-                            id = "iamredemmed", firstName = "Adanwa",
-                            font = 13.sp,
-                            radius = 45f
-                        )
-                    }
+                            .size(30.dp)
+                            .padding(end = 8.dp),
+                        painter = painterResource(id = R.drawable.pee),
+                        contentDescription = null
+                    )
+                    Text(text = "Pee")
                 }
-
+                if (diaperRecord.soilState.contains(DiaperSoilType.WET)) {
+                    Image(
+                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+                        painter = painterResource(id = R.drawable.poop),
+                        contentDescription = null
+                    )
+                    Text(text = "Poo")
+                }
             }
 
         }
     }
+}
 
 
+@Composable
+private fun BreastfeedingDetailRow(record: BreastFeedingRecord) {
+    val startTime = timestampToString(record.startTime)
+    val endTime = timestampToString(record.endTime)
+
+    val rightActiveSeconds = record.rightBreast?.activeSeconds ?: 0
+    val leftActiveSeconds = record.leftBreast?.activeSeconds ?: 0
+
+    val totalTime = rightActiveSeconds + leftActiveSeconds
+
+    Row(
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier.size(35.dp),
+            painter = painterResource(id = R.drawable.bf), contentDescription = null
+        )
+        Column(
+            modifier = Modifier.padding(start = 16.dp),
+        ) {
+            Text(text = "$startTime - $endTime")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    modifier = Modifier.padding(end = 8.dp),
+                    imageVector = Icons.Outlined.Timelapse,
+                    contentDescription = null
+                )
+                Text(
+                    text = "${secondsToFormattedTime(totalTime)} Left: ${
+                        secondsToFormattedTime(
+                            leftActiveSeconds
+                        )
+                    } Right: ${secondsToFormattedTime(rightActiveSeconds)}"
+                )
+
+            }
+        }
+    }
+}
+
+@Composable
+private fun TodayDateDisplay() {
+    Row(modifier = Modifier.padding(top = 16.dp, start = 8.dp)) {
+        Text(text = "Today, ${formatDate(LocalDate.now())}")
+    }
 }
 
 @Composable
@@ -323,7 +346,7 @@ private fun BreastFeedingSummary(breastFeedingRecords: List<BreastFeedingRecord>
         if (it < 60) {
             "<1 min"
         } else {
-            secondsToFormattedString(it)
+            secondsToFormattedTime(it)
         }
     }
 

@@ -5,8 +5,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.Document
+import com.ebony.cuddlecare.ui.documents.SortableActivity
 import com.ebony.cuddlecare.ui.documents.activeBabyCollection
 import com.ebony.cuddlecare.ui.screen.TimerState
+import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
 import com.ebony.cuddlecare.util.localDateTimeToEpoch
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
@@ -40,8 +42,13 @@ data class BreastFeedingRecord(
     val pauseSeconds: Long = 0,
     val leftBreast: BreastSideRecord? = null,
     val rightBreast: BreastSideRecord? = null
-) {
+) : SortableActivity {
     constructor() : this("", 0, null, "", "", 0, null, null)
+
+    override fun rank(): Long {
+        return endTime ?: 0
+    }
+
 }
 
 fun breastFeedingUIStateToRecord(uiState: BreastfeedingUIState): BreastFeedingRecord {

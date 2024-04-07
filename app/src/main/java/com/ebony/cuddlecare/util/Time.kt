@@ -4,14 +4,13 @@ import java.time.Instant
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
-import java.time.ZoneId
 import java.time.ZoneOffset
 import java.time.ZonedDateTime
 import java.time.format.DateTimeFormatter
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
-fun secondsToFormattedString(ticks: Long): String {
+fun secondsToFormattedTime(ticks: Long): String {
     val hours = TimeUnit.SECONDS.toHours(ticks)
     val minutes = TimeUnit.SECONDS.toMinutes(ticks) % 60
     val seconds = TimeUnit.SECONDS.toSeconds(ticks) % 60
@@ -74,4 +73,10 @@ fun epochSecondsToLocalDateTime(epochSeconds: Long): LocalDateTime? {
     return Instant.ofEpochSecond(epochSeconds)
         .atZone(ZoneOffset.UTC)
         .toLocalDateTime()
+}
+
+fun timestampToString(timestamp:Long?): String {
+    if(timestamp == null) return  ""
+    return epochSecondsToLocalDateTime(timestamp)?.format(DateTimeFormatter.ofPattern("h:mm a"))
+        ?: ""
 }

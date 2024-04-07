@@ -38,7 +38,7 @@ import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.viewmodel.SleepingUIState
 import com.ebony.cuddlecare.util.localDateTimeToDate
 import com.ebony.cuddlecare.util.localDateTimeToTime
-import com.ebony.cuddlecare.util.secondsToFormattedString
+import com.ebony.cuddlecare.util.secondsToFormattedTime
 import kotlinx.coroutines.delay
 import kotlin.reflect.KFunction0
 import kotlin.time.Duration.Companion.seconds
@@ -174,7 +174,7 @@ fun SleepingScreen(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = secondsToFormattedString(sleepingUIState.durationSecs))
+                        Text(text = secondsToFormattedTime(sleepingUIState.durationSecs))
                     }
                 }
                 Row {
@@ -186,7 +186,7 @@ fun SleepingScreen(
                         horizontalArrangement = Arrangement.End,
                         modifier = Modifier.weight(1f)
                     ) {
-                        Text(text = secondsToFormattedString(sleepingUIState.pauseSecs))
+                        Text(text = secondsToFormattedTime(sleepingUIState.pauseSecs))
                     }
                 }
                 Row {

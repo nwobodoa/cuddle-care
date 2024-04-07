@@ -29,7 +29,8 @@ data class TipItem(val tipHeader: String, val tipBody: String)
 
 @Composable
 
-fun TipsCard(onDismiss: () -> Unit) {
+fun TipsCard(onDismiss: () -> Unit,show:Boolean) {
+    if(!show) return
     val random = remember { Random.Default }
     val tipsList = readHealthTips(context = LocalContext.current)
     val randomIndex = remember { random.nextInt(tipsList.size) }

@@ -40,7 +40,7 @@ import com.ebony.cuddlecare.ui.viewmodel.BreastSideState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
 import com.ebony.cuddlecare.util.localDateTimeToDate
 import com.ebony.cuddlecare.util.localDateTimeToTime
-import com.ebony.cuddlecare.util.secondsToFormattedString
+import com.ebony.cuddlecare.util.secondsToFormattedTime
 import kotlinx.coroutines.delay
 import kotlin.time.Duration.Companion.seconds
 
@@ -171,7 +171,7 @@ fun BreastfeedingScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = secondsToFormattedString(
+                            text = secondsToFormattedTime(
                                 leftBreastUIState.activeSeconds
                                         + rightBreastUIState.activeSeconds
                             )
@@ -189,7 +189,7 @@ fun BreastfeedingScreen(
                         modifier = Modifier.weight(1f)
                     ) {
                         Text(
-                            text = secondsToFormattedString(
+                            text = secondsToFormattedTime(
                                 breastfeedingUIState.pauseSeconds
                             )
                         )
@@ -267,6 +267,6 @@ fun BreastFeedingControlBtn(
             Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
             Text(text = buttonText(breastSideState))
         }
-        Text(text = secondsToFormattedString(breastSideState.activeSeconds))
+        Text(text = secondsToFormattedTime(breastSideState.activeSeconds))
     }
 }
