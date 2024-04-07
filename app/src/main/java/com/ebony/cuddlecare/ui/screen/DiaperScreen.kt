@@ -172,7 +172,9 @@ fun DiaperScreen(
                         diaperViewModel.setDiaperCountWarning(false)
                         diaperViewModel.setShowDiaperRefill(true)
                     },
-                    showDialog = diaperUIState.showDiaperWarning && diaperUIState.diaperType == DiaperType.DISPOSABLE,
+                    showDialog = diaperUIState.showDiaperWarning && diaperUIState.diaperType == DiaperType.DISPOSABLE && diaperUIState.diaperCount?.let {
+                        (it.count.toIntOrNull() ?: 0) <= 20
+                    } == true,
                     dialogTitle = "Diapers Running low!",
                     dialogText = "Diaper count is less than 20. The total number of diapers left is ${diaperUIState.diaperCount?.count ?: 0}",
                     icon = Icons.Default.WarningAmber
@@ -189,7 +191,7 @@ fun DiaperScreen(
                             count
                         )
                     },
-                    loading = true
+                    loading = diaperUIState.loading
                 )
             }
         }

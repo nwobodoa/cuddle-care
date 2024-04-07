@@ -8,6 +8,7 @@ import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.util.epochMillisToDate
 import com.ebony.cuddlecare.util.localDateTimeToEpoch
 import com.google.firebase.Firebase
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -16,6 +17,7 @@ import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
 import java.time.ZoneOffset
+import kotlin.math.max
 
 data class DiaperUIState(
     val babyId: String? = null,
@@ -24,7 +26,7 @@ data class DiaperUIState(
     val showDatePicker: Boolean = false,
     val selectedTime: LocalTime = LocalTime.now(),
     val selectedDate: LocalDate = LocalDate.now(),
-    val loading: Boolean = true,
+    val loading: Boolean = false,
     val diaperCount: DiaperCountUI? = null,
     val showDiaperRefill: Boolean = false,
     val showDiaperWarning: Boolean = true,
@@ -46,7 +48,7 @@ data class DiaperRecord(
     val attachmentURL: String,
     val babyId: String
 ) {
-    constructor(): this(DiaperType.NONE, emptyList(),0,"","","")
+    constructor() : this(DiaperType.NONE, emptyList(), 0, "", "", "")
 }
 
 enum class DiaperType {
@@ -159,10 +161,8 @@ class DiaperViewModel : ViewModel() {
 
     fun setDiaperCountWarning(state: Boolean) {
         _diaperUIState.update {
-            val diaperCountBelowThreshold = it.diaperCount?.count?.toIntOrNull()
-                ?.let { c -> c <= 20 } == true
             it.copy(
-                showDiaperWarning = state && diaperCountBelowThreshold
+                showDiaperWarning = state
             )
         }
     }
@@ -247,13 +247,31 @@ class DiaperViewModel : ViewModel() {
         }
         val record = diaperUIToDiaperRecord(diaperUIState)
         setLoading(true)
-        diaperCountCol
-            .document(diaperUIState.babyId!!)
-            .set(record)
-            .addOnSuccessListener {
-                _diaperUIState.update { it.copy(savedSuccessfully = true) }
+        db.runTransaction { tx ->
+            val diaperRef = diaperCol.document(diaperUIState.babyId!!)
+            val diaperCountRef = diaperCountCol.document(diaperUIState.babyId!!)
+            val updateCount =
+                tx.get(diaperCountRef)
+                    .toObject(DiaperCount::class.java)?.let {
+                        it.copy(count = max(it.count - 1, 0))
+                    }
+
+            if (updateCount != null) {
+                tx.set(diaperRef, record)
+                tx.set(diaperCountRef, updateCount)
+            } else {
+                throw FirebaseFirestoreException(
+                    "No Diaper Count Record",
+                    FirebaseFirestoreException.Code.ABORTED,
+                )
             }
-            .addOnCompleteListener { setLoading(false) }
+        }.addOnSuccessListener {
+            _diaperUIState.update { it.copy(savedSuccessfully = true) }
+        }.addOnCompleteListener {
+            setLoading(false)
+        }.addOnFailureListener {
+            Log.e(TAG, "save: ", it)
+        }
     }
 
     fun setActiveBaby(activeBaby: Baby?) {
