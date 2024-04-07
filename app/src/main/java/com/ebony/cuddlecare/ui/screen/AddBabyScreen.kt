@@ -1,6 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import com.ebony.cuddlecare.ui.documents.CareGiver
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -52,6 +51,7 @@ import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.SwitchWithIcon
 import com.ebony.cuddlecare.ui.components.ToggableButton
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import com.ebony.cuddlecare.ui.documents.Gender
 import com.ebony.cuddlecare.ui.viewmodel.BabyUIState
 import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
@@ -66,8 +66,8 @@ fun AddBaby(
     navController: NavController,
     babyViewModel: BabyViewModel = viewModel(),
     user: CareGiver,
-    onTopNavigation:(String) -> Unit = {},
-    setUpdatedUser:(CareGiver) -> Unit
+    onTopNavigation: (String) -> Unit = {},
+    setUpdatedUser: (CareGiver) -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
 
@@ -76,36 +76,39 @@ fun AddBaby(
     )
 
     var openBottomSheet by remember { mutableStateOf(false) }
-    Scaffold (bottomBar = { BottomNavBar(onTopNavigation) },){
+    Scaffold(
+        bottomBar = { BottomNavBar(onTopNavigation) },
+    ) {
 
-Column (modifier = Modifier.padding(it)
-){
-
-
-    MainContent(onClick = { openBottomSheet = true })
-
-    if (openBottomSheet) {
-        ModalBottomSheet(
-            sheetState = bottomSheetState,
-            onDismissRequest = { openBottomSheet = false },
-            dragHandle = { BabyDetailsFormHeader() }
+        Column(
+            modifier = Modifier.padding(it)
         ) {
-            BabyDetailsForm(
-                navigateToHomeScreen = { navController.navigate(Screen.HomeScreen.name) },
-                babyUIState = babyUIState,
-                setSelectedGender = babyViewModel::setSelectedGender,
-                setBabyName = babyViewModel::setBabyName,
-                toggleDatePicker = babyViewModel::toggableDatePicker,
-                setSelectedDate = babyViewModel::setSelectedDate,
-                isSaved = babyUIState.addBabyUIFormState.isSaved,
-                setIsPremature = babyViewModel::setIsPremature,
-                saveBaby = {
-                    babyViewModel.createBaby(user, setUpdatedUser = setUpdatedUser)
+
+
+            MainContent(onClick = { openBottomSheet = true })
+
+            if (openBottomSheet) {
+                ModalBottomSheet(
+                    sheetState = bottomSheetState,
+                    onDismissRequest = { openBottomSheet = false },
+                    dragHandle = { BabyDetailsFormHeader() }
+                ) {
+                    BabyDetailsForm(
+                        navigateToHomeScreen = { navController.navigate(Screen.HomeScreen.name) },
+                        babyUIState = babyUIState,
+                        setSelectedGender = babyViewModel::setSelectedGender,
+                        setBabyName = babyViewModel::setBabyName,
+                        toggleDatePicker = babyViewModel::toggableDatePicker,
+                        setSelectedDate = babyViewModel::setSelectedDate,
+                        isSaved = babyUIState.addBabyUIFormState.isSaved,
+                        setIsPremature = babyViewModel::setIsPremature,
+                        saveBaby = {
+                            babyViewModel.createBaby(user, setUpdatedUser = setUpdatedUser)
+                        }
+                    )
                 }
-            )
+            }
         }
-    }
-}
 
 
     }
@@ -124,9 +127,9 @@ fun BabyDetailsForm(
     isSaved: Boolean,
 ) {
     LaunchedEffect(key1 = isSaved) {
-       if(isSaved) {
-           navigateToHomeScreen()
-       }
+        if (isSaved) {
+            navigateToHomeScreen()
+        }
     }
     LazyColumn(
         Modifier
@@ -134,10 +137,12 @@ fun BabyDetailsForm(
             .padding(horizontal = 16.dp, vertical = 16.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
-        item { GenderSelector(
-            selectedGender = babyUIState.addBabyUIFormState.selectedGender,
-            setGender = setSelectedGender
-        )}
+        item {
+            GenderSelector(
+                selectedGender = babyUIState.addBabyUIFormState.selectedGender,
+                setGender = setSelectedGender
+            )
+        }
         item {
             OutlinedTextField(
                 value = babyUIState.addBabyUIFormState.babyName,
@@ -147,32 +152,34 @@ fun BabyDetailsForm(
                 label = { Text("Baby Name") })
         }
         item {
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text(text = "Birth Date: ")
-            DateInput1(
-                toggleDatePicker = toggleDatePicker,
-                isDateExpanded = babyUIState.addBabyUIFormState.isDateExpanded,
-                selectedDate = epochMillisToDate(babyUIState.addBabyUIFormState.selectedDate),
-                setSelectedDate = setSelectedDate
-            )
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(text = "Birth Date: ")
+                DateInput1(
+                    toggleDatePicker = toggleDatePicker,
+                    isDateExpanded = babyUIState.addBabyUIFormState.isDateExpanded,
+                    selectedDate = epochMillisToDate(babyUIState.addBabyUIFormState.selectedDate),
+                    setSelectedDate = setSelectedDate
+                )
 
-        }}
+            }
+        }
         item {
-        Row(
-            Modifier.fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            Text("Premature?")
-            SwitchWithIcon(
-                isChecked = babyUIState.addBabyUIFormState.isPremature,
-                onCheck =  setIsPremature
-            )
-        }}
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text("Premature?")
+                SwitchWithIcon(
+                    isChecked = babyUIState.addBabyUIFormState.isPremature,
+                    onCheck = setIsPremature
+                )
+            }
+        }
         item {
             SaveButton(onClick = { saveBaby() })
         }
