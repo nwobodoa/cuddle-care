@@ -5,10 +5,10 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.Document
+import com.ebony.cuddlecare.ui.documents.activeBabyCollection
 import com.ebony.cuddlecare.ui.screen.TimerState
 import com.ebony.cuddlecare.util.localDateTimeToEpoch
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -102,7 +102,7 @@ class BreastfeedingViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
-        activeBabyCollection(activeBaby)
+        activeBabyCollection(breastfeedingCollection, activeBaby)
             .whereLessThanOrEqualTo("endTime", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("endTime", startOfDayEpoch)
             .addSnapshotListener { snap, ex ->
@@ -122,11 +122,6 @@ class BreastfeedingViewModel : ViewModel() {
             }
     }
 
-    private fun activeBabyCollection(activeBaby: Baby): CollectionReference {
-        return breastfeedingCollection
-            .document(activeBaby.id)
-            .collection(activeBaby.id)
-    }
 
     fun reset() {
         _breastfeedingState.update { BreastfeedingUIState() }
@@ -215,7 +210,7 @@ class BreastfeedingViewModel : ViewModel() {
             )
         }
 
-        val ref = activeBabyCollection(activeBaby).document()
+        val ref = activeBabyCollection(breastfeedingCollection, activeBaby).document()
         val record = breastFeedingUIStateToRecord(_breastfeedingState.value)
 
         ref.set(

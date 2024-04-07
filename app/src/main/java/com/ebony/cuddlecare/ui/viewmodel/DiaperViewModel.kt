@@ -9,10 +9,13 @@ import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.documents.DiaperType
 import com.ebony.cuddlecare.ui.documents.Document
+import com.ebony.cuddlecare.ui.documents.activeBabyCollection
 import com.ebony.cuddlecare.util.epochMillisToDate
 import com.ebony.cuddlecare.util.localDateTimeToEpoch
+import com.google.android.gms.tasks.Task
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.FirebaseFirestoreException
+import com.google.firebase.firestore.Transaction
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -24,7 +27,7 @@ import java.time.ZoneOffset
 import kotlin.math.max
 
 data class DiaperUIState(
-    val babyId: String? = null,
+    val baby: Baby? = null,
     val isTimeExpanded: Boolean = false,
     val showTimePicker: Boolean = false,
     val showDatePicker: Boolean = false,
@@ -40,9 +43,9 @@ data class DiaperUIState(
     val diaperSoilState: Set<DiaperSoilType> = emptySet(),
     val errors: Set<String> = emptySet(),
     val attachmentURL: String = "",
-    val savedSuccessfully: Boolean = false
+    val savedSuccessfully: Boolean = false,
+    val diaperRecords: List<DiaperRecord> = emptyList()
 )
-
 
 
 data class DiaperCountUI(
@@ -56,7 +59,7 @@ class DiaperViewModel : ViewModel() {
     val diaperUIState = _diaperUIState.asStateFlow()
     private val db = Firebase.firestore
     private val diaperCountCol = db.collection(Document.DiaperCount.name)
-    private val diaperCol = db.collection(Document.Diaper.name)
+    private val diaperCollection = db.collection(Document.Diaper.name)
 
     private fun addSoilType(diaperSoilType: DiaperSoilType) {
         _diaperUIState.update { it.copy(diaperSoilState = it.diaperSoilState + diaperSoilType) }
@@ -208,12 +211,41 @@ class DiaperViewModel : ViewModel() {
         if (diaperUIState.diaperType == null) {
             errors.add("Please Select Diaper Type")
         }
-        if (diaperUIState.babyId == null) {
+        if (diaperUIState.baby == null) {
             errors.add("No active baby selected")
         }
         return errors
     }
 
+    private fun saveClothDiaper(diaperUIState: DiaperUIState): Task<Void> {
+        val ref = activeBabyCollection(diaperCollection, diaperUIState.baby!!).document()
+        val record = diaperUIToDiaperRecord(diaperUIState).copy(id = ref.id)
+        return ref.set(record)
+    }
+
+    private fun saveDisposableDiaper(diaperUIState: DiaperUIState): Task<Transaction> {
+        val record = diaperUIToDiaperRecord(diaperUIState)
+        return db.runTransaction { tx ->
+            val diaperRef = activeBabyCollection(diaperCollection, diaperUIState.baby!!).document()
+
+            val diaperCountRef = diaperCountCol.document(diaperUIState.baby.id)
+            val updateCount =
+                tx.get(diaperCountRef)
+                    .toObject(DiaperCount::class.java)?.let {
+                        it.copy(count = max(it.count - 1, 0))
+                    }
+
+            if (updateCount != null) {
+                tx.set(diaperRef, record.copy(id = diaperUIState.baby.id))
+                tx.set(diaperCountRef, updateCount)
+            } else {
+                throw FirebaseFirestoreException(
+                    "No Diaper Count Record",
+                    FirebaseFirestoreException.Code.ABORTED,
+                )
+            }
+        }
+    }
 
     fun save() {
         val diaperUIState = _diaperUIState.value
@@ -222,27 +254,14 @@ class DiaperViewModel : ViewModel() {
             _diaperUIState.update { it.copy(errors = errors) }
             return
         }
-        val record = diaperUIToDiaperRecord(diaperUIState)
-        setLoading(true)
-        db.runTransaction { tx ->
-            val diaperRef = diaperCol.document(diaperUIState.babyId!!)
-            val diaperCountRef = diaperCountCol.document(diaperUIState.babyId!!)
-            val updateCount =
-                tx.get(diaperCountRef)
-                    .toObject(DiaperCount::class.java)?.let {
-                        it.copy(count = max(it.count - 1, 0))
-                    }
 
-            if (updateCount != null) {
-                tx.set(diaperRef, record)
-                tx.set(diaperCountRef, updateCount)
-            } else {
-                throw FirebaseFirestoreException(
-                    "No Diaper Count Record",
-                    FirebaseFirestoreException.Code.ABORTED,
-                )
-            }
-        }.addOnSuccessListener {
+        setLoading(true)
+        val saveDiaper =
+            if (diaperUIState.diaperType == DiaperType.CLOTH) saveClothDiaper(diaperUIState) else saveDisposableDiaper(
+                diaperUIState
+            )
+
+        saveDiaper.addOnSuccessListener {
             _diaperUIState.update { it.copy(savedSuccessfully = true) }
         }.addOnCompleteListener {
             setLoading(false)
@@ -252,7 +271,31 @@ class DiaperViewModel : ViewModel() {
     }
 
     fun setActiveBaby(activeBaby: Baby?) {
-        _diaperUIState.update { it.copy(babyId = activeBaby?.id) }
+        _diaperUIState.update { it.copy(baby = activeBaby) }
+    }
+
+    fun fetchRecords(activeBaby: Baby, day: LocalDate) {
+        val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        activeBabyCollection(diaperCollection, activeBaby)
+            .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
+            .addSnapshotListener { snap, ex ->
+                if (ex != null) {
+                    Log.e(TAG, "fetch diaper Records: ", ex)
+                    return@addSnapshotListener
+                }
+                snap?.documents
+                    ?.mapNotNull { it.toObject(DiaperRecord::class.java) }
+                    ?.let { records ->
+                        _diaperUIState.update {
+                            it.copy(
+                                diaperRecords = records
+                            )
+                        }
+                    }
+            }
     }
 }
 
@@ -261,12 +304,13 @@ fun diaperUIToDiaperRecord(diaperUIState: DiaperUIState): DiaperRecord {
         .of(diaperUIState.selectedDate, diaperUIState.selectedTime)
         .toEpochSecond(ZoneOffset.UTC)
     return DiaperRecord(
-        babyId = diaperUIState.babyId!!,
+        id = "",
+        babyId = diaperUIState.baby!!.id,
         diaperType = diaperUIState.diaperType!!,
         attachmentURL = diaperUIState.attachmentURL,
         notes = diaperUIState.notes,
-        createdAtEpoch = createdAtEpoch,
+        timestamp = createdAtEpoch,
         soilState = diaperUIState.diaperSoilState.toList()
     )
-
 }
+

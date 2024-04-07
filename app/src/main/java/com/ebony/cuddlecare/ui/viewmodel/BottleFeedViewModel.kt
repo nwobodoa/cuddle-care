@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.BottleFeed
 import com.ebony.cuddlecare.ui.documents.Document
+import com.ebony.cuddlecare.ui.documents.activeBabyCollection
 import com.ebony.cuddlecare.util.epochMillisToDate
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.CollectionReference
@@ -74,7 +75,7 @@ class BottleFeedViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
-        activeBabyCollection(activeBaby)
+        activeBabyCollection(bottleFeedCollection,activeBaby)
             .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
             .addSnapshotListener { doc, ex ->
@@ -119,11 +120,6 @@ class BottleFeedViewModel : ViewModel() {
         _bottleFeedingUIState.update { it.copy(canNavigateBack = canNavigateBack) }
     }
 
-    private fun activeBabyCollection(activeBaby: Baby): CollectionReference {
-        return bottleFeedCollection
-            .document(activeBaby.id)
-            .collection(activeBaby.id)
-    }
 
     fun save(activeBaby: Baby?) {
         val recordToSave = uIStateToRecord()
@@ -133,7 +129,7 @@ class BottleFeedViewModel : ViewModel() {
         }
 
         setLoading(true)
-        val ref = activeBabyCollection(activeBaby).document()
+        val ref = activeBabyCollection(bottleFeedCollection,activeBaby).document()
 
         ref.set(recordToSave.copy(id = ref.id))
             .addOnSuccessListener {

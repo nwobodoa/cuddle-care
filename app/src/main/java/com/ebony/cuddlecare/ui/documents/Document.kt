@@ -1,5 +1,7 @@
 package com.ebony.cuddlecare.ui.documents
 
+import com.google.firebase.firestore.CollectionReference
+
 enum class Document {
     Profile,
     Baby,
@@ -9,4 +11,8 @@ enum class Document {
     Sleeping,
     DiaperCount,
     Diaper
+}
+
+fun activeBabyCollection(collection: CollectionReference, activeBaby: Baby): CollectionReference {
+    return collection.document(activeBaby.id).collection(activeBaby.id)
 }

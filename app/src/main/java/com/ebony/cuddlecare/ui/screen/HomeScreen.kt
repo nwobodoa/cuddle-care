@@ -39,9 +39,12 @@ import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.BottleFeed
+import com.ebony.cuddlecare.ui.documents.DiaperRecord
+import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
+import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import com.ebony.cuddlecare.util.secondsToFormattedString
 import java.time.LocalDate
 
@@ -125,16 +128,19 @@ fun HomeScreen(
     setActiveBaby: (String) -> Unit,
     activeBaby: Baby?,
     bottleFeedViewModel: BottleFeedViewModel = viewModel(),
-    breastFeedingViewModel: BreastfeedingViewModel = viewModel()
+    breastFeedingViewModel: BreastfeedingViewModel = viewModel(),
+    diaperViewModel: DiaperViewModel = viewModel()
 ) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
     val breastfeedingUIState by breastFeedingViewModel.breastfeedingUIState.collectAsState()
+    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
 
     LaunchedEffect(key1 = activeBaby) {
         if (activeBaby != null) {
             bottleFeedViewModel.fetchRecords(activeBaby, LocalDate.now())
             breastFeedingViewModel.fetchRecords(activeBaby, LocalDate.now())
+            diaperViewModel.fetchRecords(activeBaby, LocalDate.now())
         }
     }
 
@@ -189,7 +195,7 @@ fun HomeScreen(
                 HorizontalDivider()
                 BottleFeedSummary(bottleFeed = bottleFeedingUIState.todayBottleFeed)
                 HorizontalDivider()
-                DiaperSummary()
+                DiaperSummary(diaperRecords = diaperUIState.diaperRecords)
             }
             Column(
                 modifier = Modifier
@@ -323,15 +329,14 @@ private fun BreastFeedingSummary(breastFeedingRecords: List<BreastFeedingRecord>
 }
 
 @Composable
-private fun DiaperSummary() {
+private fun DiaperSummary(diaperRecords: List<DiaperRecord>) {
+    if (diaperRecords.isEmpty()) return
+    val wetDiapers = diaperRecords.count { it.soilState.contains(DiaperSoilType.WET) }
+    val dirtyDiapers = diaperRecords.count { it.soilState.contains(DiaperSoilType.DIRTY) }
+    val totalCount = wetDiapers + dirtyDiapers
+
     Row(modifier = Modifier.padding(16.dp)) {
-        Image(
-            modifier = Modifier
-                .size(25.dp),
-            painter = painterResource(id = R.drawable.diaper),
-            contentDescription = null
-        )
-        Text(text = " 1")
+        SummaryLeadIcon(count = totalCount.toString(), resourceId = R.drawable.diaper)
         Row(modifier = Modifier.padding(start = 8.dp)) {
             Image(
                 modifier = Modifier
@@ -340,7 +345,8 @@ private fun DiaperSummary() {
                 painter = painterResource(id = R.drawable.poop),
                 contentDescription = null
             )
-            Text(text = "1  ")
+
+            Text(text = dirtyDiapers.toString())
             Image(
                 modifier = Modifier
                     .padding(end = 8.dp)
@@ -348,7 +354,7 @@ private fun DiaperSummary() {
                 painter = painterResource(id = R.drawable.pee),
                 contentDescription = null
             )
-            Text(text = "1")
+            Text(text = wetDiapers.toString())
 
         }
     }
