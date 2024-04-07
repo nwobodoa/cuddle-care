@@ -42,11 +42,16 @@ import com.ebony.cuddlecare.ui.documents.BottleFeed
 import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
+import com.ebony.cuddlecare.ui.viewmodel.BottleFeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
+import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
+import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import com.ebony.cuddlecare.util.secondsToFormattedString
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.util.Locale
 
 
 data class NavigationItem(
@@ -56,6 +61,10 @@ data class NavigationItem(
     val destination: Screen,
 )
 
+fun formatDate(date: LocalDate): String {
+    val formatter = DateTimeFormatter.ofPattern("EEE, d MMM", Locale.US) // Define the formatter pattern
+    return date.format(formatter)
+}
 
 val screens = listOf(
     NavigationItem(
@@ -182,21 +191,12 @@ fun HomeScreen(
                 }
             }
             Row(modifier = Modifier.padding(top = 16.dp, start = 8.dp)) {
+                Text(text = "Today, ${formatDate(LocalDate.now())}")
+            }
 
-                Text(text = "Today, Sat, 23 Mar")
-            }
-            Column(
-                modifier = Modifier
-                    .padding(16.dp)
-                    .background(color = Color.White)
-                    .fillMaxWidth()
-            ) {
-                BreastFeedingSummary(breastFeedingRecords = breastfeedingUIState.breastfeedingRecords)
-                HorizontalDivider()
-                BottleFeedSummary(bottleFeed = bottleFeedingUIState.todayBottleFeed)
-                HorizontalDivider()
-                DiaperSummary(diaperRecords = diaperUIState.diaperRecords)
-            }
+            ActivityDailySummary(breastfeedingUIState, bottleFeedingUIState, diaperUIState)
+
+
             Column(
                 modifier = Modifier
                     .fillMaxWidth()
@@ -293,6 +293,26 @@ fun HomeScreen(
     }
 
 
+}
+
+@Composable
+private fun ActivityDailySummary(
+    breastfeedingUIState: BreastfeedingUIState,
+    bottleFeedingUIState: BottleFeedingUIState,
+    diaperUIState: DiaperUIState
+) {
+    Column(
+        modifier = Modifier
+            .padding(16.dp)
+            .background(color = Color.White)
+            .fillMaxWidth()
+    ) {
+        BreastFeedingSummary(breastFeedingRecords = breastfeedingUIState.breastfeedingRecords)
+        HorizontalDivider()
+        BottleFeedSummary(bottleFeed = bottleFeedingUIState.todayBottleFeed)
+        HorizontalDivider()
+        DiaperSummary(diaperRecords = diaperUIState.diaperRecords)
+    }
 }
 
 @Composable
