@@ -24,6 +24,7 @@ import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberDatePickerState
@@ -46,6 +47,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.SwitchWithIcon
@@ -64,6 +66,7 @@ fun AddBaby(
     navController: NavController,
     babyViewModel: BabyViewModel = viewModel(),
     user: CareGiver,
+    onTopNavigation:(String) -> Unit = {},
     setUpdatedUser:(CareGiver) -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
@@ -73,6 +76,11 @@ fun AddBaby(
     )
 
     var openBottomSheet by remember { mutableStateOf(false) }
+    Scaffold (bottomBar = { BottomNavBar(onTopNavigation) },){
+
+Column (modifier = Modifier.padding(it)
+){
+
 
     MainContent(onClick = { openBottomSheet = true })
 
@@ -97,8 +105,10 @@ fun AddBaby(
             )
         }
     }
+}
 
 
+    }
 }
 
 @Composable

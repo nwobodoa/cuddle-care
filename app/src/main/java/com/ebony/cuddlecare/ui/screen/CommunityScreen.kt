@@ -21,6 +21,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TopAppBar
 import androidx.compose.material3.TopAppBarDefaults
@@ -39,26 +40,36 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.ToggableButton
+import com.ebony.cuddlecare.ui.components.TopBar
 import com.ebony.cuddlecare.ui.viewmodel.CommunityViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SelectedTab
 
 @Composable
 fun CommunityScreen(
+    onTopNavigation: (String) -> Unit = {},
     onNavigateBack: () -> Unit = {},
     communityViewModel: CommunityViewModel = viewModel()
 ) {
     val navController: NavHostController = rememberNavController()
     val communityUIState by communityViewModel.communityUIState.collectAsState()
+    Scaffold(
+        topBar = {
+            NavTopBar(onNavigateBack = onNavigateBack, "Community")
+        },
+        bottomBar = { BottomNavBar(onTopNavigation) },
+    ) {
+        Column (modifier = Modifier.padding(it))
+        {
 
-    Column {
-        NavTopBar(onNavigateBack = onNavigateBack, "Community")
-        TabSelection(communityViewModel)
-        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+            TabSelection(communityViewModel)
+            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+
+            }
+
 
         }
-
-
     }
 }
 

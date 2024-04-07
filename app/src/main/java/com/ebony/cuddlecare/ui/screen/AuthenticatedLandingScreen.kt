@@ -113,7 +113,13 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.AddBabyScreen.name) {
-                AddBaby(navController = navController, user = user, setUpdatedUser = setUpdatedUser)
+                AddBaby(
+                    navController = navController,
+                    user = user,
+                    setUpdatedUser = setUpdatedUser,
+                    onTopNavigation = { dest -> navController.navigate(dest) },
+
+                )
             }
 
             composable(Screen.Diaper.name) {
@@ -130,7 +136,10 @@ fun AuthenticatedScreens(
                 ReminderScreen { navController.popBackStack() }
             }
             composable(Screen.CommunityScreen.name) {
-
+                CommunityScreen(
+                    onTopNavigation = {dest -> navController.navigate(dest)},
+                    onNavigateBack = {navController.popBackStack()},
+                )
             }
             composable(Screen.Profile.name) {
                 AccountScreen(
