@@ -236,8 +236,8 @@ fun HomeScreen(
                         Image(
                             modifier = Modifier
                                 .padding(end = 8.dp)
-                                .size(20.dp),
-                        painter = painterResource(id = R.drawable.poop2), contentDescription = null
+                                .size(23.dp),
+                        painter = painterResource(id = R.drawable.pee), contentDescription = null
                         )
                         Text(text = "1")
 
@@ -259,8 +259,10 @@ fun HomeScreen(
                         ) {
                         Text(text = "4:33 PM")
                         Row(verticalAlignment = Alignment.CenterVertically) {
-                            Image(modifier = Modifier.padding(end = 8.dp),
-                                painter = painterResource(id = R.drawable.poop2),
+                            Image(modifier = Modifier
+                                .size(30.dp)
+                                .padding(end = 8.dp),
+                                painter = painterResource(id = R.drawable.pee),
                                 contentDescription = null
                             )
                             Text(text = "Pee")

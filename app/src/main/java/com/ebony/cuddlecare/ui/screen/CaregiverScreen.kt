@@ -335,7 +335,6 @@ fun PendingSentInvites(pendingSentInvites: List<Invite> = emptyList()) {
 
 @Composable
 private fun PendingSentInvite(invite: Invite) {
-    val openAlertDialog = remember { mutableStateOf(false) }
     Row(
         modifier = Modifier
             .background(Color.White)
