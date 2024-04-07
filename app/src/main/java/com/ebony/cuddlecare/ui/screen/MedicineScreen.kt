@@ -32,10 +32,12 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.AttachmentRow
+import com.ebony.cuddlecare.ui.components.DateInput
 import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
+import com.ebony.cuddlecare.ui.components.TimeInput
 import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
 
 

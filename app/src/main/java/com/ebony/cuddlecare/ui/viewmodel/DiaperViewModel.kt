@@ -15,8 +15,10 @@ import kotlinx.coroutines.flow.update
 import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.LocalTime
+import java.time.ZoneOffset
 
 data class DiaperUIState(
+    val babyId: String? = null,
     val isTimeExpanded: Boolean = false,
     val showTimePicker: Boolean = false,
     val showDatePicker: Boolean = false,
@@ -26,20 +28,26 @@ data class DiaperUIState(
     val diaperCount: DiaperCountUI? = null,
     val showDiaperRefill: Boolean = false,
     val showDiaperWarning: Boolean = true,
-    val diaperType: DiaperType = DiaperType.NONE,
+    val diaperType: DiaperType? = null,
     val showDiaperTypeDropdown: Boolean = false,
     val notes: String = "",
-    val diaperSoilState: Set<DiaperSoilType> = emptySet()
+    val diaperSoilState: Set<DiaperSoilType> = emptySet(),
+    val errors: Set<String> = emptySet(),
+    val attachmentURL: String = "",
+    val savedSuccessfully: Boolean = false
 )
 
 
 data class DiaperRecord(
     val diaperType: DiaperType,
-    val soilState: Set<DiaperSoilType>,
+    val soilState: List<DiaperSoilType>,
     val createdAtEpoch: Long,
     val notes: String,
-    val attachment: String
-)
+    val attachmentURL: String,
+    val babyId: String
+) {
+    constructor(): this(DiaperType.NONE, emptyList(),0,"","","")
+}
 
 enum class DiaperType {
     CLOTH, DISPOSABLE, NONE
@@ -68,7 +76,8 @@ class DiaperViewModel : ViewModel() {
     private val _diaperUIState = MutableStateFlow(DiaperUIState())
     val diaperUIState = _diaperUIState.asStateFlow()
     private val db = Firebase.firestore
-    private val diaperCountColl = db.collection(Document.DiaperCount.name)
+    private val diaperCountCol = db.collection(Document.DiaperCount.name)
+    private val diaperCol = db.collection(Document.Diaper.name)
 
     private fun addSoilType(diaperSoilType: DiaperSoilType) {
         _diaperUIState.update { it.copy(diaperSoilState = it.diaperSoilState + diaperSoilType) }
@@ -125,7 +134,7 @@ class DiaperViewModel : ViewModel() {
             _diaperUIState.update { it.copy(loading = false) }
             return
         }
-        diaperCountColl.document(activeBaby.id)
+        diaperCountCol.document(activeBaby.id)
             .addSnapshotListener { snapshot, ex ->
                 if (ex != null) {
                     Log.e(TAG, "fetchDiaper: error fetching diaper count", ex)
@@ -200,7 +209,7 @@ class DiaperViewModel : ViewModel() {
         }
         diaperCountUiToRecord(diaperCount)?.let {
             setLoading(true)
-            diaperCountColl.document(it.babyId).set(it)
+            diaperCountCol.document(it.babyId).set(it)
                 .addOnCompleteListener {
                     setLoading(false)
                     setShowDiaperRefill(false)
@@ -216,4 +225,53 @@ class DiaperViewModel : ViewModel() {
     fun setShowDiaperTypeDropdown(state: Boolean) {
         _diaperUIState.update { it.copy(showDiaperTypeDropdown = state) }
     }
+
+    private fun validate(diaperUIState: DiaperUIState): Set<String> {
+        val errors = mutableSetOf<String>()
+        if (diaperUIState.diaperType == null) {
+            errors.add("Please Select Diaper Type")
+        }
+        if (diaperUIState.babyId == null) {
+            errors.add("No active baby selected")
+        }
+        return errors
+    }
+
+
+    fun save() {
+        val diaperUIState = _diaperUIState.value
+        val errors = validate(diaperUIState)
+        if (errors.isNotEmpty()) {
+            _diaperUIState.update { it.copy(errors = errors) }
+            return
+        }
+        val record = diaperUIToDiaperRecord(diaperUIState)
+        setLoading(true)
+        diaperCountCol
+            .document(diaperUIState.babyId!!)
+            .set(record)
+            .addOnSuccessListener {
+                _diaperUIState.update { it.copy(savedSuccessfully = true) }
+            }
+            .addOnCompleteListener { setLoading(false) }
+    }
+
+    fun setActiveBaby(activeBaby: Baby?) {
+        _diaperUIState.update { it.copy(babyId = activeBaby?.id) }
+    }
+}
+
+fun diaperUIToDiaperRecord(diaperUIState: DiaperUIState): DiaperRecord {
+    val createdAtEpoch = LocalDateTime
+        .of(diaperUIState.selectedDate, diaperUIState.selectedTime)
+        .toEpochSecond(ZoneOffset.UTC)
+    return DiaperRecord(
+        babyId = diaperUIState.babyId!!,
+        diaperType = diaperUIState.diaperType!!,
+        attachmentURL = diaperUIState.attachmentURL,
+        notes = diaperUIState.notes,
+        createdAtEpoch = createdAtEpoch,
+        soilState = diaperUIState.diaperSoilState.toList()
+    )
+
 }

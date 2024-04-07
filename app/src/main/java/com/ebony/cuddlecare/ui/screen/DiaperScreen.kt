@@ -23,30 +23,22 @@ import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.ArrowDropDown
 import androidx.compose.material.icons.outlined.Folder
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.BasicAlertDialog
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.DatePicker
-import androidx.compose.material3.DatePickerDialog
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SheetState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.TextField
 import androidx.compose.material3.TextFieldDefaults
-import androidx.compose.material3.TimePicker
-import androidx.compose.material3.rememberDatePickerState
 import androidx.compose.material3.rememberModalBottomSheetState
-import androidx.compose.material3.rememberTimePickerState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
@@ -68,11 +60,13 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.AttachmentRow
-import com.ebony.cuddlecare.ui.components.DropDownField
+import com.ebony.cuddlecare.ui.components.DateInput
+import com.ebony.cuddlecare.ui.components.ErrorText
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.Loading
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
+import com.ebony.cuddlecare.ui.components.TimeInput
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.viewmodel.DiaperSoilType
@@ -80,10 +74,7 @@ import com.ebony.cuddlecare.ui.viewmodel.DiaperType
 import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import kotlinx.coroutines.launch
-import java.time.LocalDate
 import java.time.LocalTime
-import java.time.ZoneId
-import java.time.format.DateTimeFormatter
 
 @Composable
 @Preview(showBackground = true)
@@ -93,10 +84,17 @@ fun DiaperScreen(
     onNavigateBack: () -> Unit = {}
 ) {
     LaunchedEffect(key1 = activeBaby) {
+        diaperViewModel.setActiveBaby(activeBaby)
         diaperViewModel.fetchDiaperCount(activeBaby)
     }
 
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+
+    LaunchedEffect(key1 = diaperUIState.savedSuccessfully) {
+        if (diaperUIState.savedSuccessfully) {
+            onNavigateBack()
+        }
+    }
 
 
 
@@ -161,7 +159,12 @@ fun DiaperScreen(
                     value = diaperUIState.notes,
                     onValueChange = diaperViewModel::setNotes
                 )
-                SaveButton(onClick = {})
+
+                Column {
+                    diaperUIState.errors.forEach { e -> ErrorText(e) }
+                }
+
+                SaveButton(onClick = diaperViewModel::save)
 
                 RefillAlertDialog(
                     onDismissRequest = { diaperViewModel.setDiaperCountWarning(false) },
@@ -270,9 +273,9 @@ private fun DiaperTypeSelectRow(
         Column {
             Row(modifier = Modifier.clickable { setShowDiaperTypeDropDown(true) }) {
                 val displayType =
-                    if (diaperUIState.diaperType == DiaperType.NONE) "Select Type" else diaperUIState.diaperType.name.lowercase()
-                        .replaceFirstChar { it.uppercase() }
-                Text(text = displayType)
+                    if (diaperUIState.diaperType == DiaperType.NONE) "Select Type" else diaperUIState.diaperType?.name?.lowercase()
+                        ?.replaceFirstChar { it.uppercase() }
+                Text(text = displayType ?: "Select Type")
                 Icon(Icons.Outlined.ArrowDropDown, contentDescription = "Arrow down icon")
             }
             DropdownMenu(
@@ -383,105 +386,6 @@ fun DiaperSoilTypeBtnRow(
             Text(text = "Dirty")
         }
     }
-}
-
-@Composable
-@OptIn(ExperimentalMaterial3Api::class)
-fun DateInput(
-    modifier: Modifier = Modifier,
-    toggleDatePicker: () -> Unit,
-    isTimeExpanded: Boolean = false,
-    selectedDate: LocalDate,
-    setSelectedDate: (Long) -> Unit = {}
-) {
-    val datePickerState = rememberDatePickerState(
-        initialSelectedDateMillis = selectedDate
-            .atStartOfDay(ZoneId.systemDefault())
-            .toInstant()
-            .toEpochMilli()
-    )
-    DropDownField(
-        label = "",
-        value = selectedDate.format(DateTimeFormatter.ofPattern("d MMM")),
-        modifier = modifier.padding(horizontal = 4.dp)
-    ) {
-        toggleDatePicker()
-    }
-
-    if (isTimeExpanded) {
-        DatePickerDialog(
-            onDismissRequest = { toggleDatePicker() },
-            confirmButton = {
-                TextButton(onClick = { toggleDatePicker() }) {
-                    setSelectedDate(datePickerState.selectedDateMillis ?: 0L)
-                    Text("OK")
-                }
-            },
-
-            ) {
-            DatePicker(state = datePickerState, showModeToggle = true, title = {})
-        }
-    }
-
-}
-
-@OptIn(ExperimentalMaterial3Api::class)
-@Composable
-fun TimeInput(
-    modifier: Modifier = Modifier,
-    label: String,
-    showTimeDialog: Boolean = false,
-    setTimePicker: (Boolean) -> Unit,
-    onValueChange: (LocalTime) -> Unit = {},
-    selectedTime: LocalTime = LocalTime.now(),
-) {
-
-    val timeState = rememberTimePickerState(
-        initialHour = selectedTime.hour,
-        initialMinute = selectedTime.minute
-    )
-
-    if (showTimeDialog) {
-        BasicAlertDialog(
-            onDismissRequest = { setTimePicker(false) },
-            modifier = Modifier
-                .fillMaxWidth()
-                .background(color = MaterialTheme.colorScheme.background)
-        ) {
-            Column(
-                modifier = Modifier
-                    .background(color = Color.LightGray.copy(alpha = .3f))
-                    .padding(top = 28.dp, start = 20.dp, end = 20.dp, bottom = 12.dp),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            ) {
-                TimePicker(state = timeState)
-                Row(
-                    modifier = Modifier
-                        .padding(top = 12.dp)
-                        .fillMaxWidth(),
-                    horizontalArrangement = Arrangement.End
-                ) {
-                    TextButton(
-                        onClick = { setTimePicker(false) },
-                        content = { Text(text = "Dismiss") })
-                    TextButton(
-                        onClick = {
-                            setTimePicker(false)
-                            onValueChange(LocalTime.of(timeState.hour, timeState.minute))
-                        },
-                        content = { Text(text = "Confirm") })
-                }
-            }
-        }
-    }
-
-    DropDownField(
-        modifier = modifier,
-        label = label,
-        value = selectedTime.format(DateTimeFormatter.ofPattern("hh:mm a")),
-        onClick = { setTimePicker(true) })
-
 }
 
 @Composable

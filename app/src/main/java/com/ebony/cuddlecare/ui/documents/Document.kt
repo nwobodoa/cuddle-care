@@ -7,5 +7,6 @@ enum class Document {
     BreastFeeding,
     BottleFeeding,
     Sleeping,
-    DiaperCount;
+    DiaperCount,
+    Diaper
 }
