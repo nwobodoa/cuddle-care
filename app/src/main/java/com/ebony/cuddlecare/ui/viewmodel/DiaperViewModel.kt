@@ -17,8 +17,6 @@ import java.time.LocalDateTime
 import java.time.LocalTime
 
 data class DiaperUIState(
-    val isWetDiaper: Boolean = false,
-    val isDirtyDiaper: Boolean = false,
     val isTimeExpanded: Boolean = false,
     val showTimePicker: Boolean = false,
     val showDatePicker: Boolean = false,
@@ -28,7 +26,28 @@ data class DiaperUIState(
     val diaperCount: DiaperCountUI? = null,
     val showDiaperRefill: Boolean = false,
     val showDiaperWarning: Boolean = true,
+    val diaperType: DiaperType = DiaperType.NONE,
+    val showDiaperTypeDropdown: Boolean = false,
+    val notes: String = "",
+    val diaperSoilState: Set<DiaperSoilType> = emptySet()
 )
+
+
+data class DiaperRecord(
+    val diaperType: DiaperType,
+    val soilState: Set<DiaperSoilType>,
+    val createdAtEpoch: Long,
+    val notes: String,
+    val attachment: String
+)
+
+enum class DiaperType {
+    CLOTH, DISPOSABLE, NONE
+}
+
+enum class DiaperSoilType {
+    WET, DRY, DIRTY
+}
 
 
 data class DiaperCount(
@@ -51,12 +70,26 @@ class DiaperViewModel : ViewModel() {
     private val db = Firebase.firestore
     private val diaperCountColl = db.collection(Document.DiaperCount.name)
 
+    private fun addSoilType(diaperSoilType: DiaperSoilType) {
+        _diaperUIState.update { it.copy(diaperSoilState = it.diaperSoilState + diaperSoilType) }
+    }
+
+    fun setNotes(notes: String) {
+        _diaperUIState.update { it.copy(notes = notes) }
+    }
+
+    private fun removeSoilType(diaperSoilType: DiaperSoilType) {
+        _diaperUIState.update { it.copy(diaperSoilState = it.diaperSoilState - diaperSoilType) }
+    }
+
     fun toggleWetDiaper() {
-        _diaperUIState.update { it.copy(isWetDiaper = !it.isWetDiaper) }
+        val isWet = _diaperUIState.value.diaperSoilState.contains(DiaperSoilType.WET)
+        if (isWet) removeSoilType(DiaperSoilType.WET) else addSoilType(DiaperSoilType.WET)
     }
 
     fun toggleDirtyDiaper() {
-        _diaperUIState.update { it.copy(isDirtyDiaper = !it.isDirtyDiaper) }
+        val isDirty = _diaperUIState.value.diaperSoilState.contains(DiaperSoilType.DIRTY)
+        if (isDirty) removeSoilType(DiaperSoilType.DIRTY) else addSoilType(DiaperSoilType.DIRTY)
     }
 
     fun toggleDatePicker() {
@@ -120,7 +153,8 @@ class DiaperViewModel : ViewModel() {
             val diaperCountBelowThreshold = it.diaperCount?.count?.toIntOrNull()
                 ?.let { c -> c <= 20 } == true
             it.copy(
-                showDiaperWarning = state && diaperCountBelowThreshold)
+                showDiaperWarning = state && diaperCountBelowThreshold
+            )
         }
     }
 
@@ -130,9 +164,6 @@ class DiaperViewModel : ViewModel() {
             Log.i(TAG, "setDiaperCount: No active baby")
             return
         }
-
-
-
         _diaperUIState.update {
             it.copy(
                 diaperCount = DiaperCountUI(
@@ -144,20 +175,6 @@ class DiaperViewModel : ViewModel() {
                 )
             )
         }
-        val diaperCountRecord = diaperCountUiToRecord(_diaperUIState.value.diaperCount)
-
-        if (diaperCountRecord != null) {
-            setLoading(true)
-            diaperCountColl.document(activeBaby.id).set(diaperCountRecord)
-                .addOnCompleteListener {
-
-                }
-                .addOnCompleteListener {
-                    setLoading(false)
-                }
-
-        }
-
     }
 
     private fun diaperCountUiToRecord(diaperCountUI: DiaperCountUI?): DiaperCount? {
@@ -172,5 +189,31 @@ class DiaperViewModel : ViewModel() {
 
     private fun setLoading(loading: Boolean) {
         _diaperUIState.update { it.copy(loading = loading) }
+    }
+
+    fun saveDiaperCount() {
+        val diaperCount = _diaperUIState.value.diaperCount
+        if (diaperCount?.babyId == null) {
+            setShowDiaperRefill(false)
+            //TODO handle no baby
+            return
+        }
+        diaperCountUiToRecord(diaperCount)?.let {
+            setLoading(true)
+            diaperCountColl.document(it.babyId).set(it)
+                .addOnCompleteListener {
+                    setLoading(false)
+                    setShowDiaperRefill(false)
+                }
+        }
+
+    }
+
+    fun setSelectedDiaperType(diaperType: DiaperType) {
+        _diaperUIState.update { it.copy(diaperType = diaperType) }
+    }
+
+    fun setShowDiaperTypeDropdown(state: Boolean) {
+        _diaperUIState.update { it.copy(showDiaperTypeDropdown = state) }
     }
 }

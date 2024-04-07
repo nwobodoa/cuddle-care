@@ -3,6 +3,7 @@ package com.ebony.cuddlecare.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -17,7 +18,6 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AddCircle
-import androidx.compose.material.icons.filled.CameraAlt
 import androidx.compose.material.icons.filled.WarningAmber
 import androidx.compose.material.icons.filled.WaterDrop
 import androidx.compose.material.icons.outlined.ArrowDropDown
@@ -28,6 +28,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.DatePicker
 import androidx.compose.material3.DatePickerDialog
+import androidx.compose.material3.DropdownMenu
+import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -60,18 +62,22 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.AttachmentRow
 import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
+import com.ebony.cuddlecare.ui.components.Loading
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.ToggableButton
 import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.viewmodel.DiaperSoilType
+import com.ebony.cuddlecare.ui.viewmodel.DiaperType
+import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import kotlinx.coroutines.launch
 import java.time.LocalDate
@@ -90,8 +96,8 @@ fun DiaperScreen(
         diaperViewModel.fetchDiaperCount(activeBaby)
     }
 
-
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+
 
 
     Scaffold(topBar = { MTopBar(onNavigateBack = onNavigateBack) })
@@ -115,12 +121,46 @@ fun DiaperScreen(
 
                 ScreenMainIcon(R.drawable.diaper_logo)
                 LastUpdated("Diaper", "Last: 20 mins ago")
-                TimeTypeSegment()
-                DiaperCount(
-                    count = diaperUIState.diaperCount?.count ?: "0",
-                    onClick = { diaperViewModel.setShowDiaperRefill(true) },
+
+                Column(
+                    modifier = Modifier
+                        .clip(shape = RoundedCornerShape(20.dp))
+                        .background(color = Color.White)
+                        .padding(16.dp)
+                        .fillMaxWidth(),
+                    verticalArrangement = Arrangement.spacedBy(16.dp)
                 )
-                AttachmentRow()
+
+                {
+                    TimeControlRow(
+                        diaperUIState = diaperUIState,
+                        toggleDatePicker = diaperViewModel::toggleDatePicker,
+                        setSelectedDate = diaperViewModel::setSelectedDate,
+                        setShowTimePicker = diaperViewModel::setShowTimePicker,
+                        setSelectedTime = diaperViewModel::setSelectedTime,
+                    )
+                    DiaperTypeSelectRow(
+                        diaperUIState = diaperUIState,
+                        setSelectedDiaperType = { type -> diaperViewModel.setSelectedDiaperType(type) },
+                        setShowDiaperTypeDropDown = diaperViewModel::setShowDiaperTypeDropdown,
+                    )
+                    DiaperSoilTypeBtnRow(
+                        diaperUIState = diaperUIState,
+                        toggleDirtyDiaper = diaperViewModel::toggleDirtyDiaper,
+                        toggleWetDiaper = diaperViewModel::toggleWetDiaper
+                    )
+                }
+
+                if (diaperUIState.diaperType == DiaperType.DISPOSABLE) {
+                    DiaperCount(
+                        count = diaperUIState.diaperCount?.count ?: "0",
+                        onClick = { diaperViewModel.setShowDiaperRefill(true) },
+                    )
+                }
+                AttachmentRow(
+                    value = diaperUIState.notes,
+                    onValueChange = diaperViewModel::setNotes
+                )
                 SaveButton(onClick = {})
 
                 RefillAlertDialog(
@@ -129,16 +169,16 @@ fun DiaperScreen(
                         diaperViewModel.setDiaperCountWarning(false)
                         diaperViewModel.setShowDiaperRefill(true)
                     },
-                    showDialog = diaperUIState.showDiaperWarning,
+                    showDialog = diaperUIState.showDiaperWarning && diaperUIState.diaperType == DiaperType.DISPOSABLE,
                     dialogTitle = "Diapers Running low!",
                     dialogText = "Diaper count is less than 20. The total number of diapers left is ${diaperUIState.diaperCount?.count ?: 0}",
                     icon = Icons.Default.WarningAmber
                 )
 
-                UpdateDiaperCountDialog(
+                DiaperCountInput(
                     isOpen = diaperUIState.showDiaperRefill,
                     onClose = { diaperViewModel.setShowDiaperRefill(false) },
-                    onConfirm = { /*TODO*/ },
+                    onConfirm = diaperViewModel::saveDiaperCount,
                     diaperCount = diaperUIState.diaperCount?.count ?: "0",
                     setDiaperCount = { count ->
                         diaperViewModel.setDiaperCount(
@@ -146,7 +186,7 @@ fun DiaperScreen(
                             count
                         )
                     },
-                    loading = diaperUIState.loading
+                    loading = true
                 )
             }
         }
@@ -210,110 +250,140 @@ private fun DiaperCount(
     }
 }
 
-
 @Composable
-@Preview(showBackground = true)
-fun TimeTypeSegment(diaperViewModel: DiaperViewModel = viewModel()) {
-    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+private fun DiaperTypeSelectRow(
+    diaperUIState: DiaperUIState,
+    setSelectedDiaperType: (DiaperType) -> Unit,
+    setShowDiaperTypeDropDown: (Boolean) -> Unit,
+) {
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        LeadingDetailsIcon(
+            title = "Type",
+            imageVector = Icons.Outlined.Folder,
+            contentDescription = "Folder icon"
+        )
 
-    Column(
-        modifier = Modifier
-            .clip(shape = RoundedCornerShape(20.dp))
-            .background(color = Color.White)
-            .padding(16.dp)
-            .fillMaxWidth(),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
-    )
-
-    {
-
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically
-        ) {
-            LeadingDetailsIcon(
-                modifier = Modifier.weight(1f),
-                title = "Time",
-                imageVector = Icons.Default.AccessTime,
-                contentDescription = "Time"
-            )
-            Row(
-                horizontalArrangement = Arrangement.End,
-                modifier = Modifier.weight(1f)
-            ) {
-                DateInput(
-                    toggleDatePicker = { diaperViewModel.toggleDatePicker() },
-                    isTimeExpanded = diaperUIState.isTimeExpanded,
-                    selectedDate = diaperUIState.selectedDate,
-                    setSelectedDate = diaperViewModel::setSelectedDate
-                )
-                Spacer(modifier = Modifier.size(8.dp))
-                TimeInput(
-                    setTimePicker = diaperViewModel::setShowTimePicker,
-                    label = "",
-                    showTimeDialog = diaperUIState.showTimePicker,
-                    selectedTime = diaperUIState.selectedTime,
-                    onValueChange = diaperViewModel::setSelectedTime,
-                )
-            }
-        }
-        Row(
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            LeadingDetailsIcon(
-                title = "Type",
-                imageVector = Icons.Outlined.Folder,
-                contentDescription = "Folder icon"
-            )
-            Row {
-                Text(text = "Select Type")
+        Column {
+            Row(modifier = Modifier.clickable { setShowDiaperTypeDropDown(true) }) {
+                val displayType =
+                    if (diaperUIState.diaperType == DiaperType.NONE) "Select Type" else diaperUIState.diaperType.name.lowercase()
+                        .replaceFirstChar { it.uppercase() }
+                Text(text = displayType)
                 Icon(Icons.Outlined.ArrowDropDown, contentDescription = "Arrow down icon")
             }
+            DropdownMenu(
+                expanded = diaperUIState.showDiaperTypeDropdown,
+                onDismissRequest = { setShowDiaperTypeDropDown(false) }
+            ) {
+                val diaperTypeEntries = DiaperType.entries.filter { it != DiaperType.NONE }
+                diaperTypeEntries.forEachIndexed { idx, type ->
+                    DropdownMenuItem(
+                        text = {
+                            Text(
+                                text = type.name.lowercase().replaceFirstChar { it.uppercase() },
+                                color = Color.Black
+                            )
+                        },
+                        onClick = {
+                            setSelectedDiaperType(type)
+                            setShowDiaperTypeDropDown(false)
+                        })
+                    if (idx != diaperTypeEntries.lastIndex) {
+                        HorizontalDivider()
+                    }
+                }
+            }
         }
+    }
 
+}
+
+@Composable
+private fun TimeControlRow(
+    diaperUIState: DiaperUIState,
+    toggleDatePicker: () -> Unit,
+    setSelectedDate: (Long) -> Unit,
+    setShowTimePicker: (Boolean) -> Unit,
+    setSelectedTime: (LocalTime) -> Unit,
+) {
+
+    Row(
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        LeadingDetailsIcon(
+            modifier = Modifier.weight(1f),
+            title = "Time",
+            imageVector = Icons.Default.AccessTime,
+            contentDescription = "Time"
+        )
         Row(
-            horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()
-
-
+            horizontalArrangement = Arrangement.End,
+            modifier = Modifier.weight(1f)
         ) {
-
-            ToggableButton(
-                modifier = Modifier.clip(shape = RoundedCornerShape(30.dp)),
-                onClick = { diaperViewModel.toggleWetDiaper() },
-                activated = diaperUIState.isWetDiaper
-            ) {
-                Icon(
-                    imageVector = Icons.Default.WaterDrop, contentDescription = "water drop"
-                )
-                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                Text(text = "Wet")
-
-            }
-
-            ToggableButton(
-                onClick = {
-                    diaperViewModel.toggleDirtyDiaper()
-                },
-                activated = diaperUIState.isDirtyDiaper,
-                modifier = Modifier
-                    .padding(start = 8.dp)
-                    .clip(shape = RoundedCornerShape(30.dp))
-            ) {
-                Icon(
-                    painter = painterResource(id = R.drawable.poop),
-                    contentDescription = "Poop",
-
-                    )
-                Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
-                Text(text = "Dirty")
-            }
+            DateInput(
+                toggleDatePicker = toggleDatePicker,
+                isTimeExpanded = diaperUIState.isTimeExpanded,
+                selectedDate = diaperUIState.selectedDate,
+                setSelectedDate = setSelectedDate
+            )
+            Spacer(modifier = Modifier.size(8.dp))
+            TimeInput(
+                setTimePicker = setShowTimePicker,
+                label = "",
+                showTimeDialog = diaperUIState.showTimePicker,
+                selectedTime = diaperUIState.selectedTime,
+                onValueChange = setSelectedTime,
+            )
         }
-
     }
 }
 
+
+@Composable
+fun DiaperSoilTypeBtnRow(
+    diaperUIState: DiaperUIState,
+    toggleDirtyDiaper: () -> Unit,
+    toggleWetDiaper: () -> Unit
+) {
+    Row(
+        horizontalArrangement = Arrangement.End, modifier = Modifier.fillMaxWidth()
+
+    ) {
+        ToggableButton(
+            modifier = Modifier.clip(shape = RoundedCornerShape(30.dp)),
+            onClick = toggleWetDiaper,
+            activated = diaperUIState.diaperSoilState.contains(DiaperSoilType.WET)
+        ) {
+            Icon(
+                imageVector = Icons.Default.WaterDrop, contentDescription = "water drop"
+            )
+            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+            Text(text = "Wet")
+
+        }
+
+        ToggableButton(
+            onClick = toggleDirtyDiaper,
+            activated = diaperUIState.diaperSoilState.contains(DiaperSoilType.DIRTY),
+            modifier = Modifier
+                .padding(start = 8.dp)
+                .clip(shape = RoundedCornerShape(30.dp))
+        ) {
+            Icon(
+                painter = painterResource(id = R.drawable.poop),
+                contentDescription = "Poop",
+
+                )
+            Spacer(modifier = Modifier.size(ButtonDefaults.IconSpacing))
+            Text(text = "Dirty")
+        }
+    }
+}
 
 @Composable
 @OptIn(ExperimentalMaterial3Api::class)
@@ -354,61 +424,6 @@ fun DateInput(
     }
 
 }
-
-
-@Composable
-fun AttachmentRow(value: String = "", onValueChange: (String) -> Unit = {}) {
-    Column(
-        verticalArrangement = Arrangement.spacedBy(8.dp)
-    ) {
-        val maxLength = 3000
-
-
-        TextField(
-            modifier = Modifier.fillMaxWidth(),
-            value = value,
-            onValueChange = {
-                if (value.length <= maxLength) {
-                    onValueChange(it)
-                }
-            },
-
-            colors = TextFieldDefaults.colors(
-                focusedContainerColor = colorResource(id = R.color.backcolor),
-                unfocusedIndicatorColor = Color.Gray,
-                focusedIndicatorColor = Color.Transparent,
-                disabledIndicatorColor = Color.Transparent,
-            ),
-            keyboardOptions = KeyboardOptions(autoCorrect = true),
-            label = { Text(text = "Notes") },
-
-            )
-        Text(
-            text = "${value.length}/$maxLength",
-            textAlign = TextAlign.End,
-            color = Color.Gray,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(end = 16.dp)
-        )
-
-        Row(modifier = Modifier.fillMaxWidth()) {
-            Text(text = "Attachments", modifier = Modifier.weight(1f))
-            Icon(
-                painter = painterResource(id = R.drawable.img),
-                contentDescription = "Gallery icon",
-                modifier = Modifier.align(Alignment.CenterVertically)
-
-            )
-            Icon(
-                imageVector = Icons.Default.CameraAlt,
-                contentDescription = "Camera icon",
-                modifier = Modifier.align(Alignment.CenterVertically)
-            )
-        }
-    }
-}
-
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -522,8 +537,6 @@ fun DiaperRefillSheet(
     loading: Boolean
 ) {
     val scope = rememberCoroutineScope()
-
-
     Column(
         modifier = Modifier
             .background(Color.White)
@@ -539,6 +552,9 @@ fun DiaperRefillSheet(
                     onClose()
                 }
             }
+        }
+        if (loading) {
+            Loading()
         }
         Row(
             modifier = Modifier
@@ -585,16 +601,13 @@ fun DiaperRefillSheet(
             }) {
                 Text(text = "Ok")
             }
-
         }
     }
-
-
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun UpdateDiaperCountDialog(
+fun DiaperCountInput(
     isOpen: Boolean,
     onClose: () -> Unit,
     onConfirm: () -> Unit,
@@ -617,12 +630,7 @@ fun UpdateDiaperCountDialog(
                 diaperCount = diaperCount,
                 setDiaperCount = setDiaperCount,
                 loading = loading
-
             )
         }
     }
 }
-
-
-
-

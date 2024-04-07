@@ -24,6 +24,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.ui.auth.UserAuthViewModel
+import com.ebony.cuddlecare.ui.components.Loading
 import com.ebony.cuddlecare.ui.screen.AuthenticatedScreens
 import com.ebony.cuddlecare.ui.screen.LoginScreen
 import com.ebony.cuddlecare.ui.screen.RegisterScreen
@@ -53,7 +54,10 @@ fun CuddleCareApp(
 
 
     if (userAuthUIState.loading) {
-        Column(modifier = Modifier.padding(start = 16.dp, end = 16.dp)) {
+        Box(
+            modifier = Modifier.fillMaxSize(),
+            contentAlignment = Alignment.Center
+        ) {
             Loading()
         }
         return
@@ -77,7 +81,8 @@ fun CuddleCareApp(
         }
         composable(Screen.AuthenticatedLandingScreen.name) {
             userAuthUIState.user?.let { user ->
-                AuthenticatedScreens(user = user,
+                AuthenticatedScreens(
+                    user = user,
                     setActiveBaby = userAuthViewModel::setActiveBaby,
                     setUpdatedUser = userAuthViewModel::setUser,
                     onSignOut = userAuthViewModel::signOut
@@ -85,24 +90,5 @@ fun CuddleCareApp(
             }
         }
 
-    }
-}
-
-@Composable
-private fun Loading() {
-    Box(
-        modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center
-    ) {
-        Column(
-
-            Modifier
-                .fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally,
-            verticalArrangement = Arrangement.Center,
-
-            ) {
-            CircularProgressIndicator()
-
-        }
     }
 }

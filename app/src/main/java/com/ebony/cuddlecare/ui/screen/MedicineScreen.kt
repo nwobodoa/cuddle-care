@@ -31,6 +31,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.AttachmentRow
 import com.ebony.cuddlecare.ui.components.DropDownField
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
@@ -116,7 +117,6 @@ fun MedicineScreen(
 
                         Row(
                             horizontalArrangement = Arrangement.End,
-                           // modifier = Modifier.weight(1f),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             Text(text = medicineUIState.qty.toString())

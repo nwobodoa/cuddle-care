@@ -1,7 +1,5 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.content.ContentValues.TAG
-import android.util.Log
 import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -48,6 +46,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.AttachmentRow
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton

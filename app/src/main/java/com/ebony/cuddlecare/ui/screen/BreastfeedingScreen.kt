@@ -14,7 +14,6 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
 import androidx.compose.material.icons.filled.Flag
-import androidx.compose.material.icons.filled.Password
 import androidx.compose.material.icons.filled.Pause
 import androidx.compose.material.icons.filled.PlayArrow
 import androidx.compose.material.icons.filled.Timelapse
@@ -32,6 +31,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.unit.dp
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.AttachmentRow
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
