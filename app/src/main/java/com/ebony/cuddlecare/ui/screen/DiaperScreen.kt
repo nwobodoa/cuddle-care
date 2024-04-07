@@ -3,6 +3,7 @@ package com.ebony.cuddlecare.ui.screen
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.horizontalScroll
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -531,12 +532,14 @@ fun DiaperRefillSheet(
                 }
             }
         }
+Row (modifier = Modifier
+    .fillMaxWidth(),
+    horizontalArrangement = Arrangement.Center) {
 
-        Text(text = "Refill Diaper", fontWeight = FontWeight.Bold, fontSize = 16.sp)
-        Text(
-            text = "Enter new Diaper count",
-            fontSize = 16.sp
-        )
+
+    Text(text = "Refill Diaper", fontWeight = FontWeight.Bold, fontSize = 16.sp)
+}
+
         TextField(
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = Color.Transparent,
@@ -545,10 +548,11 @@ fun DiaperRefillSheet(
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,
             ),
+            prefix = { Text(text = "Enter new Diaper Count: ")},
             modifier = Modifier.fillMaxWidth(),
             value = newDiaperCount.toString(),
             onValueChange = { setNewDiaperCount(it.toInt())},
-            label = { Text(text = "New Count") },
+            label = { Text(text = "") },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number)
         )
         HorizontalDivider()
@@ -558,10 +562,12 @@ fun DiaperRefillSheet(
                 .fillMaxWidth(),
             horizontalArrangement = Arrangement.End
         ) {
-            OutlinedButton(modifier = Modifier.padding(end = 16.dp),
+            OutlinedButton(
+                border = BorderStroke(1.dp, colorResource(id = R.color.orange)),
+                modifier = Modifier.padding(end = 16.dp),
                 onClick = { onBottomSheetClose() }
             ) {
-                Text(text = "Cancel")
+                Text(text = "Cancel", fontWeight = FontWeight.Bold)
             }
             Button(onClick = {
                 onConfirm()
