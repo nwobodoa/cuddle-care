@@ -4,9 +4,11 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
@@ -15,6 +17,8 @@ import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.automirrored.filled.DirectionsBike
+import androidx.compose.material.icons.filled.DirectionsBike
 import androidx.compose.material.icons.outlined.Timelapse
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
@@ -248,35 +252,44 @@ fun HomeScreen(
 
     ) {
         ActivityMenuRow(onTopNavigation)
-        Column(modifier = Modifier.verticalScroll(scrollState)) {
-            TipsCard(show = isTipsCardVisible, onDismiss = { isTipsCardVisible = false })
-            TodayDateDisplay()
-            if (loading) {
-                Loading()
-                return
-            }
-
-            if (sortableActivities.isEmpty()) {
-                Column(
-                    modifier = Modifier.fillMaxWidth(),
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    Text(text = "No data found")
+            Column(modifier = Modifier.verticalScroll(scrollState)) {
+                TipsCard(show = isTipsCardVisible,
+                    onDismiss = { isTipsCardVisible = false })
+                TodayDateDisplay()
+                if (loading) {
+                    Loading()
+                    return
                 }
-                return
+
+                if (sortableActivities.isEmpty()) {
+                    Column(
+                        modifier = Modifier
+                            .fillMaxSize()
+                            .padding(top = 250.dp),
+                        horizontalAlignment = Alignment.CenterHorizontally,
+                        verticalArrangement = Arrangement.Center
+                    ) {
+                        Image(
+                            imageVector = Icons.AutoMirrored.Filled.DirectionsBike,
+                            contentDescription = null
+                        )
+                        Text(text = "No data found")
+                    }
+                    return
+                }
+
+                ActivityDailySummary(
+                    breastfeedingUIState.breastfeedingRecords,
+                    bottleFeedingUIState.bottleFeedingRecords,
+                    diaperUIState.diaperRecords
+                )
+                DetailedActivityList(sortableActivities = sortableActivities)
+
             }
-
-            ActivityDailySummary(
-                breastfeedingUIState.breastfeedingRecords,
-                bottleFeedingUIState.bottleFeedingRecords,
-                diaperUIState.diaperRecords
-            )
-            DetailedActivityList(sortableActivities = sortableActivities)
-
         }
     }
 
-}
+
 
 @Composable
 private fun ActivityMenuRow(onTopNavigation: (String) -> Unit) {
