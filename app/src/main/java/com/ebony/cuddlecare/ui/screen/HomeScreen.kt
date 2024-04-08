@@ -16,6 +16,7 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Timelapse
+import androidx.compose.material.icons.outlined.Vaccines
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -232,8 +233,8 @@ private fun DetailedActivityList(sortableActivities: List<SortableActivity>) {
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(16.dp)
-            .background(color = Color.White, shape = RoundedCornerShape(10)),
+            .padding(8.dp)
+            .background(color = Color.White, shape = RoundedCornerShape(10.dp)),
         verticalArrangement = Arrangement.Center
     )
     {
@@ -392,7 +393,7 @@ private fun VaccinationDetailRow(record: VaccinationRecord) {
             Row(verticalAlignment = Alignment.CenterVertically) {
                 Image(
                     modifier = Modifier.padding(end = 8.dp),
-                    imageVector = Icons.Outlined.Timelapse,
+                    imageVector = Icons.Outlined.Vaccines,
                     contentDescription = null
                 )
                 Text(

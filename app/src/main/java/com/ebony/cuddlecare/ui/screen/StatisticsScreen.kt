@@ -1,15 +1,12 @@
 package com.ebony.cuddlecare.ui.screen
 
-import androidx.compose.animation.core.LinearOutSlowInEasing
-import androidx.compose.animation.core.animateFloatAsState
-import androidx.compose.animation.core.tween
-import androidx.compose.foundation.Canvas
+import android.content.Context
+import android.graphics.Typeface
+import android.widget.Toast
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.BoxWithConstraints
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
@@ -21,48 +18,51 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ExpandMore
+import androidx.compose.material.rememberModalBottomSheetState
 import androidx.compose.material3.IconButton
-import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.rotate
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Fill
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.graphics.painter.Painter
-import androidx.compose.ui.platform.LocalDensity
-import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import co.yml.charts.axis.AxisData
+import co.yml.charts.common.components.Legends
+import co.yml.charts.common.extensions.getMaxElementInYAxis
+import co.yml.charts.common.model.LegendsConfig
+import co.yml.charts.common.model.PlotType
+import co.yml.charts.common.model.Point
+import co.yml.charts.common.utils.DataUtils
+import co.yml.charts.ui.barchart.models.BarPlotData
+import co.yml.charts.ui.barchart.models.BarStyle
+import co.yml.charts.ui.barchart.models.GroupBarChartData
+import co.yml.charts.ui.barchart.models.SelectionHighlightData
+import co.yml.charts.ui.piechart.charts.DonutPieChart
+import co.yml.charts.ui.piechart.models.PieChartConfig
+import co.yml.charts.ui.piechart.models.PieChartData
+import co.yml.charts.ui.piechart.utils.proportion
 import com.ebony.cuddlecare.R
-import com.ebony.cuddlecare.ui.components.BarGraph
-import com.ebony.cuddlecare.ui.components.BarType
 import com.ebony.cuddlecare.ui.components.BottomNavBar
-import com.ebony.cuddlecare.ui.components.Chart
-import com.ebony.cuddlecare.ui.components.ChartScreen
-import com.ebony.cuddlecare.ui.components.StackedBarChart
+import co.yml.charts.ui.barchart.StackedBarChart
+import co.yml.charts.ui.barchart.models.BarData
+import co.yml.charts.ui.barchart.models.GroupBar
 import com.ebony.cuddlecare.ui.components.TopBar
-import com.ebony.cuddlecare.ui.components.stackedBarChartInputs
 import com.ebony.cuddlecare.ui.documents.Baby
-import kotlin.math.min
+import kotlin.random.Random
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StatisticsScreen(
     onNotificationClick: () -> Unit = {},
@@ -153,196 +153,225 @@ fun StatisticsScreen(
             }
 
 
-            Column(modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp)
-                .height(300.dp)
-                .background(Color.White, shape = RoundedCornerShape(10.dp)))
-            {
 
-                Row(modifier = Modifier.padding(top = 16.dp)) {
-                    Text(
-                        text = "Detailed",
-                        modifier = Modifier.padding(bottom = 16.dp, start = 16.dp),
-                        fontWeight = FontWeight.Bold,
-                        fontSize = 20.sp
-                    )
-                }
-
-
-                Column(
+              Column(
                     modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .height(300.dp)
+                        .fillMaxSize()
+                        .padding(horizontal = 8.dp, vertical = 16.dp)
                         .background(Color.White, shape = RoundedCornerShape(10.dp)),
-                    verticalArrangement = Arrangement.Center
-                ) {
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ){
 
-                    // Preview with sample data
-                    PieChart(
-                        data = mapOf(
-                            Pair("Sample-1", 150),
-                            Pair("Sample-2", 120),
-                            Pair("Sample-3", 110),
-
-                            )
-                    )
+                    VerticalStackedBarChart()
                 }
-            }
 
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal=8.dp, vertical = 16.dp)
-                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+
+
+          Column(
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(horizontal = 8.dp, vertical = 16.dp)
+                    .background(Color.White, shape = RoundedCornerShape(10.dp)),
                 verticalArrangement = Arrangement.Center,
                 horizontalAlignment = Alignment.CenterHorizontally
             )
             {
-                val datalist = mutableListOf(30, 60, 90, 50, 70)
-                val floatValue = mutableListOf<Float>()
-                val datesList = mutableListOf(2,3,4,5,6)
-                datalist.forEachIndexed { index , value ->
-                floatValue.add(index = index, element = value.toFloat()/datalist.max().toFloat())
-                }
-                BarGraph(
-                    graphBarData = floatValue,
-                    xAxisScaleData = datesList,
-                    barData_ = datalist,
 
-                    height = 300.dp,
-                    roundType = BarType.TOP_CURVED,
-                    barWidth = 20.dp,
-                    barColor = Color.Blue,
-                    barArrangement = Arrangement.SpaceEvenly
-                )
-            }
-            Column(modifier = Modifier
-                .fillMaxSize()
-                .padding(horizontal=8.dp, vertical = 16.dp)
-                .background(Color.White, shape = RoundedCornerShape(10.dp)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-                val datalist = mutableListOf(30, 60, 90, 50, 70)
-                val floatValue = mutableListOf<Float>()
-                val datesList = mutableListOf(2, 3, 4, 5, 6)
-                datalist.forEachIndexed { index, value ->
-                    floatValue.add(
-                        index = index,
-                        element = value.toFloat() / datalist.max().toFloat()
-                    )
-                }
-                ChartScreen(
-                    title = "Stacked Bar Chart",
-                    chart = {
-                        StackedBarChart(
-                            modifier = Modifier.padding(20.dp),
-                            values = stackedBarChartInputs()
-                        )
-                    }
-                )
+                SimpleDonutChart(context = LocalContext.current)
 
             }
-            }
 
-
-
-        }
-        }
-
-
-
-
-
-    @Composable
-    fun PieChart(
-        data: Map<String, Int>,
-        radiusOuter: Dp = 90.dp,
-        chartBarWidth: Dp = 50.dp,
-        animDuration: Int = 1000,
-) {
-
-        val totalSum = data.values.sum()
-        val floatValue = mutableListOf<Float>()
-
-        // To set the value of each Arc according to
-        // the value given in the data, we have used a simple formula.
-        // For a detailed explanation check out the Medium Article.
-        // The link is in the about section and readme file of this GitHub Repository
-        data.values.forEachIndexed { index, values ->
-            floatValue.add(index, 360 * values.toFloat() / totalSum.toFloat())
-        }
-
-        // add the colors as per the number of data(no. of pie chart entries)
-        // so that each data will get a color
-        val colors = listOf(
-            colorResource(id = R.color.teal_200),
-            colorResource(id = R.color.teal_700),
-            colorResource(id = R.color.purple_200),
-
-        )
-
-        var animationPlayed by remember { mutableStateOf(false) }
-
-        var lastValue = 0f
-
-        // it is the diameter value of the Pie
-        val animateSize by animateFloatAsState(
-            targetValue = if (animationPlayed) radiusOuter.value * 2f else 0f,
-            animationSpec = tween(
-                durationMillis = animDuration,
-                delayMillis = 0,
-                easing = LinearOutSlowInEasing
-            ), label = ""
-        )
-
-        // if you want to stabilize the Pie Chart you can use value -90f
-        // 90f is used to complete 1/4 of the rotation
-        val animateRotation by animateFloatAsState(
-            targetValue = if (animationPlayed) 90f * 11f else 0f,
-            animationSpec = tween(
-                durationMillis = animDuration,
-                delayMillis = 0,
-                easing = LinearOutSlowInEasing
-            ), label = ""
-        )
-
-        // to play the animation only once when the function is Created or Recomposed
-        LaunchedEffect(key1 = true) {
-            animationPlayed = true
-        }
-
-        Column(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalAlignment = Alignment.CenterHorizontally
-        ) {
-
-            // Pie Chart using Canvas Arc
-            Box(
-                modifier = Modifier.size(animateSize.dp),
-                contentAlignment = Alignment.Center
-            ) {
-                Canvas(
-                    modifier = Modifier
-                        .size(radiusOuter * 2f)
-                        .rotate(animateRotation)
-                ) {
-                    // draw each Arc for each data entry in Pie Chart
-                    floatValue.forEachIndexed { index, value ->
-                        drawArc(
-                            color = colors[index],
-                            lastValue,
-                            value,
-                            useCenter = false,
-                            style = Stroke(chartBarWidth.toPx(), cap = StrokeCap.Butt)
-                        )
-                        lastValue += value
-                    }
-                }
-            }
         }
     }
+
+
+}
+
+/**
+ * Simple donut chart
+ *
+ * @param context
+ */
+@ExperimentalMaterialApi
+@Composable
+private fun SimpleDonutChart(context: Context) {
+
+    val accessibilitySheetState =
+        rememberModalBottomSheetState(initialValue = ModalBottomSheetValue.Hidden)
+    val scope = rememberCoroutineScope()
+    val data = getDonutChartData()
+    // Sum of all the values
+    val sumOfValues = data.totalLength
+
+    // Calculate each proportion value
+    val proportions = data.slices.proportion(sumOfValues)
+    val pieChartConfig =
+        PieChartConfig(
+            labelVisible = true,
+            strokeWidth = 120f,
+            labelColor = Color.Black,
+            activeSliceAlpha = .9f,
+            isEllipsizeEnabled = true,
+            labelTypeface = Typeface.defaultFromStyle(Typeface.BOLD),
+            isAnimationEnable = true,
+            chartPadding = 25,
+            labelFontSize = 42.sp,
+        )
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .height(500.dp)
+    ) {
+        Legends(legendsConfig = DataUtils.getLegendsConfigFromPieChartData(pieChartData = data, 3))
+        DonutPieChart(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+            data,
+            pieChartConfig
+        ) { slice ->
+            Toast.makeText(context, slice.label, Toast.LENGTH_SHORT).show()
+        }
+    }
+}
+
+fun getDonutChartData(): PieChartData {
+    return PieChartData(
+        slices = listOf(
+            PieChartData.Slice("HP", 15f, Color(0xFF5F0A87)),
+            PieChartData.Slice("Dell", 30f, Color(0xFF20BF55)),
+            PieChartData.Slice("Lenovo", 10f, Color(0xFFA40606)),
+            PieChartData.Slice("Asus", 15f, Color(0xFFF53844)),
+            PieChartData.Slice("Acer", 10f, Color(0xFFEC9F05)),
+            PieChartData.Slice("Apple", 30f, Color(0xFF009FFD)),
+        ),
+        plotType = PlotType.Donut
+    )
+}
+
+@Composable
+                fun VerticalStackedBarChart() {
+    val barSize = 3
+    val listSize = 10
+    val groupBarData = getGroupBarChartData(listSize, 100, barSize)
+    val yStepSize = 10
+    val xAxisData = AxisData.Builder()
+        .axisStepSize(30.dp)
+        .steps(listSize - 1)
+        .startDrawPadding(48.dp)
+        .labelData { index -> "C $index" }
+        .build()
+    val yAxisData = AxisData.Builder()
+        .steps(yStepSize)
+        .labelAndAxisLinePadding(20.dp)
+        .axisOffset(20.dp)
+        .labelData { index ->
+            val valueList = mutableListOf<Float>()
+            groupBarData.map { groupBar ->
+                var yMax = 0f
+                groupBar.barList.forEach {
+                    yMax += it.point.y
+                }
+                valueList.add(yMax)
+            }
+            val maxElementInYAxis = getMaxElementInYAxis(valueList.maxOrNull() ?: 0f, yStepSize)
+
+            (index * (maxElementInYAxis / yStepSize)).toString()
+        }
+        .topPadding(36.dp)
+        .build()
+    val colorPaletteList = DataUtils.getColorPaletteList(barSize)
+    val legendsConfig = LegendsConfig(
+        legendLabelList = DataUtils.getLegendsLabelData(colorPaletteList),
+        gridColumnCount = 3
+    )
+    val groupBarPlotData = BarPlotData(
+        groupBarList = groupBarData,
+        barStyle = BarStyle(
+            barWidth = 35.dp,
+            selectionHighlightData = SelectionHighlightData(
+                isHighlightFullBar = true,
+                groupBarPopUpLabel = { name, value ->
+                    "Name : C$name Value : ${String.format("%.2f", value)}"
+                }
+            )
+        ),
+        barColorPaletteList = colorPaletteList
+    )
+    val groupBarChartData = GroupBarChartData(
+        barPlotData = groupBarPlotData,
+        xAxisData = xAxisData,
+        yAxisData = yAxisData,
+        paddingBetweenStackedBars = 4.dp,
+        drawBar = { drawScope, barChartData, barStyle, drawOffset, height, barIndex ->
+            with(drawScope) {
+                drawRect(
+                    color = colorPaletteList[barIndex],
+                    topLeft = drawOffset,
+                    size = Size(barStyle.barWidth.toPx(), height),
+                    style = barStyle.barDrawStyle,
+                    blendMode = barStyle.barBlendMode
+                )
+            }
+        }
+    )
+    Column(
+        Modifier
+            .height(500.dp)
+    ) {
+        StackedBarChart(
+            modifier = Modifier
+                .height(400.dp),
+            groupBarChartData = groupBarChartData
+        )
+        Legends(
+            legendsConfig = legendsConfig
+        )
+    }
+}
+
+
+/**
+ * Returns the sample gradient bar chart data.
+ * @param listSize Size of the list
+ * @param maxRange Maximum range for the values
+ * @param barSize size of bars in one group
+ */
+fun getGroupBarChartData(listSize: Int, maxRange: Int, barSize: Int): List<GroupBar> {
+    val list = mutableListOf<GroupBar>()
+    for (index in 0 until listSize) {
+        val barList = mutableListOf<BarData>()
+        for (i in 0 until barSize) {
+            val barValue = "%.2f".format(Random.nextDouble(1.0, maxRange.toDouble())).toFloat()
+            barList.add(
+                BarData(
+                    Point(
+                        index.toFloat(),
+                        barValue
+                    ),
+                    label = "B$i",
+                    description = "Bar at $index with label B$i has value ${
+                        String.format(
+                            "%.2f", barValue
+                        )
+                    }"
+                )
+            )
+        }
+        list.add(GroupBar(index.toString(), barList))
+    }
+    return list
+}
+
+
+
+
+
+
+
+
+
+
 
 
