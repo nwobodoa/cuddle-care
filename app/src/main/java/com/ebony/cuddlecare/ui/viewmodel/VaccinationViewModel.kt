@@ -88,7 +88,7 @@ class VaccinationViewModel : ViewModel() {
         return errors
     }
 
-    fun uiStateToRecord(uiState: VaccineUIState): VaccinationRecord {
+    private fun uiStateToRecord(uiState: VaccineUIState): VaccinationRecord {
         return VaccinationRecord(
             id = "",
             attachments = uiState.attachments,
@@ -140,7 +140,6 @@ class VaccinationViewModel : ViewModel() {
             }.addOnCompleteListener {
                 setLoading(false)
             }
-
     }
 
 

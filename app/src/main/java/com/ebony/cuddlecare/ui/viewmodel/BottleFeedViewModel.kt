@@ -4,7 +4,7 @@ import android.content.ContentValues.TAG
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import com.ebony.cuddlecare.ui.documents.Baby
-import com.ebony.cuddlecare.ui.documents.BottleFeed
+import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
 import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.ui.documents.activeBabyCollection
 import com.ebony.cuddlecare.util.epochMillisToDate
@@ -30,7 +30,7 @@ data class BottleFeedingUIState(
     val selectedDate: LocalDate = LocalDate.now(),
     val loading: Boolean = false,
     val canNavigateBack: Boolean = false,
-    val bottleFeedingRecords: List<BottleFeed> = emptyList(),
+    val bottleFeedingRecords: List<BottleFeedingRecord> = emptyList(),
     val breastFeedingRecords: List<BreastFeedingRecord> = emptyList()
 )
 
@@ -55,10 +55,11 @@ class BottleFeedViewModel : ViewModel() {
         _bottleFeedingUIState.update { it.copy(isTimeExpanded = !it.isTimeExpanded) }
     }
 
-    private fun uIStateToRecord(): BottleFeed {
+    private fun uIStateToRecord(): BottleFeedingRecord {
         val state = _bottleFeedingUIState.value
-        return BottleFeed(
-
+        return BottleFeedingRecord(
+            id = "",
+            babyId = "",
             quantityMl = state.quantityMl,
             notes = state.notes,
             attachmentURL = state.attachmentURL,
@@ -82,9 +83,9 @@ class BottleFeedViewModel : ViewModel() {
                     Log.e(TAG, "fetchBottleFeed: ", ex)
                     return@addSnapshotListener
                 }
-                val bottleFeeds: List<BottleFeed>? = doc?.documents?.mapNotNull {
+                val bottleFeeds: List<BottleFeedingRecord>? = doc?.documents?.mapNotNull {
                     it.toObject(
-                        BottleFeed::class.java
+                        BottleFeedingRecord::class.java
                     )
                 }
                 _bottleFeedingUIState.update {
@@ -122,7 +123,7 @@ class BottleFeedViewModel : ViewModel() {
 
     fun save(activeBaby: Baby?) {
         val recordToSave = uIStateToRecord()
-        if (recordToSave == BottleFeed() || activeBaby == null) {
+        if (recordToSave == BottleFeedingRecord() || activeBaby == null) {
             TODO("Handle empty record")
             return
         }

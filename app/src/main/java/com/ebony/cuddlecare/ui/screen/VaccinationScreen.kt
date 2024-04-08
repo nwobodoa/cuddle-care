@@ -69,6 +69,12 @@ fun VaccinationScreen(
     val vaccineUIState by vaccinationViewModel.vaccineUIState.collectAsState()
     val scrollState = rememberScrollState()
 
+    LaunchedEffect(key1 = vaccineUIState.savedSuccessfully) {
+        if(vaccineUIState.savedSuccessfully) {
+            onNavigateBack()
+        }
+    }
+
     if (vaccineUIState.showVaccineList) {
         VaccineList(
             setSelectedVaccine = vaccinationViewModel::setSelectVaccine,

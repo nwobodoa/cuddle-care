@@ -102,7 +102,7 @@ class SleepingViewModel : ViewModel() {
     fun save(activeBaby: Baby?) {
         val sleepingUIState = _sleepingUIState.value
         if (activeBaby == null || sleepingUIState.durationSecs == 0L) {
-            TODO("Handle empty record")
+             // TODO("Handle empty record")
             return
         }
         setSavedSuccess(false)

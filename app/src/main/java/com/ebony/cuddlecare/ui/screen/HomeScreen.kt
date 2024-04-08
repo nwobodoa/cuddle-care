@@ -12,11 +12,9 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyRow
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.rememberScrollState
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.Timelapse
-import androidx.compose.material.icons.outlined.Vaccines
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,26 +35,22 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.BottomNavBar
+import com.ebony.cuddlecare.ui.components.DetailedActivityList
 import com.ebony.cuddlecare.ui.components.Loading
 import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
 import com.ebony.cuddlecare.ui.documents.Baby
-import com.ebony.cuddlecare.ui.documents.BottleFeed
+import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
 import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
-import com.ebony.cuddlecare.ui.documents.SortableActivity
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
-import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
 import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
-import com.ebony.cuddlecare.ui.viewmodel.VaccinationRecord
 import com.ebony.cuddlecare.ui.viewmodel.VaccinationViewModel
-import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
 import com.ebony.cuddlecare.util.secondsToFormattedTime
-import com.ebony.cuddlecare.util.timestampToString
 import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.util.Locale
@@ -208,21 +202,26 @@ fun HomeScreen(
                 TodayDateDisplay()
                 if (loading) {
                     Loading()
-                } else if (sortableActivities.isEmpty()) {
+                    return@Scaffold
+                }
+
+                if (sortableActivities.isEmpty()) {
                     Column(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalAlignment = Alignment.CenterHorizontally
                     ) {
                         Text(text = "No data found")
                     }
-                } else {
-                    ActivityDailySummary(
-                        breastfeedingUIState.breastfeedingRecords,
-                        bottleFeedingUIState.bottleFeedingRecords,
-                        diaperUIState.diaperRecords
-                    )
-                    DetailedActivityList(sortableActivities = sortableActivities)
+                    return@Scaffold
                 }
+
+                ActivityDailySummary(
+                    breastfeedingUIState.breastfeedingRecords,
+                    bottleFeedingUIState.bottleFeedingRecords,
+                    diaperUIState.diaperRecords
+                )
+                DetailedActivityList(sortableActivities = sortableActivities)
+
             }
         }
     }
@@ -246,185 +245,6 @@ private fun ActivityMenuRow(onTopNavigation: (String) -> Unit) {
 }
 
 @Composable
-private fun DetailedActivityList(sortableActivities: List<SortableActivity>) {
-    val sortedActivities = sortableActivities.sortedBy { -it.rank() }
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-            .background(color = Color.White, shape = RoundedCornerShape(10.dp)),
-        verticalArrangement = Arrangement.Center
-    )
-    {
-        sortedActivities.mapIndexed { idx, record ->
-            when (record) {
-                is DiaperRecord -> DiaperDetailRow(diaperRecord = record)
-                is BreastFeedingRecord -> BreastfeedingDetailRow(record = record)
-                is SleepRecord -> SleepingDetailRow(record = record)
-                is VaccinationRecord -> VaccinationDetailRow(record = record)
-                else -> Text(text = "Unknown")
-            }
-
-            if (idx != sortableActivities.lastIndex) {
-                HorizontalDivider()
-            }
-        }
-    }
-}
-
-@Composable
-private fun DiaperDetailRow(diaperRecord: DiaperRecord) {
-    Row(
-        modifier = Modifier.padding(start = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            modifier = Modifier.size(35.dp),
-            painter = painterResource(id = R.drawable.diaper), contentDescription = null
-        )
-        Column(
-            modifier = Modifier.padding(16.dp),
-        ) {
-            Text(text = diaperRecord.timestampToString())
-
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                if (diaperRecord.soilState.contains(DiaperSoilType.DIRTY)) {
-                    Image(
-                        modifier = Modifier
-                            .size(30.dp)
-                            .padding(end = 8.dp),
-                        painter = painterResource(id = R.drawable.pee),
-                        contentDescription = null
-                    )
-                    Text(text = "Pee")
-                }
-                if (diaperRecord.soilState.contains(DiaperSoilType.WET)) {
-                    Image(
-                        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                        painter = painterResource(id = R.drawable.poop),
-                        contentDescription = null
-                    )
-                    Text(text = "Poo")
-                }
-            }
-
-        }
-    }
-}
-
-
-@Composable
-private fun BreastfeedingDetailRow(record: BreastFeedingRecord) {
-    val startTime = timestampToString(record.startTime)
-    val endTime = timestampToString(record.endTime)
-
-    val rightActiveSeconds = record.rightBreast?.activeSeconds ?: 0
-    val leftActiveSeconds = record.leftBreast?.activeSeconds ?: 0
-
-    val totalTime = rightActiveSeconds + leftActiveSeconds
-
-    Row(
-        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            modifier = Modifier.size(35.dp),
-            painter = painterResource(id = R.drawable.bf), contentDescription = null
-        )
-        Column(
-            modifier = Modifier.padding(start = 16.dp),
-        ) {
-            Text(text = "$startTime - $endTime")
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    modifier = Modifier.padding(end = 8.dp),
-                    imageVector = Icons.Outlined.Timelapse,
-                    contentDescription = null
-                )
-                Text(
-                    text = "${secondsToFormattedTime(totalTime)} Left: ${
-                        secondsToFormattedTime(
-                            leftActiveSeconds
-                        )
-                    } Right: ${secondsToFormattedTime(rightActiveSeconds)}"
-                )
-
-            }
-        }
-    }
-}
-
-@Composable
-private fun SleepingDetailRow(record: SleepRecord) {
-    val startTime = timestampToString(record.startTimeEpochSecs)
-    val endTime = timestampToString(record.endTimeEpochSecs)
-
-
-    val totalTime = record.endTimeEpochSecs - record.startTimeEpochSecs
-
-    Row(
-        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            modifier = Modifier.size(35.dp),
-            painter = painterResource(id = R.drawable.crib), contentDescription = null
-        )
-        Column(
-            modifier = Modifier.padding(start = 16.dp),
-        ) {
-            Text(text = "$startTime - $endTime")
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    modifier = Modifier.padding(end = 8.dp),
-                    imageVector = Icons.Outlined.Timelapse,
-                    contentDescription = null
-                )
-                Text(
-                    text = secondsToFormattedTime(totalTime)
-                )
-
-            }
-        }
-    }
-}
-
-
-@Composable
-private fun VaccinationDetailRow(record: VaccinationRecord) {
-    val endTime =
-        epochSecondsToLocalDateTime(record.endTimeEpochSecs)?.format(DateTimeFormatter.ofPattern("h:mm a"))
-            ?: ""
-
-    Row(
-        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
-        verticalAlignment = Alignment.CenterVertically
-    ) {
-        Image(
-            modifier = Modifier.size(35.dp),
-            painter = painterResource(id = R.drawable.vaccine), contentDescription = null
-        )
-        Column(
-            modifier = Modifier.padding(start = 16.dp),
-        ) {
-            Text(text = endTime)
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Image(
-                    modifier = Modifier.padding(end = 8.dp),
-                    imageVector = Icons.Outlined.Vaccines,
-                    contentDescription = null
-                )
-                Text(
-                    text = record.type
-                )
-
-            }
-        }
-    }
-}
-
-
-@Composable
 private fun TodayDateDisplay() {
     Row(modifier = Modifier.padding(top = 16.dp, start = 8.dp)) {
         Text(text = "Today, ${formatDate(LocalDate.now())}")
@@ -434,7 +254,7 @@ private fun TodayDateDisplay() {
 @Composable
 private fun ActivityDailySummary(
     breastfeedingRecords: List<BreastFeedingRecord>,
-    bottleFeedingRecords: List<BottleFeed>,
+    bottleFeedingRecords: List<BottleFeedingRecord>,
     diaperRecords: List<DiaperRecord>
 ) {
     Column(
@@ -517,7 +337,7 @@ private fun DiaperSummary(diaperRecords: List<DiaperRecord>) {
 }
 
 @Composable
-private fun BottleFeedSummary(bottleFeed: List<BottleFeed>) {
+private fun BottleFeedSummary(bottleFeed: List<BottleFeedingRecord>) {
     if (bottleFeed.isEmpty()) return
     Row(modifier = Modifier.padding(16.dp)) {
         SummaryLeadIcon(bottleFeed.count().toString(), resourceId = R.drawable.bottle)
