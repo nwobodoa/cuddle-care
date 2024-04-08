@@ -66,7 +66,6 @@ fun AddBaby(
     navController: NavController,
     babyViewModel: BabyViewModel = viewModel(),
     user: CareGiver,
-    onTopNavigation: (String) -> Unit = {},
     setUpdatedUser: (CareGiver) -> Unit
 ) {
     val babyUIState by babyViewModel.babyUIState.collectAsState()
@@ -76,9 +75,7 @@ fun AddBaby(
     )
 
     var openBottomSheet by remember { mutableStateOf(false) }
-    Scaffold(
-        bottomBar = { BottomNavBar(onTopNavigation) },
-    ) {
+    Scaffold {
 
         Column(
             modifier = Modifier.padding(it)

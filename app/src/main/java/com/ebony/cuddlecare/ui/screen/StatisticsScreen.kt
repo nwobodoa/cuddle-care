@@ -8,6 +8,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -69,122 +70,110 @@ fun StatisticsScreen(
     onTopNavigation: (String) -> Unit,
     babies: List<Baby>,
     setActiveBaby: (String) -> Unit,
-    activeBaby: Baby?
+    activeBaby: Baby?,
+    innerPadding: PaddingValues
 ) {
-    Scaffold(
-        topBar = {
-            TopBar(
-                onNotificationClick = {},
-                babies = babies,
-                setActiveBaby = setActiveBaby,
-                activeBaby = activeBaby
 
-            )
-        },
-        bottomBar = { BottomNavBar(onTopNavigation) },
-    ) { innerPadding ->
-        val scrollState = rememberScrollState()
-        Column(
+    val scrollState = rememberScrollState()
+    Column(
+        modifier = Modifier
+            .verticalScroll(state = scrollState)
+            .padding(innerPadding)
+            .padding(16.dp)
+    ) {
+        Row(
             modifier = Modifier
-                .verticalScroll(state = scrollState)
-                .padding(innerPadding)
-                .padding(16.dp)
-        ) {
-            Row(
+                .fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+        )
+        {
+            Image(
                 modifier = Modifier
-                    .fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
+                    .padding(end = 16.dp)
+                    .size(50.dp),
+                painter = painterResource(id = R.drawable.diaper), contentDescription = null
             )
-            {
-                Image(
-                    modifier = Modifier
-                        .padding(end = 16.dp)
-                        .size(50.dp),
-                    painter = painterResource(id = R.drawable.diaper), contentDescription = null
-                )
 
-                Text(text = "Diaper", fontWeight = FontWeight.Bold, fontSize = 30.sp)
-                Image(imageVector = Icons.Default.ExpandMore, contentDescription = null)
-
-            }
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(text = "24 Mar - 30 Mar")
-                IconButton(onClick = { /*TODO*/ }) {
-                    Image(
-                        modifier = Modifier
-                            .size(35.dp),
-                        imageVector = Icons.Default.CalendarMonth, contentDescription = null
-                    )
-                }
-            }
-            Row(
-                modifier = Modifier
-                    .fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(16.dp)
-            )
-            {
-                Column(
-                    modifier = Modifier
-                        .border(
-                            width = 1.dp, color = Color.Green,
-                            shape = RoundedCornerShape(10.dp)
-                        )
-                        .width(150.dp)
-                        .background(Color.White, shape = RoundedCornerShape(10.dp))
-                        .padding(8.dp)
-                ) {
-                    Text(text = "Number of Times")
-                    Text(text = "")
-                    Text(text = "Day")
-
-                }
-
-                Column(
-                    modifier = Modifier
-                        .width(150.dp)
-                        .height(90.dp)
-                        .background(Color.White, shape = RoundedCornerShape(10.dp))
-                        .padding(8.dp)
-                ) {
-                    Text(text = "Time of Day")
-
-
-                }
-            }
-
-
-
-              Column(
-                    modifier = Modifier
-                        .fillMaxSize()
-                        .padding(horizontal = 8.dp, vertical = 16.dp)
-                        .background(Color.White, shape = RoundedCornerShape(10.dp)),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ){
-
-                    VerticalStackedBarChart()
-                }
-
-
-
-          Column(
-                modifier = Modifier
-                    .fillMaxSize()
-                    .padding(horizontal = 8.dp, vertical = 16.dp)
-                    .background(Color.White, shape = RoundedCornerShape(10.dp)),
-                verticalArrangement = Arrangement.Center,
-                horizontalAlignment = Alignment.CenterHorizontally
-            )
-            {
-
-                SimpleDonutChart(context = LocalContext.current)
-
-            }
+            Text(text = "Diaper", fontWeight = FontWeight.Bold, fontSize = 30.sp)
+            Image(imageVector = Icons.Default.ExpandMore, contentDescription = null)
 
         }
-    }
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            Text(text = "24 Mar - 30 Mar")
+            IconButton(onClick = { /*TODO*/ }) {
+                Image(
+                    modifier = Modifier
+                        .size(35.dp),
+                    imageVector = Icons.Default.CalendarMonth, contentDescription = null
+                )
+            }
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxWidth(),
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        )
+        {
+            Column(
+                modifier = Modifier
+                    .border(
+                        width = 1.dp, color = Color.Green,
+                        shape = RoundedCornerShape(10.dp)
+                    )
+                    .width(150.dp)
+                    .background(Color.White, shape = RoundedCornerShape(10.dp))
+                    .padding(8.dp)
+            ) {
+                Text(text = "Number of Times")
+                Text(text = "")
+                Text(text = "Day")
 
+            }
+
+            Column(
+                modifier = Modifier
+                    .width(150.dp)
+                    .height(90.dp)
+                    .background(Color.White, shape = RoundedCornerShape(10.dp))
+                    .padding(8.dp)
+            ) {
+                Text(text = "Time of Day")
+
+
+            }
+        }
+
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 16.dp)
+                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+
+            VerticalStackedBarChart()
+        }
+
+
+
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal = 8.dp, vertical = 16.dp)
+                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        )
+        {
+
+            SimpleDonutChart(context = LocalContext.current)
+
+        }
+
+    }
 
 }
 
@@ -251,7 +240,7 @@ fun getDonutChartData(): PieChartData {
 }
 
 @Composable
-  fun VerticalStackedBarChart() {
+fun VerticalStackedBarChart() {
     val barSize = 3
     val listSize = 10
     val groupBarData = getGroupBarChartData(listSize, 50, barSize)

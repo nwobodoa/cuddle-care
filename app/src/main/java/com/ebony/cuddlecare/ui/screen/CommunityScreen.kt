@@ -5,6 +5,7 @@ import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -50,24 +51,17 @@ import com.ebony.cuddlecare.ui.viewmodel.SelectedTab
 fun CommunityScreen(
     onTopNavigation: (String) -> Unit = {},
     onNavigateBack: () -> Unit = {},
-    communityViewModel: CommunityViewModel = viewModel()
+    communityViewModel: CommunityViewModel = viewModel(),
+    innerPadding: PaddingValues
 ) {
     val navController: NavHostController = rememberNavController()
     val communityUIState by communityViewModel.communityUIState.collectAsState()
-    Scaffold(
-        topBar = {
-            NavTopBar(onNavigateBack = onNavigateBack, "Community")
-        },
-        bottomBar = { BottomNavBar(onTopNavigation) },
-    ) {
-        Column (modifier = Modifier.padding(it))
-        {
 
-            TabSelection(communityViewModel)
-            LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+    Column(modifier = Modifier.padding(innerPadding))
+    {
 
-            }
-
+        TabSelection(communityViewModel)
+        LazyColumn(verticalArrangement = Arrangement.spacedBy(4.dp)) {
 
         }
     }

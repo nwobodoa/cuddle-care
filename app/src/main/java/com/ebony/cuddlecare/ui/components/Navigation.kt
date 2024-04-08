@@ -84,20 +84,21 @@ fun ScreenScaffold(
     }
 }
 
+data class BottomNavigationItem(
+    val title: String,
+    val selectedIcon: ImageVector,
+    val unselectedIcon: ImageVector,
+    val hasNews: Boolean,
+    val badgeCount: Int? = null,
+    val destination: Screen
+)
+
 
 @Composable
-fun BottomNavBar(onTopNavigation: (String) -> Unit) {
-
+fun BottomNavBar() {
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
 
-    data class BottomNavigationItem(
-        val title: String,
-        val selectedIcon: ImageVector,
-        val unselectedIcon: ImageVector,
-        val hasNews: Boolean,
-        val badgeCount: Int? = null,
-        val destination: Screen
-    )
+
 
     val navItems = listOf(
         BottomNavigationItem(
@@ -159,7 +160,6 @@ fun BottomNavBar(onTopNavigation: (String) -> Unit) {
                 selected = selectedItemIndex == index,
                 onClick = {
                     selectedItemIndex = index
-                    onTopNavigation(item.destination.name)
                 }
             )
         }

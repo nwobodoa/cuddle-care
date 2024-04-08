@@ -74,12 +74,15 @@ fun AuthenticatedScreens(
         NavHost(navController = navController, startDestination = startDestination) {
 
             composable(Screen.HomeScreen.name) {
-                HomeScreen(
+                HomeNavigableScreen(
+                    user = user,
                     onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
                     onTopNavigation = { dest -> navController.navigate(dest) },
                     babies = babyUIState.listOfBabies,
                     activeBaby = babyUIState.activeBaby,
-                    setActiveBaby = setActiveBaby
+                    setBabyToUpdate = { baby -> careGiverViewModel.setBaby(baby) },
+                    setActiveBaby = setActiveBaby,
+                    onSignOut = onSignOut
                 )
             }
             composable(Screen.SleepingScreen.name) {
@@ -131,8 +134,6 @@ fun AuthenticatedScreens(
                     navController = navController,
                     user = user,
                     setUpdatedUser = setUpdatedUser,
-                    onTopNavigation = { dest -> navController.navigate(dest) },
-
                 )
             }
 
@@ -153,30 +154,7 @@ fun AuthenticatedScreens(
             composable(Screen.ReminderScreen.name) {
                 ReminderScreen { navController.popBackStack() }
             }
-            composable(Screen.CommunityScreen.name) {
-                CommunityScreen(
-                    onTopNavigation = {dest -> navController.navigate(dest)},
-                    onNavigateBack = {navController.popBackStack()},
-                )
-            }
-            composable(Screen.Profile.name) {
-                AccountScreen(
-                    onTopNavigation = { dest -> navController.navigate(dest) },
-                    babies = babyUIState.listOfBabies,
-                    user = user,
-                    setBabyToUpdate = { baby -> careGiverViewModel.setBaby(baby) },
-                    onSignOut = onSignOut
-                )
-            }
-            composable(Screen.Statistics.name) {
-                StatisticsScreen(
-                    onNotificationClick = { navController.navigate(Screen.ReminderScreen.name) },
-                    onTopNavigation = { dest -> navController.navigate(dest) },
-                    babies = babyUIState.listOfBabies,
-                    activeBaby = babyUIState.activeBaby,
-                    setActiveBaby = setActiveBaby
-                )
-            }
+
             composable(Screen.Caregiver.name) {
                 CareGiverScreen(
                     onNavigateBack = { navController.popBackStack() },

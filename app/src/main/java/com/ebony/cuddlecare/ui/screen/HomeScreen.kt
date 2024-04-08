@@ -5,6 +5,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -33,6 +34,10 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.DetailedActivityList
@@ -41,6 +46,7 @@ import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
+import com.ebony.cuddlecare.ui.documents.CareGiver
 import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
@@ -131,11 +137,70 @@ fun NavigationIcon(
 }
 
 @Composable
-fun HomeScreen(
+fun HomeNavigableScreen(
     onNotificationClick: () -> Unit = {},
     onTopNavigation: (String) -> Unit,
     babies: List<Baby>,
     setActiveBaby: (String) -> Unit,
+    activeBaby: Baby?,
+    setBabyToUpdate: (Baby) -> Unit,
+    onSignOut: () -> Unit,
+    user: CareGiver,
+    navController: NavHostController = rememberNavController(),
+) {
+
+    Scaffold(
+        topBar = {
+            TopBar(
+                onNotificationClick = onNotificationClick,
+                babies = babies,
+                setActiveBaby = setActiveBaby,
+                activeBaby = activeBaby
+            )
+        },
+        bottomBar = { BottomNavBar() },
+    ) { innerPadding ->
+        NavHost(navController = navController, startDestination = Screen.HomeScreen.name) {
+            composable(Screen.HomeScreen.name) {
+                HomeScreen(
+                    onTopNavigation = onTopNavigation,
+                    innerPadding = innerPadding,
+                    activeBaby = activeBaby
+                )
+            }
+
+            composable(Screen.CommunityScreen.name) {
+                CommunityScreen(innerPadding = innerPadding)
+            }
+
+            composable(Screen.Profile.name) {
+                AccountScreen(
+                    user = user,
+                    babies = babies,
+                    onTopNavigation = onTopNavigation,
+                    setBabyToUpdate = setBabyToUpdate,
+                    onSignOut = onSignOut,
+                    innerPadding = innerPadding
+                )
+            }
+            composable(Screen.Statistics.name) {
+                StatisticsScreen(
+                    onTopNavigation = onTopNavigation,
+                    babies = babies,
+                    setActiveBaby = setActiveBaby,
+                    activeBaby = activeBaby,
+                    innerPadding = innerPadding
+                )
+            }
+
+        }
+    }
+}
+
+@Composable
+fun HomeScreen(
+    onTopNavigation: (String) -> Unit,
+    innerPadding: PaddingValues,
     activeBaby: Baby?,
     bottleFeedViewModel: BottleFeedViewModel = viewModel(),
     breastFeedingViewModel: BreastfeedingViewModel = viewModel(),
@@ -176,55 +241,41 @@ fun HomeScreen(
     val loading = breastfeedingUIState.loading || diaperUIState.loading || sleepUIState.loading
             || medicineUIState.loading || vaccineUIState.loading
 
+    Column(
+        modifier = Modifier
+            .padding(innerPadding)
+            .padding(top = 8.dp)
 
-    Scaffold(
-        topBar = {
-            TopBar(
-                onNotificationClick = onNotificationClick,
-                babies = babies,
-                setActiveBaby = setActiveBaby,
-                activeBaby = activeBaby
-
-            )
-        },
-        bottomBar = { BottomNavBar(onTopNavigation) },
-    ) { innerPadding ->
-
-        Column(
-            modifier = Modifier
-                .padding(innerPadding)
-                .padding(top = 8.dp)
-
-        ) {
-            ActivityMenuRow(onTopNavigation)
-            Column(modifier = Modifier.verticalScroll(scrollState)) {
-                TipsCard(show = isTipsCardVisible, onDismiss = { isTipsCardVisible = false })
-                TodayDateDisplay()
-                if (loading) {
-                    Loading()
-                    return@Scaffold
-                }
-
-                if (sortableActivities.isEmpty()) {
-                    Column(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalAlignment = Alignment.CenterHorizontally
-                    ) {
-                        Text(text = "No data found")
-                    }
-                    return@Scaffold
-                }
-
-                ActivityDailySummary(
-                    breastfeedingUIState.breastfeedingRecords,
-                    bottleFeedingUIState.bottleFeedingRecords,
-                    diaperUIState.diaperRecords
-                )
-                DetailedActivityList(sortableActivities = sortableActivities)
-
+    ) {
+        ActivityMenuRow(onTopNavigation)
+        Column(modifier = Modifier.verticalScroll(scrollState)) {
+            TipsCard(show = isTipsCardVisible, onDismiss = { isTipsCardVisible = false })
+            TodayDateDisplay()
+            if (loading) {
+                Loading()
+                return
             }
+
+            if (sortableActivities.isEmpty()) {
+                Column(
+                    modifier = Modifier.fillMaxWidth(),
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    Text(text = "No data found")
+                }
+                return
+            }
+
+            ActivityDailySummary(
+                breastfeedingUIState.breastfeedingRecords,
+                bottleFeedingUIState.bottleFeedingRecords,
+                diaperUIState.diaperRecords
+            )
+            DetailedActivityList(sortableActivities = sortableActivities)
+
         }
     }
+
 }
 
 @Composable

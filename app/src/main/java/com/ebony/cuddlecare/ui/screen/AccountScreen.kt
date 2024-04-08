@@ -6,6 +6,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -64,7 +65,8 @@ fun AccountScreen(
     onTopNavigation: (String) -> Unit,
     setBabyToUpdate: (Baby) -> Unit,
     onSignOut: () -> Unit,
-    accountViewModel: AccountViewModel = viewModel()
+    accountViewModel: AccountViewModel = viewModel(),
+    innerPadding: PaddingValues
 ) {
     val accountUIState by accountViewModel.accountUIState.collectAsState()
     val scrollState = rememberScrollState()
@@ -73,35 +75,30 @@ fun AccountScreen(
         accountViewModel.checkInvites(user)
     }
 
-    Scaffold(
-        bottomBar = { BottomNavBar(onTopNavigation) },
-        topBar = { HeaderText(text = "Account") }
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .verticalScroll(state = scrollState)
+            .padding(innerPadding)
+            .padding(16.dp),
+        Arrangement.Center
     ) {
-        Column(
-            modifier = Modifier
-                .fillMaxWidth()
-                .verticalScroll(state = scrollState)
-                .padding(it)
-                .padding(16.dp),
-            Arrangement.Center
-        ) {
-            MainPageContent(
-                onClick = { accountViewModel.setIsAccountManagementOpen(true) },
-                onTopNavigation = onTopNavigation,
-                user = user,
-                babies = babies,
-                setBabyToUpdate = setBabyToUpdate,
-                accountUIState = accountUIState,
-                onHandleInvite = { invite -> accountViewModel.processInvite(user, invite) }
-            )
-            AccountManagement(
-                user = user,
-                accountUIState = accountUIState,
-                isOpen = accountUIState.isAccountManagementOpen,
-                onClose = { accountViewModel.setIsAccountManagementOpen(false) },
-                onSignOut = onSignOut,
-            )
-        }
+        MainPageContent(
+            onClick = { accountViewModel.setIsAccountManagementOpen(true) },
+            onTopNavigation = onTopNavigation,
+            user = user,
+            babies = babies,
+            setBabyToUpdate = setBabyToUpdate,
+            accountUIState = accountUIState,
+            onHandleInvite = { invite -> accountViewModel.processInvite(user, invite) }
+        )
+        AccountManagement(
+            user = user,
+            accountUIState = accountUIState,
+            isOpen = accountUIState.isAccountManagementOpen,
+            onClose = { accountViewModel.setIsAccountManagementOpen(false) },
+            onSignOut = onSignOut,
+        )
     }
 }
 
