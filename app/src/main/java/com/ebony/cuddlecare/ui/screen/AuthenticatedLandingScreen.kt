@@ -18,6 +18,8 @@ import com.ebony.cuddlecare.ui.viewmodel.BabyViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.CareGiverViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
+import kotlinx.coroutines.delay
+import kotlin.time.Duration.Companion.seconds
 
 //TODO What are we doing with names
 
@@ -46,6 +48,18 @@ fun AuthenticatedScreens(
 
     LaunchedEffect(key1 = babyUIState.activeBaby) {
         breastfeedingViewModel.reset()
+    }
+
+    LaunchedEffect(key1 = sleepingUIState.timerState) {
+        while (sleepingUIState.timerState == TimerState.PAUSED) {
+            delay(1.seconds)
+            sleepingViewModel.incrementPauseTimer()
+        }
+
+        while (sleepingUIState.timerState == TimerState.STARTED) {
+            delay(1.seconds)
+            sleepingViewModel.incrementTimer()
+        }
     }
 
 

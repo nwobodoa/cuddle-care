@@ -50,6 +50,8 @@ import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
+import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
+import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
 import com.ebony.cuddlecare.util.secondsToFormattedTime
 import com.ebony.cuddlecare.util.timestampToString
 import java.time.LocalDate
@@ -140,12 +142,15 @@ fun HomeScreen(
     activeBaby: Baby?,
     bottleFeedViewModel: BottleFeedViewModel = viewModel(),
     breastFeedingViewModel: BreastfeedingViewModel = viewModel(),
-    diaperViewModel: DiaperViewModel = viewModel()
+    diaperViewModel: DiaperViewModel = viewModel(),
+    sleepViewModel:SleepingViewModel = viewModel()
 ) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
     val breastfeedingUIState by breastFeedingViewModel.breastfeedingUIState.collectAsState()
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+    val sleepUIState by sleepViewModel.sleepingUIState.collectAsState()
+
     val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = activeBaby) {
@@ -153,6 +158,7 @@ fun HomeScreen(
             bottleFeedViewModel.fetchRecords(activeBaby, LocalDate.now())
             breastFeedingViewModel.fetchRecords(activeBaby, LocalDate.now())
             diaperViewModel.fetchRecords(activeBaby, LocalDate.now())
+            sleepViewModel.fetchRecord(activeBaby,LocalDate.now())
         }
     }
 
@@ -197,7 +203,10 @@ fun HomeScreen(
                 TodayDateDisplay()
                 ActivityDailySummary(breastfeedingUIState, bottleFeedingUIState, diaperUIState)
                 DetailedActivityList(
-                    sortableActivities = breastfeedingUIState.breastfeedingRecords + diaperUIState.diaperRecords
+                    sortableActivities =
+                    breastfeedingUIState.breastfeedingRecords
+                            + diaperUIState.diaperRecords
+                            + sleepUIState.sleepRecords
                 )
             }
         }
@@ -219,6 +228,7 @@ private fun DetailedActivityList(sortableActivities: List<SortableActivity>) {
             when (record) {
                 is DiaperRecord -> DiaperDetailRow(diaperRecord = record)
                 is BreastFeedingRecord -> BreastfeedingDetailRow(record = record)
+                is SleepRecord -> SleepingDetailRow(record = record)
                 else -> Text(text = "Unknown")
             }
 
@@ -310,6 +320,42 @@ private fun BreastfeedingDetailRow(record: BreastFeedingRecord) {
         }
     }
 }
+
+@Composable
+private fun SleepingDetailRow(record: SleepRecord) {
+    val startTime = timestampToString(record.startTimeEpochSecs)
+    val endTime = timestampToString(record.endTimeEpochSecs)
+
+
+    val totalTime = record.startTimeEpochSecs + record.endTimeEpochSecs
+
+    Row(
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier.size(35.dp),
+            painter = painterResource(id = R.drawable.crib), contentDescription = null
+        )
+        Column(
+            modifier = Modifier.padding(start = 16.dp),
+        ) {
+            Text(text = "$startTime - $endTime")
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    modifier = Modifier.padding(end = 8.dp),
+                    imageVector = Icons.Outlined.Timelapse,
+                    contentDescription = null
+                )
+                Text(
+                    text = secondsToFormattedTime(totalTime)
+                )
+
+            }
+        }
+    }
+}
+
 
 @Composable
 private fun TodayDateDisplay() {

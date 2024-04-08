@@ -85,17 +85,7 @@ fun SleepingScreen(
         }
     }
 
-    LaunchedEffect(key1 = sleepingUIState.timerState) {
-        while (sleepingUIState.timerState == TimerState.PAUSED) {
-            delay(1.seconds)
-            incrementPauseTimer()
-        }
 
-        while (sleepingUIState.timerState == TimerState.STARTED) {
-            delay(1.seconds)
-            incrementTimer()
-        }
-    }
 
     Column(
         modifier = Modifier
