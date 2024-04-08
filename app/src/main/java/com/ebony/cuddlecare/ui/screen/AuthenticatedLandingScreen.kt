@@ -117,7 +117,9 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.VaccineScreen.name) {
-                VaccinationScreen { navController.popBackStack() }
+                VaccinationScreen(
+                    onNavigateBack = navController::popBackStack,
+                    activeBaby = babyUIState.activeBaby)
             }
 
             composable(Screen.Bottle.name) {

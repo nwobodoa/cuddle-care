@@ -52,16 +52,27 @@ import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.TimeInput
+import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.viewmodel.VaccinationViewModel
 import com.ebony.cuddlecare.ui.viewmodel.VaccineUIState
+import java.time.LocalTime
 
 
 @Composable
 fun VaccinationScreen(
     vaccinationViewModel: VaccinationViewModel = viewModel(),
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    activeBaby: Baby?
 ) {
     val vaccineUIState by vaccinationViewModel.vaccineUIState.collectAsState()
+
+    if (vaccineUIState.showVaccineList) {
+        VaccineList(
+            setSelectedVaccine = vaccinationViewModel::setSelectVaccine,
+            closeList = { vaccinationViewModel.setShowVaccineList(false) }
+        )
+        return
+    }
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -79,9 +90,16 @@ fun VaccinationScreen(
         {
             ScreenMainIcon(drawableId = R.drawable.vac_logo)
             LastUpdated(title = "Vaccination", "Last: Never")
-            TimeTypeSegment(vaccinationViewModel, vaccineUIState)
-            AttachmentRow()
-            SaveButton(onClick = {/*TODO*/ })
+            TimeTypeSegment(
+                setSelectDate = vaccinationViewModel::setSelectedDate,
+                toggleDatePicker = vaccinationViewModel::toggleDatePicker,
+                setShowTimePicker = vaccinationViewModel::setShowTimePicker,
+                setSelectedTime = vaccinationViewModel::setSelectedTime,
+                setShowVaccineList = vaccinationViewModel::setShowVaccineList,
+                vaccineUIState = vaccineUIState
+            )
+            AttachmentRow(value = vaccineUIState.notes, onValueChange = vaccinationViewModel::setNotes)
+            SaveButton(onClick = { vaccinationViewModel.save(activeBaby) })
             //TODO disable save button if nothing is entered
         }
     }
@@ -89,7 +107,11 @@ fun VaccinationScreen(
 
 @Composable
 private fun TimeTypeSegment(
-    vaccinationViewModel: VaccinationViewModel,
+    setSelectDate: (Long) -> Unit,
+    toggleDatePicker: () -> Unit,
+    setShowTimePicker: (Boolean) -> Unit,
+    setSelectedTime: (LocalTime) -> Unit,
+    setShowVaccineList: (Boolean) -> Unit,
     vaccineUIState: VaccineUIState
 ) {
     Column(
@@ -117,18 +139,18 @@ private fun TimeTypeSegment(
                 modifier = Modifier.weight(1f)
             ) {
                 DateInput(
-                    toggleDatePicker = { vaccinationViewModel.toggleDatePicker() },
+                    toggleDatePicker = toggleDatePicker,
                     isTimeExpanded = vaccineUIState.isTimeExpanded,
                     selectedDate = vaccineUIState.selectedDate,
-                    setSelectedDate = vaccinationViewModel::setSelectedDate
+                    setSelectedDate = setSelectDate
                 )
                 Spacer(modifier = Modifier.size(8.dp))
                 TimeInput(
-                    setTimePicker = vaccinationViewModel::setShowTimePicker,
+                    setTimePicker = setShowTimePicker,
                     label = "",
                     showTimeDialog = vaccineUIState.showTimePicker,
                     selectedTime = vaccineUIState.selectedTime,
-                    onValueChange = vaccinationViewModel::setSelectedTime,
+                    onValueChange = setSelectedTime,
                 )
             }
         }
@@ -145,7 +167,9 @@ private fun TimeTypeSegment(
                 imageVector = Icons.Outlined.Folder,
                 contentDescription = "Time"
             )
-            Row(modifier = Modifier.clickable { /*onClick*/ }) {
+            Row(modifier = Modifier.clickable {
+                setShowVaccineList(true)
+            }) {
                 Text(text = "Select Type")
                 Icon(Icons.Outlined.ArrowDropDown, contentDescription = "Arrow down icon")
             }
@@ -154,9 +178,11 @@ private fun TimeTypeSegment(
 }
 
 @OptIn(ExperimentalFoundationApi::class)
-@Preview(showBackground = true)
 @Composable
-fun VaccineList() {
+fun VaccineList(
+    setSelectedVaccine: (String) -> Unit = {},
+    closeList: () -> Unit
+) {
     val vaccineTypes =
         listOf(
             "Chickenpox (Var)",
@@ -233,7 +259,16 @@ fun VaccineList() {
                 }
 
                 items(filteredList.value) { vaccine ->
-                    VaccineItem(vaccine = vaccine)
+                    Row(modifier = Modifier
+                        .padding(top = 16.dp, bottom = 16.dp)
+                        .clickable {
+                            setSelectedVaccine(vaccine)
+                            closeList()
+                        }
+
+                    ) {
+                        Text(text = vaccine)
+                    }
                     HorizontalDivider()
                 }
 
@@ -242,15 +277,6 @@ fun VaccineList() {
         }
     }
 }
-
-
-@Composable
-fun VaccineItem(vaccine: String) {
-    Row(modifier = Modifier.padding(top = 16.dp, bottom = 16.dp)) {
-        Text(text = vaccine)
-    }
-}
-
 
 
 

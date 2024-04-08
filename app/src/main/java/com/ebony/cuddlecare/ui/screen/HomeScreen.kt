@@ -53,6 +53,9 @@ import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
 import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
+import com.ebony.cuddlecare.ui.viewmodel.VaccinationRecord
+import com.ebony.cuddlecare.ui.viewmodel.VaccinationViewModel
+import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
 import com.ebony.cuddlecare.util.secondsToFormattedTime
 import com.ebony.cuddlecare.util.timestampToString
 import java.time.LocalDate
@@ -145,7 +148,8 @@ fun HomeScreen(
     breastFeedingViewModel: BreastfeedingViewModel = viewModel(),
     diaperViewModel: DiaperViewModel = viewModel(),
     sleepViewModel: SleepingViewModel = viewModel(),
-    medicineViewModel: MedicineViewModel = viewModel()
+    medicineViewModel: MedicineViewModel = viewModel(),
+    vaccinationViewModel: VaccinationViewModel = viewModel()
 ) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
@@ -153,6 +157,7 @@ fun HomeScreen(
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     val sleepUIState by sleepViewModel.sleepingUIState.collectAsState()
     val medicineUIState by medicineViewModel.medicineUIState.collectAsState()
+    val vaccineUIState by vaccinationViewModel.vaccineUIState.collectAsState()
 
     val scrollState = rememberScrollState()
 
@@ -163,9 +168,18 @@ fun HomeScreen(
             diaperViewModel.fetchRecords(activeBaby, LocalDate.now())
             sleepViewModel.fetchRecord(activeBaby, LocalDate.now())
             medicineViewModel.fetchRecord(activeBaby, LocalDate.now())
+            vaccinationViewModel.fetchRecord(activeBaby, LocalDate.now())
+
         }
     }
 
+    val sortableActivities =
+        (breastfeedingUIState.breastfeedingRecords
+                + diaperUIState.diaperRecords
+                + sleepUIState.sleepRecords
+                + medicineUIState.medicineRecords
+                + vaccineUIState.vaccinationRecords
+                )
 
 
 
@@ -206,14 +220,7 @@ fun HomeScreen(
                 TipsCard(show = isTipsCardVisible, onDismiss = { isTipsCardVisible = false })
                 TodayDateDisplay()
                 ActivityDailySummary(breastfeedingUIState, bottleFeedingUIState, diaperUIState)
-                DetailedActivityList(
-                    sortableActivities =
-                    breastfeedingUIState.breastfeedingRecords
-                            + diaperUIState.diaperRecords
-                            + sleepUIState.sleepRecords
-                            + medicineUIState.medicineRecords
-
-                )
+                DetailedActivityList(sortableActivities = sortableActivities)
             }
         }
     }
@@ -235,6 +242,7 @@ private fun DetailedActivityList(sortableActivities: List<SortableActivity>) {
                 is DiaperRecord -> DiaperDetailRow(diaperRecord = record)
                 is BreastFeedingRecord -> BreastfeedingDetailRow(record = record)
                 is SleepRecord -> SleepingDetailRow(record = record)
+                is VaccinationRecord -> VaccinationDetailRow(record = record)
                 else -> Text(text = "Unknown")
             }
 
@@ -333,7 +341,7 @@ private fun SleepingDetailRow(record: SleepRecord) {
     val endTime = timestampToString(record.endTimeEpochSecs)
 
 
-    val totalTime = record.startTimeEpochSecs + record.endTimeEpochSecs
+    val totalTime = record.endTimeEpochSecs - record.startTimeEpochSecs
 
     Row(
         modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
@@ -355,6 +363,40 @@ private fun SleepingDetailRow(record: SleepRecord) {
                 )
                 Text(
                     text = secondsToFormattedTime(totalTime)
+                )
+
+            }
+        }
+    }
+}
+
+
+@Composable
+private fun VaccinationDetailRow(record: VaccinationRecord) {
+    val endTime =
+        epochSecondsToLocalDateTime(record.endTimeEpochSecs)?.format(DateTimeFormatter.ofPattern("h:mm a"))
+            ?: ""
+
+    Row(
+        modifier = Modifier.padding(start = 16.dp, top = 16.dp, bottom = 16.dp),
+        verticalAlignment = Alignment.CenterVertically
+    ) {
+        Image(
+            modifier = Modifier.size(35.dp),
+            painter = painterResource(id = R.drawable.vaccine), contentDescription = null
+        )
+        Column(
+            modifier = Modifier.padding(start = 16.dp),
+        ) {
+            Text(text = endTime)
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Image(
+                    modifier = Modifier.padding(end = 8.dp),
+                    imageVector = Icons.Outlined.Timelapse,
+                    contentDescription = null
+                )
+                Text(
+                    text = record.type
                 )
 
             }
