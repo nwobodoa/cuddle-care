@@ -34,18 +34,20 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.AttachmentRow
 import com.ebony.cuddlecare.ui.components.DateInput
 import com.ebony.cuddlecare.ui.components.DropDownField
+import com.ebony.cuddlecare.ui.components.ErrorText
 import com.ebony.cuddlecare.ui.components.LeadingDetailsIcon
 import com.ebony.cuddlecare.ui.components.MTopBar
 import com.ebony.cuddlecare.ui.components.SaveButton
 import com.ebony.cuddlecare.ui.components.TimeInput
+import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
 
 
 @Composable
-@Preview(showBackground = true)
 fun MedicineScreen(
     medicineViewModel: MedicineViewModel = viewModel(),
-    onNavigateBack: () -> Unit = {}
+    onNavigateBack: () -> Unit = {},
+    activeBaby: Baby?
 ) {
     val medicineUIState by medicineViewModel.medicineUIState.collectAsState()
     Column(
@@ -121,7 +123,7 @@ fun MedicineScreen(
                             horizontalArrangement = Arrangement.End,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(text = medicineUIState.qty.toString())
+                            Text(text = medicineUIState.dosage.toString())
                             Spacer(modifier = Modifier.size(8.dp))
                             DropDownField(
                                 value = medicineUIState.selectedUnit,
@@ -147,6 +149,7 @@ fun MedicineScreen(
                         }
                     }
 
+
                 }
 
             }
@@ -154,7 +157,10 @@ fun MedicineScreen(
 
 
             AttachmentRow()
-            SaveButton(onClick = {/*TODO*/ })
+            Column {
+                medicineUIState.errors.forEach { e -> ErrorText(e) }
+            }
+            SaveButton(onClick = { medicineViewModel.save(activeBaby) })
             //TODO disable save button if nothing is entered
 
         }

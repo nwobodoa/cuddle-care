@@ -11,6 +11,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -144,7 +145,11 @@ fun AuthenticatedScreens(
             }
 
             composable(Screen.MedicationScreen.name) {
-                MedicineScreen { navController.popBackStack() }
+                MedicineScreen(
+                    onNavigateBack = navController::popBackStack,
+                    activeBaby = babyUIState.activeBaby
+                )
+
             }
             composable(Screen.ReminderScreen.name) {
                 ReminderScreen { navController.popBackStack() }

@@ -50,6 +50,7 @@ import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
+import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
 import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
 import com.ebony.cuddlecare.util.secondsToFormattedTime
@@ -143,13 +144,15 @@ fun HomeScreen(
     bottleFeedViewModel: BottleFeedViewModel = viewModel(),
     breastFeedingViewModel: BreastfeedingViewModel = viewModel(),
     diaperViewModel: DiaperViewModel = viewModel(),
-    sleepViewModel:SleepingViewModel = viewModel()
+    sleepViewModel: SleepingViewModel = viewModel(),
+    medicineViewModel: MedicineViewModel = viewModel()
 ) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
     val breastfeedingUIState by breastFeedingViewModel.breastfeedingUIState.collectAsState()
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
     val sleepUIState by sleepViewModel.sleepingUIState.collectAsState()
+    val medicineUIState by medicineViewModel.medicineUIState.collectAsState()
 
     val scrollState = rememberScrollState()
 
@@ -158,7 +161,8 @@ fun HomeScreen(
             bottleFeedViewModel.fetchRecords(activeBaby, LocalDate.now())
             breastFeedingViewModel.fetchRecords(activeBaby, LocalDate.now())
             diaperViewModel.fetchRecords(activeBaby, LocalDate.now())
-            sleepViewModel.fetchRecord(activeBaby,LocalDate.now())
+            sleepViewModel.fetchRecord(activeBaby, LocalDate.now())
+            medicineViewModel.fetchRecord(activeBaby, LocalDate.now())
         }
     }
 
@@ -207,6 +211,8 @@ fun HomeScreen(
                     breastfeedingUIState.breastfeedingRecords
                             + diaperUIState.diaperRecords
                             + sleepUIState.sleepRecords
+                            + medicineUIState.medicineRecords
+
                 )
             }
         }

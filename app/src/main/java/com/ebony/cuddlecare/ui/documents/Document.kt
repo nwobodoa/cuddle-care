@@ -10,7 +10,9 @@ enum class Document {
     BottleFeeding,
     Sleeping,
     DiaperCount,
-    Diaper
+    Diaper,
+    Medicine,
+    Vaccination
 }
 
 fun activeBabyCollection(collection: CollectionReference, activeBaby: Baby): CollectionReference {
