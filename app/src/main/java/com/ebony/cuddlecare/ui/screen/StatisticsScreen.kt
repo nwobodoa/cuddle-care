@@ -55,7 +55,9 @@ import co.yml.charts.ui.piechart.charts.DonutPieChart
 import co.yml.charts.ui.piechart.models.PieChartConfig
 import co.yml.charts.ui.piechart.models.PieChartData
 import com.ebony.cuddlecare.R
+import com.ebony.cuddlecare.ui.components.DateInput
 import com.ebony.cuddlecare.ui.documents.Baby
+import java.time.LocalDate
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -112,12 +114,24 @@ fun StatisticsScreen(
                     contentColor = Color.Black
                 )
             ) {
-                Text(text = "24 Mar - 30 Mar", fontSize = 18.sp)
+                DateInput(
+                    toggleDatePicker = {  },
+                    isTimeExpanded = false,
+                    selectedDate = LocalDate.now(),
+                    setSelectedDate = {}
+                )
+                Text(text = " - ", fontSize = 18.sp)
+                DateInput(
+                    toggleDatePicker = {  },
+                    isTimeExpanded = false,
+                    selectedDate = LocalDate.now(),
+                    setSelectedDate = {  }
+                )
             }
             IconButton(onClick = { /*TODO*/ }) {
                 Image(
                     modifier = Modifier
-                        .size(35.dp),
+                        .size(25.dp),
                     imageVector = Icons.Default.CalendarMonth, contentDescription = null
                 )
             }
