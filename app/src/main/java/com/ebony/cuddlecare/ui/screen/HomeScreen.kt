@@ -158,7 +158,11 @@ fun HomeNavigableScreen(
                 activeBaby = activeBaby
             )
         },
-        bottomBar = { BottomNavBar() },
+        bottomBar = {
+            BottomNavBar(
+                navigate = { dest -> navController.navigate(dest) }
+            )
+        },
     ) { innerPadding ->
         NavHost(navController = navController, startDestination = Screen.HomeScreen.name) {
             composable(Screen.HomeScreen.name) {

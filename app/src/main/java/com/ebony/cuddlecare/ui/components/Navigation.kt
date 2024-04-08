@@ -93,46 +93,46 @@ data class BottomNavigationItem(
     val destination: Screen
 )
 
+val navItems = listOf(
+    BottomNavigationItem(
+        title = "Home",
+        selectedIcon = Icons.Filled.Home,
+        unselectedIcon = Icons.Outlined.Home,
+        hasNews = false,
+        destination = Screen.HomeScreen
+
+    ),
+    BottomNavigationItem(
+        title = "Community",
+        selectedIcon = Icons.Filled.Diversity3,
+        unselectedIcon = Icons.Outlined.Diversity3,
+        hasNews = false,
+        badgeCount = 10,
+        destination = Screen.CommunityScreen
+    ),
+    BottomNavigationItem(
+        title = "Statistics",
+        selectedIcon = Icons.Filled.Analytics,
+        unselectedIcon = Icons.Outlined.Analytics,
+        hasNews = false,
+        destination = Screen.Statistics
+    ),
+    BottomNavigationItem(
+        title = "Account",
+        selectedIcon = Icons.Filled.PermIdentity,
+        unselectedIcon = Icons.Outlined.PermIdentity,
+        hasNews = true,
+        destination = Screen.Profile
+
+    )
+)
 
 @Composable
-fun BottomNavBar() {
+fun BottomNavBar(navigate: (String) -> Unit) {
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
 
 
 
-    val navItems = listOf(
-        BottomNavigationItem(
-            title = "Home",
-            selectedIcon = Icons.Filled.Home,
-            unselectedIcon = Icons.Outlined.Home,
-            hasNews = false,
-            destination = Screen.HomeScreen
-
-        ),
-        BottomNavigationItem(
-            title = "Community",
-            selectedIcon = Icons.Filled.Diversity3,
-            unselectedIcon = Icons.Outlined.Diversity3,
-            hasNews = false,
-            badgeCount = 10,
-            destination = Screen.CommunityScreen
-        ),
-        BottomNavigationItem(
-            title = "Statistics",
-            selectedIcon = Icons.Filled.Analytics,
-            unselectedIcon = Icons.Outlined.Analytics,
-            hasNews = false,
-            destination = Screen.Statistics
-        ),
-        BottomNavigationItem(
-            title = "Account",
-            selectedIcon = Icons.Filled.PermIdentity,
-            unselectedIcon = Icons.Outlined.PermIdentity,
-            hasNews = true,
-            destination = Screen.Profile
-
-        )
-    )
 
     NavigationBar {
         navItems.forEachIndexed { index, item ->
@@ -140,11 +140,11 @@ fun BottomNavBar() {
                 icon = {
                     //Icon(item.icon!!, contentDescription = item.title)
                     BadgedBox(badge = {
-                        if(item.badgeCount != null){
-                            Badge{
+                        if (item.badgeCount != null) {
+                            Badge {
                                 Text(text = item.badgeCount.toString())
                             }
-                        }else if(item.hasNews){
+                        } else if (item.hasNews) {
                             Badge()
                         }
                     }) {
@@ -160,6 +160,7 @@ fun BottomNavBar() {
                 selected = selectedItemIndex == index,
                 onClick = {
                     selectedItemIndex = index
+                    navigate(item.destination.name)
                 }
             )
         }

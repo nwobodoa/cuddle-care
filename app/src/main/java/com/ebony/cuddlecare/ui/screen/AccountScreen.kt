@@ -78,7 +78,6 @@ fun AccountScreen(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .verticalScroll(state = scrollState)
             .padding(innerPadding)
             .padding(16.dp),
         Arrangement.Center
