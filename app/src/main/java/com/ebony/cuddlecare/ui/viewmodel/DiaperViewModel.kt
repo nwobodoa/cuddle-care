@@ -278,10 +278,12 @@ class DiaperViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
+        setLoading(true)
         activeBabyCollection(diaperCollection, activeBaby)
             .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
             .addSnapshotListener { snap, ex ->
+                setLoading(false)
                 if (ex != null) {
                     Log.e(TAG, "fetch diaper Records: ", ex)
                     return@addSnapshotListener

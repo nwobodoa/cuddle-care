@@ -37,6 +37,7 @@ import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.BottomNavBar
+import com.ebony.cuddlecare.ui.components.Loading
 import com.ebony.cuddlecare.ui.components.TipsCard
 import com.ebony.cuddlecare.ui.components.TopBar
 import com.ebony.cuddlecare.ui.documents.Baby
@@ -45,11 +46,8 @@ import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.documents.SortableActivity
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
-import com.ebony.cuddlecare.ui.viewmodel.BottleFeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
-import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingUIState
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
-import com.ebony.cuddlecare.ui.viewmodel.DiaperUIState
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import com.ebony.cuddlecare.ui.viewmodel.MedicineViewModel
 import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
@@ -170,7 +168,6 @@ fun HomeScreen(
             sleepViewModel.fetchRecord(activeBaby, LocalDate.now())
             medicineViewModel.fetchRecord(activeBaby, LocalDate.now())
             vaccinationViewModel.fetchRecord(activeBaby, LocalDate.now())
-
         }
     }
 
@@ -182,6 +179,8 @@ fun HomeScreen(
                 + vaccineUIState.vaccinationRecords
                 )
 
+    val loading = breastfeedingUIState.loading || diaperUIState.loading || sleepUIState.loading
+            || medicineUIState.loading || vaccineUIState.loading
 
 
     Scaffold(
@@ -203,26 +202,45 @@ fun HomeScreen(
                 .padding(top = 8.dp)
 
         ) {
-            LazyRow(
-                modifier = Modifier.padding(start = 8.dp, end = 8.dp),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                items(screens) { item ->
-                    NavigationIcon(
-                        drawableId = item.iconDrawableId!!,
-                        text = item.title,
-                        onClick = {
-                            onTopNavigation(item.destination.name)
-                        })
-                }
-            }
-
+            ActivityMenuRow(onTopNavigation)
             Column(modifier = Modifier.verticalScroll(scrollState)) {
                 TipsCard(show = isTipsCardVisible, onDismiss = { isTipsCardVisible = false })
                 TodayDateDisplay()
-                ActivityDailySummary(breastfeedingUIState, bottleFeedingUIState, diaperUIState)
-                DetailedActivityList(sortableActivities = sortableActivities)
+                if (loading) {
+                    Loading()
+                } else if (sortableActivities.isEmpty()) {
+                    Column(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalAlignment = Alignment.CenterHorizontally
+                    ) {
+                        Text(text = "No data found")
+                    }
+                } else {
+                    ActivityDailySummary(
+                        breastfeedingUIState.breastfeedingRecords,
+                        bottleFeedingUIState.bottleFeedingRecords,
+                        diaperUIState.diaperRecords
+                    )
+                    DetailedActivityList(sortableActivities = sortableActivities)
+                }
             }
+        }
+    }
+}
+
+@Composable
+private fun ActivityMenuRow(onTopNavigation: (String) -> Unit) {
+    LazyRow(
+        modifier = Modifier.padding(start = 8.dp, end = 8.dp),
+        horizontalArrangement = Arrangement.spacedBy(8.dp)
+    ) {
+        items(screens) { item ->
+            NavigationIcon(
+                drawableId = item.iconDrawableId!!,
+                text = item.title,
+                onClick = {
+                    onTopNavigation(item.destination.name)
+                })
         }
     }
 }
@@ -415,9 +433,9 @@ private fun TodayDateDisplay() {
 
 @Composable
 private fun ActivityDailySummary(
-    breastfeedingUIState: BreastfeedingUIState,
-    bottleFeedingUIState: BottleFeedingUIState,
-    diaperUIState: DiaperUIState
+    breastfeedingRecords: List<BreastFeedingRecord>,
+    bottleFeedingRecords: List<BottleFeed>,
+    diaperRecords: List<DiaperRecord>
 ) {
     Column(
         modifier = Modifier
@@ -425,11 +443,11 @@ private fun ActivityDailySummary(
             .background(color = Color.White)
             .fillMaxWidth()
     ) {
-        BreastFeedingSummary(breastFeedingRecords = breastfeedingUIState.breastfeedingRecords)
+        BreastFeedingSummary(breastFeedingRecords = breastfeedingRecords)
         HorizontalDivider()
-        BottleFeedSummary(bottleFeed = bottleFeedingUIState.todayBottleFeed)
+        BottleFeedSummary(bottleFeed = bottleFeedingRecords)
         HorizontalDivider()
-        DiaperSummary(diaperRecords = diaperUIState.diaperRecords)
+        DiaperSummary(diaperRecords = diaperRecords)
     }
 }
 

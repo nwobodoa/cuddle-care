@@ -209,7 +209,7 @@ private fun SimpleDonutChart(context: Context) {
     val pieChartConfig =
         PieChartConfig(
             labelVisible = true,
-            strokeWidth = 120f,
+            strokeWidth = 250f,
             labelColor = Color.Black,
             activeSliceAlpha = .9f,
             isEllipsizeEnabled = true,
@@ -251,10 +251,10 @@ fun getDonutChartData(): PieChartData {
 }
 
 @Composable
-                fun VerticalStackedBarChart() {
+  fun VerticalStackedBarChart() {
     val barSize = 3
     val listSize = 10
-    val groupBarData = getGroupBarChartData(listSize, 100, barSize)
+    val groupBarData = getGroupBarChartData(listSize, 50, barSize)
     val yStepSize = 10
     val xAxisData = AxisData.Builder()
         .axisStepSize(30.dp)
@@ -303,7 +303,7 @@ fun getDonutChartData(): PieChartData {
         barPlotData = groupBarPlotData,
         xAxisData = xAxisData,
         yAxisData = yAxisData,
-        paddingBetweenStackedBars = 4.dp,
+        paddingBetweenStackedBars = 0.dp,
         drawBar = { drawScope, barChartData, barStyle, drawOffset, height, barIndex ->
             with(drawScope) {
                 drawRect(

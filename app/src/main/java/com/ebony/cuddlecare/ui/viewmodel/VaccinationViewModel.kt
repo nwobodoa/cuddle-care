@@ -57,7 +57,7 @@ data class VaccinationRecord(
 class VaccinationViewModel : ViewModel() {
     private val _vaccineUIState = MutableStateFlow((VaccineUIState()))
     val vaccineUIState = _vaccineUIState.asStateFlow()
-    val vaccinationCollection = Firebase.firestore.collection(Document.Vaccination.name)
+    private val vaccinationCollection = Firebase.firestore.collection(Document.Vaccination.name)
     fun toggleDatePicker() {
         _vaccineUIState.update { it.copy(isTimeExpanded = !it.isTimeExpanded) }
     }
@@ -152,10 +152,12 @@ class VaccinationViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
+        setLoading(true)
         activeBabyCollection(vaccinationCollection, activeBaby)
             .whereLessThanOrEqualTo("endTimeEpochSecs", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("endTimeEpochSecs", startOfDayEpoch)
             .addSnapshotListener { snap, ex ->
+                setLoading(false)
                 if (ex != null) {
                     Log.e(TAG, "fetchRecord: ", ex)
                     return@addSnapshotListener

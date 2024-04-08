@@ -9,7 +9,6 @@ import com.ebony.cuddlecare.ui.documents.Document
 import com.ebony.cuddlecare.ui.documents.activeBabyCollection
 import com.ebony.cuddlecare.util.epochMillisToDate
 import com.google.firebase.Firebase
-import com.google.firebase.firestore.CollectionReference
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -31,7 +30,7 @@ data class BottleFeedingUIState(
     val selectedDate: LocalDate = LocalDate.now(),
     val loading: Boolean = false,
     val canNavigateBack: Boolean = false,
-    val todayBottleFeed: List<BottleFeed> = emptyList(),
+    val bottleFeedingRecords: List<BottleFeed> = emptyList(),
     val breastFeedingRecords: List<BreastFeedingRecord> = emptyList()
 )
 
@@ -89,7 +88,7 @@ class BottleFeedViewModel : ViewModel() {
                     )
                 }
                 _bottleFeedingUIState.update {
-                    it.copy(todayBottleFeed = bottleFeeds ?: emptyList())
+                    it.copy(bottleFeedingRecords = bottleFeeds ?: emptyList())
                 }
             }
     }

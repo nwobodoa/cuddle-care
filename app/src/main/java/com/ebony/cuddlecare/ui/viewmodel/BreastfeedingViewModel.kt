@@ -109,10 +109,12 @@ class BreastfeedingViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
+        setLoading(true)
         activeBabyCollection(breastfeedingCollection, activeBaby)
             .whereLessThanOrEqualTo("endTime", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("endTime", startOfDayEpoch)
             .addSnapshotListener { snap, ex ->
+                setLoading(false)
                 if (ex != null) {
                     Log.e(TAG, "fetchRecords: ", ex)
                     return@addSnapshotListener
@@ -127,6 +129,10 @@ class BreastfeedingViewModel : ViewModel() {
                         }
                     }
             }
+    }
+
+    private fun setLoading(b: Boolean) {
+        _breastfeedingState.update { it.copy(loading = b) }
     }
 
 

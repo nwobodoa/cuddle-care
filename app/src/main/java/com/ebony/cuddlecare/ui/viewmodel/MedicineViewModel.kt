@@ -35,7 +35,8 @@ data class MedicineUIState(
     val errors: List<String> = emptyList(),
     val notes: String = "",
     val savedSuccessfully: Boolean = false,
-    val medicineRecords: List<MedicineRecord> = emptyList()
+    val medicineRecords: List<MedicineRecord> = emptyList(),
+    val loading: Boolean = false
 )
 
 data class MedicineRecord(
@@ -44,7 +45,7 @@ data class MedicineRecord(
     val endTimestampEpocSecs: Long,
     val timestamp: Long = localDateTimeToEpoch(LocalDateTime.now())!!,
     val notes: String
-):SortableActivity {
+) : SortableActivity {
     override fun rank(): Long {
         return timestamp
     }
@@ -55,6 +56,11 @@ class MedicineViewModel : ViewModel() {
     val medicineUIState = _medicineUIState.asStateFlow()
 
     private val medicineCollection = Firebase.firestore.collection(Document.Medicine.name)
+
+
+    fun setLoading(loading: Boolean) {
+        _medicineUIState.update { it.copy(loading = loading) }
+    }
 
     fun toggleDatePicker() {
         _medicineUIState.update { it.copy(isTimeExpanded = !it.isTimeExpanded) }
@@ -138,10 +144,12 @@ class MedicineViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
+        setLoading(true)
         activeBabyCollection(medicineCollection, activeBaby)
             .whereLessThanOrEqualTo("endTimeEpochSecs", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("endTimeEpochSecs", startOfDayEpoch)
             .addSnapshotListener { snap, ex ->
+                setLoading(false)
                 if (ex != null) {
                     Log.e(ContentValues.TAG, "fetchRecord: ", ex)
                     return@addSnapshotListener
@@ -151,6 +159,7 @@ class MedicineViewModel : ViewModel() {
                     snap?.documents?.mapNotNull { it.toObject(MedicineRecord::class.java) }
                         ?: emptyList()
                 _medicineUIState.update { it.copy(medicineRecords = medicineRecords) }
+
             }
     }
 

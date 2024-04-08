@@ -133,10 +133,12 @@ class SleepingViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
+        setLoading(true)
         activeBabyCollection(sleepingCollection, activeBaby)
             .whereLessThanOrEqualTo("endTimeEpochSecs", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("endTimeEpochSecs", startOfDayEpoch)
             .addSnapshotListener { snap, ex ->
+                setLoading(false)
                 if (ex != null) {
                     Log.e(TAG, "fetchRecord: ", ex)
                     return@addSnapshotListener
