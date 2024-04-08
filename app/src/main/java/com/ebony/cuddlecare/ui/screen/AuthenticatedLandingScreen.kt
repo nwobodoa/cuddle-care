@@ -128,6 +128,13 @@ fun AuthenticatedScreens(
                     activeBaby = babyUIState.activeBaby
                 )
             }
+            composable(Screen.DoctorScreen.name) {
+//                DoctorVisitScreen(
+//                    onNavigateBack = { navController.popBackStack() },
+//                    activeBaby = babyUIState.activeBaby
+//                )
+            }
+
 
             composable(Screen.AddBabyScreen.name) {
                 AddBaby(

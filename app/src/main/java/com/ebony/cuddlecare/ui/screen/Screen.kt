@@ -16,6 +16,8 @@ enum class Screen {
     CommunityScreen,
     Profile,
     Statistics,
-    Caregiver
+    Caregiver,
+    DoctorScreen,
+    PottyScreen
 
 }

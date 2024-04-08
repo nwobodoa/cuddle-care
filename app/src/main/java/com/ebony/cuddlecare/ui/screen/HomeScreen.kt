@@ -107,13 +107,9 @@ val screens = listOf(
     NavigationItem(
         iconDrawableId = R.drawable.doc,
         title = "Doctor Visit",
-        destination = Screen.VaccineScreen
-    ),
-    NavigationItem(
-        iconDrawableId = R.drawable.potty,
-        title = "Potty",
-        destination = Screen.VaccineScreen
-    ),
+        destination = Screen.DoctorScreen
+    )
+
 )
 
 @Composable
