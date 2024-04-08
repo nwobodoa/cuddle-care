@@ -20,13 +20,14 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.CalendarMonth
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
@@ -36,17 +37,20 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import co.yml.charts.axis.AxisData
 import co.yml.charts.common.components.Legends
 import co.yml.charts.common.extensions.getMaxElementInYAxis
 import co.yml.charts.common.model.LegendLabel
 import co.yml.charts.common.model.LegendsConfig
 import co.yml.charts.common.model.PlotType
+import co.yml.charts.common.model.Point
 import co.yml.charts.common.utils.DataUtils
 import co.yml.charts.common.utils.DataUtils.getGroupBarChartData
 import co.yml.charts.ui.barchart.BarChart
 import co.yml.charts.ui.barchart.StackedBarChart
 import co.yml.charts.ui.barchart.models.BarChartData
+import co.yml.charts.ui.barchart.models.BarData
 import co.yml.charts.ui.barchart.models.BarPlotData
 import co.yml.charts.ui.barchart.models.BarStyle
 import co.yml.charts.ui.barchart.models.GroupBarChartData
@@ -57,7 +61,15 @@ import co.yml.charts.ui.piechart.models.PieChartData
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DateInput
 import com.ebony.cuddlecare.ui.documents.Baby
+import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
+import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
+import com.ebony.cuddlecare.ui.viewmodel.StatsViewModel
+import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
 import java.time.LocalDate
+import java.time.format.DateTimeFormatter
+import java.time.temporal.ChronoUnit
+import java.util.Locale
+import kotlin.math.max
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -68,7 +80,9 @@ fun StatisticsScreen(
     babies: List<Baby>,
     setActiveBaby: (String) -> Unit,
     activeBaby: Baby?,
-    innerPadding: PaddingValues
+    innerPadding: PaddingValues,
+    statsViewModel: StatsViewModel = viewModel(),
+    bottleFeedViewModel: BottleFeedViewModel = viewModel()
 ) {
     val pieChartConfig =
         PieChartConfig(
@@ -83,59 +97,39 @@ fun StatisticsScreen(
             labelFontSize = 42.sp,
         )
     val scrollState = rememberScrollState()
+
+    val statsUIState by statsViewModel.statsUIState.collectAsState()
+    val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
+
+
+    LaunchedEffect(key1 = activeBaby, key2 = statsUIState.startDate, key3 = statsUIState.endDate) {
+        bottleFeedViewModel.fetchRangeRecords(
+            activeBaby,
+            statsUIState.startDate,
+            statsUIState.endDate
+        )
+    }
+
+
     Column(
         modifier = Modifier
             .verticalScroll(state = scrollState)
             .padding(innerPadding)
             .padding(16.dp)
     ) {
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            verticalAlignment = Alignment.CenterVertically,
+        Navigator()
+
+        RangePicker(
+            startDate = statsUIState.startDate,
+            endDate = statsUIState.endDate,
+            startDateExpanded = statsUIState.startDateExpanded,
+            endDateExpanded = statsUIState.endDateExpanded,
+            setEndDate = statsViewModel::setEndDate,
+            setStartDate = statsViewModel::setStartDate,
+            toggleEndDate = statsViewModel::toggleEndDateExpanded,
+            toggleStartDate = statsViewModel::toggleStartDateExpanded
         )
-        {
-            Image(
-                modifier = Modifier
-                    .padding(end = 16.dp)
-                    .size(50.dp),
-                painter = painterResource(id = R.drawable.diaper), contentDescription = null
-            )
 
-            Text(text = "Diaper", fontWeight = FontWeight.Bold, fontSize = 30.sp)
-            Image(imageVector = Icons.Default.ExpandMore, contentDescription = null)
-
-        }
-        Row(verticalAlignment = Alignment.CenterVertically) {
-
-            TextButton(onClick = { /*TODO*/ },
-                colors = ButtonDefaults.textButtonColors(
-                    containerColor = colorResource(id = R.color.backcolor),
-                    contentColor = Color.Black
-                )
-            ) {
-                DateInput(
-                    toggleDatePicker = {  },
-                    isTimeExpanded = false,
-                    selectedDate = LocalDate.now(),
-                    setSelectedDate = {}
-                )
-                Text(text = " - ", fontSize = 18.sp)
-                DateInput(
-                    toggleDatePicker = {  },
-                    isTimeExpanded = false,
-                    selectedDate = LocalDate.now(),
-                    setSelectedDate = {  }
-                )
-            }
-            IconButton(onClick = { /*TODO*/ }) {
-                Image(
-                    modifier = Modifier
-                        .size(25.dp),
-                    imageVector = Icons.Default.CalendarMonth, contentDescription = null
-                )
-            }
-        }
         Row(
             modifier = Modifier
                 .fillMaxWidth(),
@@ -170,9 +164,12 @@ fun StatisticsScreen(
 
             }
         }
-            BottleFeedingSummary()
-            //DiaperSummary(context = LocalContext.current, pieChartConfig = pieChartConfig)
-
+        BottleFeedingSummary(
+            bottleFeedingUIState.bottleFeedingRecords,
+            statsUIState.startDate,
+            statsUIState.endDate
+        )
+        //DiaperSummary(context = LocalContext.current, pieChartConfig = pieChartConfig)
 
 
     }
@@ -180,22 +177,85 @@ fun StatisticsScreen(
 }
 
 
+@Composable
+private fun Navigator() {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth(),
+        verticalAlignment = Alignment.CenterVertically,
+    )
+    {
+        Image(
+            modifier = Modifier
+                .padding(end = 16.dp)
+                .size(50.dp),
+            painter = painterResource(id = R.drawable.diaper), contentDescription = null
+        )
 
+        Text(text = "Diaper", fontWeight = FontWeight.Bold, fontSize = 30.sp)
+        Image(imageVector = Icons.Default.ExpandMore, contentDescription = null)
+
+    }
+}
+
+@Composable
+private fun RangePicker(
+    startDate: LocalDate,
+    endDate: LocalDate,
+    setStartDate: (Long) -> Unit,
+    setEndDate: (Long) -> Unit,
+    startDateExpanded: Boolean,
+    toggleStartDate: () -> Unit,
+    endDateExpanded: Boolean,
+    toggleEndDate: () -> Unit
+) {
+    Row(verticalAlignment = Alignment.CenterVertically) {
+        TextButton(
+            onClick = { /*TODO*/ },
+            colors = ButtonDefaults.textButtonColors(
+                containerColor = colorResource(id = R.color.backcolor),
+                contentColor = Color.Black
+            )
+        ) {
+            DateInput(
+                toggleDatePicker = toggleStartDate,
+                isTimeExpanded = startDateExpanded,
+                selectedDate = startDate,
+                setSelectedDate = setStartDate
+            )
+        }
+        Text(text = " - ", fontSize = 18.sp)
+        TextButton(
+            onClick = { /*TODO*/ },
+            colors = ButtonDefaults.textButtonColors(
+                containerColor = colorResource(id = R.color.backcolor),
+                contentColor = Color.Black
+            )
+        ) {
+            DateInput(
+                toggleDatePicker = toggleEndDate,
+                isTimeExpanded = endDateExpanded,
+                selectedDate = endDate,
+                setSelectedDate = setEndDate
+            )
+        }
+    }
+}
 
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig){
+fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig) {
     val data = PieChartData(
         slices = listOf(
-                PieChartData.Slice("Dirty", 15f, Color(0xFFEC9F05)),
-                PieChartData.Slice("Wet", 30f, Color(0xFF5F0A87)),
-                PieChartData.Slice("Dirty and Wet", 10f, Color(0xFF58C2AB)),
+            PieChartData.Slice("Dirty", 15f, Color(0xFFEC9F05)),
+            PieChartData.Slice("Wet", 30f, Color(0xFF5F0A87)),
+            PieChartData.Slice("Dirty and Wet", 10f, Color(0xFF58C2AB)),
 
             ),
         plotType = PlotType.Donut
     )
-     Column(
+    Column(
         modifier = Modifier
             .padding(vertical = 16.dp)
             .background(Color.White, RoundedCornerShape(10))
@@ -291,7 +351,7 @@ fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig){
     ) {
         StackedBarChart(
             modifier = Modifier
-               .height(400.dp),
+                .height(400.dp),
             groupBarChartData = groupBarChartData
         )
         Legends(
@@ -303,13 +363,13 @@ fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig){
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun BreastFeedingSummary(context: Context, pieChartConfig: PieChartConfig){
+fun BreastFeedingSummary(context: Context, pieChartConfig: PieChartConfig) {
     val data = PieChartData(
         slices = listOf(
             PieChartData.Slice("Left Breast", 15f, Color(0xFF5F0A87)),
             PieChartData.Slice("Right Breast", 30f, Color(0xFF20BF55)),
 
-        ),
+            ),
         plotType = PlotType.Donut
     )
 
@@ -416,10 +476,9 @@ fun BreastFeedingSummary(context: Context, pieChartConfig: PieChartConfig){
 }
 
 
-
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SleepSummary(context: Context, pieChartConfig: PieChartConfig){
+fun SleepSummary(context: Context, pieChartConfig: PieChartConfig) {
     val data = PieChartData(
         slices = listOf(
             PieChartData.Slice("Total Hours Awake", 15f, Color(0xFF5F0A87)),
@@ -479,18 +538,54 @@ fun SleepSummary(context: Context, pieChartConfig: PieChartConfig){
         showXAxis = true,
         horizontalExtraSpace = 20.dp
     )
-    BarChart(modifier = Modifier
-        .padding(top = 32.dp)
-        .height(350.dp), barChartData = barChartData)
+    BarChart(
+        modifier = Modifier
+            .padding(top = 32.dp)
+            .height(350.dp), barChartData = barChartData
+    )
+}
+
+fun dateByQty(startDate: LocalDate, endDate: LocalDate): Map<LocalDate, Long> {
+    val days = max(ChronoUnit.DAYS.between(startDate, endDate), 7)
+    return (0..days).map { startDate.plusDays(it) }.associateWith { 0 }
 }
 
 
-@OptIn(ExperimentalMaterialApi::class)
+fun diaperToBarChatData(
+    bottleFeedingRecords: List<BottleFeedingRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+): List<BarData> {
+
+
+    val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)
+    val summary = bottleFeedingRecords
+        .groupBy { epochSecondsToLocalDateTime(it.timestamp)!!.toLocalDate() }
+        .mapValues { it.value.sumOf { c -> c.quantityMl } }
+
+    val rangeSummary = dateByQty(startDate, endDate) + summary
+    return rangeSummary
+        .map { Pair(it.key, it.value) }
+        .sortedBy { it.first }
+        .mapIndexed { idx, pair ->
+            val point = Point(idx.toFloat(), pair.second.toFloat())
+            val label = pair.first.format(formatter)
+            BarData(point = point, label = label)
+        }
+}
+
+
 @Composable
-fun BottleFeedingSummary(){
+fun BottleFeedingSummary(
+    bottleFeedingRecords: List<BottleFeedingRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+) {
+    if (bottleFeedingRecords.isEmpty()) return
     val maxRange = 100
-    val barData = DataUtils.getGradientBarChartData(50, 100)
+    val barData = diaperToBarChatData(bottleFeedingRecords, startDate, endDate)
     val yStepSize = 10
+
     val xAxisData = AxisData.Builder()
         .axisStepSize(30.dp)
         .steps(barData.size - 1)
@@ -499,12 +594,14 @@ fun BottleFeedingSummary(){
         .startDrawPadding(48.dp)
         .labelData { index -> barData[index].label }
         .build()
+
     val yAxisData = AxisData.Builder()
         .steps(yStepSize)
         .labelAndAxisLinePadding(20.dp)
         .axisOffset(20.dp)
         .labelData { index -> (index * (maxRange / yStepSize)).toString() }
         .build()
+
     val barChartData = BarChartData(
         chartData = barData,
         xAxisData = xAxisData,
@@ -515,15 +612,19 @@ fun BottleFeedingSummary(){
             selectionHighlightData = SelectionHighlightData(
                 highlightBarColor = Color.Red,
                 highlightTextBackgroundColor = Color.Green,
-                popUpLabel = { _, y -> " Value : $y " }
+                popUpLabel = { _, y -> " Ml : $y " }
             )),
         showYAxis = true,
         showXAxis = true,
         horizontalExtraSpace = 20.dp
     )
-    BarChart(modifier = Modifier
-        .padding(top = 32.dp)
-        .height(350.dp), barChartData = barChartData)
+
+    BarChart(
+        modifier = Modifier
+            .padding(top = 32.dp)
+            .height(350.dp),
+        barChartData = barChartData
+    )
 
 }
 
@@ -531,7 +632,7 @@ fun BottleFeedingSummary(){
 fun getDiaperLegendsLabelData(): List<LegendLabel> {
 
     val labelList = mutableListOf<LegendLabel>()
-     val colorList = listOf(
+    val colorList = listOf(
         colorResource(id = R.color.orange),
         colorResource(id = R.color.myRed),
         colorResource(id = R.color.purple_700)
@@ -548,7 +649,6 @@ fun getDiaperLegendsLabelData(): List<LegendLabel> {
     }
     return labelList
 }
-
 
 
 

@@ -75,7 +75,7 @@ class BottleFeedViewModel : ViewModel() {
         val startOfDayEpoch = day.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
         val endOfDayEpoch = day.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
 
-        activeBabyCollection(bottleFeedCollection,activeBaby)
+        activeBabyCollection(bottleFeedCollection, activeBaby)
             .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
             .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
             .addSnapshotListener { doc, ex ->
@@ -129,7 +129,7 @@ class BottleFeedViewModel : ViewModel() {
         }
 
         setLoading(true)
-        val ref = activeBabyCollection(bottleFeedCollection,activeBaby).document()
+        val ref = activeBabyCollection(bottleFeedCollection, activeBaby).document()
 
         ref.set(recordToSave.copy(id = ref.id))
             .addOnSuccessListener {
@@ -143,6 +143,30 @@ class BottleFeedViewModel : ViewModel() {
                 setLoading(true)
             }
 
+    }
+
+    fun fetchRangeRecords(activeBaby: Baby?, startDate: LocalDate, endDate: LocalDate) {
+        if (activeBaby == null) return
+        val startOfDayEpoch = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = endDate.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        activeBabyCollection(bottleFeedCollection, activeBaby)
+            .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
+            .addSnapshotListener { doc, ex ->
+                if (ex != null) {
+                    Log.e(TAG, "fetchBottleFeed: ", ex)
+                    return@addSnapshotListener
+                }
+                val bottleFeeds: List<BottleFeedingRecord>? = doc?.documents?.mapNotNull {
+                    it.toObject(
+                        BottleFeedingRecord::class.java
+                    )
+                }
+                _bottleFeedingUIState.update {
+                    it.copy(bottleFeedingRecords = bottleFeeds ?: emptyList())
+                }
+            }
     }
 
 }
