@@ -18,7 +18,7 @@ data class RegisterUIState(
     val errors: List<String> = emptyList(),
     val isRegistrationSuccessful: Boolean = false
 )
-class RegisterViewModel() : ViewModel() {
+class RegisterViewModel : ViewModel() {
     private val firebaseAuth = FirebaseAuth.getInstance()
     private val _registerUIState = MutableStateFlow(RegisterUIState())
     val registerUIState = _registerUIState.asStateFlow()

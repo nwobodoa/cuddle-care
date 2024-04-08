@@ -19,6 +19,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -27,6 +30,7 @@ import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.AttachmentRow
@@ -123,44 +127,68 @@ fun DoctorVisitScreen(
                 }
             }
 
+            Row(
+                horizontalArrangement = Arrangement.spacedBy(10.dp)
+
+            ) {
+                Text(text = "Reaction",fontSize = 18.sp)
+
                 Row(
                     modifier = Modifier.fillMaxWidth(),
                     horizontalArrangement = Arrangement.End
                 ) {
 
-                    Row(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-                        Text(text = "Reaction")
+                    var clickedIcon by remember{ mutableStateOf(false) }
+                    var clickedIcon1 by remember{ mutableStateOf(false) }
+                    var clickedIcon2 by remember{ mutableStateOf(false) }
+
+                    IconButton(onClick = { clickedIcon = !clickedIcon }) {
+                        Image(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(
+                                id = if(clickedIcon){
+                                    R.drawable.happy1
+                                }else{
+                                    R.drawable.happy2
+                                }
+                            ),
+                            contentDescription = null
+                        )
                     }
-                    IconButton(onClick = bottleFeedingViewModel::incrementQty) {
-//                        Image(
-//                            painter = painterResource(id = R.drawable.happyface1),
-//                            contentDescription = "plus button"
-//                        )
+                    IconButton(onClick = {  clickedIcon1 = !clickedIcon1 }) {
+                        Image(
+                            modifier = Modifier.size(70.dp),
+                            painter = painterResource(
+                                id = if(clickedIcon1){
+                                    R.drawable.straightface1
+                                }else{
+                                    R.drawable.straightface2
+                                }),
+                            contentDescription = null
+                        )
+                    }
+                    IconButton(onClick = {clickedIcon2 = !clickedIcon2 }) {
+                        Image(modifier = Modifier.size(70.dp),
+                            painter = painterResource(
+                                id = if(clickedIcon2){
+                                    R.drawable.sad1
+                                }else{
+                                    R.drawable.sad2
+                                }
+                            ),
+                            contentDescription = null
+                        )
                     }
 
-//
-//                    Image(
-//
-//                        painter = painterResource(id = R.drawable.straightface1),
-//                        contentDescription = "plus button"
-//                    )
-//
-//                    IconButton(onClick = bottleFeedingViewModel::incrementQty) {
-//                        Image(
-//                            painter = painterResource(id = R.drawable.sad1),
-//                            contentDescription = "plus button"
-//                        )
-//                    }
+
                 }
-
-                AttachmentRow(
-                    value = bottleFeedingUIState.notes,
-                    onValueChange = bottleFeedingViewModel::setNotes
-                )
-                SaveButton(onClick = { bottleFeedingViewModel.save(activeBaby) })
             }
+            AttachmentRow(
+                value = bottleFeedingUIState.notes,
+                onValueChange = bottleFeedingViewModel::setNotes
+            )
+            SaveButton(onClick = { bottleFeedingViewModel.save(activeBaby) })
         }
+
     }
-
-
-
+}

@@ -18,7 +18,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.DirectionsBike
-import androidx.compose.material.icons.filled.DirectionsBike
 import androidx.compose.material.icons.outlined.Timelapse
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Scaffold
