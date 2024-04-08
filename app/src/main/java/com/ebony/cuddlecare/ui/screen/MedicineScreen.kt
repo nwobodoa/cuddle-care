@@ -11,7 +11,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Medication
@@ -50,6 +52,7 @@ fun MedicineScreen(
     activeBaby: Baby?
 ) {
     val medicineUIState by medicineViewModel.medicineUIState.collectAsState()
+    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -59,6 +62,7 @@ fun MedicineScreen(
         Column(
             modifier = Modifier
                 .fillMaxHeight()
+                .verticalScroll(state = scrollState)
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),

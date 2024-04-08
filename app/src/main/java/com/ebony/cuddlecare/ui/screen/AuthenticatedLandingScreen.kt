@@ -11,7 +11,6 @@ import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
-import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
@@ -87,13 +86,11 @@ fun AuthenticatedScreens(
                 SleepingScreen(
                     onNavigateBack = navController::popBackStack,
                     sleepingUIState = sleepingUIState,
-                    incrementTimer = sleepingViewModel::incrementTimer,
-                    incrementPauseTimer = sleepingViewModel::incrementPauseTimer,
-                    toggleTimerState = sleepingViewModel::toggleTimerState,
+                    setNotes = sleepingViewModel::setNotes,
                     saveSleep = {
                         sleepingViewModel.save(babyUIState.activeBaby)
                     },
-                    setNotes = sleepingViewModel::setNotes,
+                    toggleTimerState = sleepingViewModel::toggleTimerState,
                     reset = sleepingViewModel::reset
                 )
 

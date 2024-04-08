@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.AddCircle
@@ -89,6 +91,7 @@ fun DiaperScreen(
     }
 
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = diaperUIState.savedSuccessfully) {
         if (diaperUIState.savedSuccessfully) {
@@ -102,6 +105,7 @@ fun DiaperScreen(
     {
         Column(
             modifier = Modifier
+                .verticalScroll(state = scrollState)
                 .padding(it)
                 .fillMaxHeight()
                 .background(color = colorResource(id = R.color.orange))

@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -39,9 +41,6 @@ import com.ebony.cuddlecare.ui.viewmodel.SleepingUIState
 import com.ebony.cuddlecare.util.localDateTimeToDate
 import com.ebony.cuddlecare.util.localDateTimeToTime
 import com.ebony.cuddlecare.util.secondsToFormattedTime
-import kotlinx.coroutines.delay
-import kotlin.reflect.KFunction0
-import kotlin.time.Duration.Companion.seconds
 
 
 @Composable
@@ -49,8 +48,6 @@ fun SleepingScreen(
     onNavigateBack: () -> Unit = {},
     sleepingUIState: SleepingUIState,
     setNotes: (String) -> Unit,
-    incrementPauseTimer: KFunction0<Unit>,
-    incrementTimer: KFunction0<Unit>,
     saveSleep: () -> Unit,
     toggleTimerState: () -> Unit,
     reset: () -> Unit
@@ -85,11 +82,12 @@ fun SleepingScreen(
         }
     }
 
-
+    val scrollState = rememberScrollState()
 
     Column(
         modifier = Modifier
             .fillMaxHeight()
+
             .background(color = colorResource(id = R.color.orange))
     )
     {
@@ -97,6 +95,7 @@ fun SleepingScreen(
         Column(
             modifier = Modifier
                 .fillMaxHeight()
+                .verticalScroll(state = scrollState)
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),

@@ -13,6 +13,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.LazyRow
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ExitToApp
 import androidx.compose.material.icons.filled.AddCircle
@@ -65,6 +67,7 @@ fun AccountScreen(
     accountViewModel: AccountViewModel = viewModel()
 ) {
     val accountUIState by accountViewModel.accountUIState.collectAsState()
+    val scrollState = rememberScrollState()
 
     LaunchedEffect(key1 = user) {
         accountViewModel.checkInvites(user)
@@ -77,6 +80,7 @@ fun AccountScreen(
         Column(
             modifier = Modifier
                 .fillMaxWidth()
+                .verticalScroll(state = scrollState)
                 .padding(it)
                 .padding(16.dp),
             Arrangement.Center

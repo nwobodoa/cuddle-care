@@ -13,8 +13,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccessTime
 import androidx.compose.material.icons.filled.Add
@@ -65,6 +67,7 @@ fun VaccinationScreen(
     activeBaby: Baby?
 ) {
     val vaccineUIState by vaccinationViewModel.vaccineUIState.collectAsState()
+    val scrollState = rememberScrollState()
 
     if (vaccineUIState.showVaccineList) {
         VaccineList(
@@ -82,6 +85,7 @@ fun VaccinationScreen(
         Column(
             modifier = Modifier
                 .fillMaxHeight()
+                .verticalScroll(state = scrollState)
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),

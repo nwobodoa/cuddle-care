@@ -56,7 +56,10 @@ import com.ebony.cuddlecare.ui.components.BarGraph
 import com.ebony.cuddlecare.ui.components.BarType
 import com.ebony.cuddlecare.ui.components.BottomNavBar
 import com.ebony.cuddlecare.ui.components.Chart
+import com.ebony.cuddlecare.ui.components.ChartScreen
+import com.ebony.cuddlecare.ui.components.StackedBarChart
 import com.ebony.cuddlecare.ui.components.TopBar
+import com.ebony.cuddlecare.ui.components.stackedBarChartInputs
 import com.ebony.cuddlecare.ui.documents.Baby
 import kotlin.math.min
 
@@ -214,10 +217,41 @@ fun StatisticsScreen(
                     barArrangement = Arrangement.SpaceEvenly
                 )
             }
+            Column(modifier = Modifier
+                .fillMaxSize()
+                .padding(horizontal=8.dp, vertical = 16.dp)
+                .background(Color.White, shape = RoundedCornerShape(10.dp)),
+                verticalArrangement = Arrangement.Center,
+                horizontalAlignment = Alignment.CenterHorizontally
+            )
+            {
+                val datalist = mutableListOf(30, 60, 90, 50, 70)
+                val floatValue = mutableListOf<Float>()
+                val datesList = mutableListOf(2, 3, 4, 5, 6)
+                datalist.forEachIndexed { index, value ->
+                    floatValue.add(
+                        index = index,
+                        element = value.toFloat() / datalist.max().toFloat()
+                    )
+                }
+                ChartScreen(
+                    title = "Stacked Bar Chart",
+                    chart = {
+                        StackedBarChart(
+                            modifier = Modifier.padding(20.dp),
+                            values = stackedBarChartInputs()
+                        )
+                    }
+                )
+
+            }
+            }
+
+
 
         }
         }
-    }
+
 
 
 

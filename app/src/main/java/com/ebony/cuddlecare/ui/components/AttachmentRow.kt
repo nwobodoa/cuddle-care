@@ -41,6 +41,7 @@ fun AttachmentRow(value: String = "", onValueChange: (String) -> Unit = {}) {
 
             colors = TextFieldDefaults.colors(
                 focusedContainerColor = colorResource(id = R.color.backcolor),
+                unfocusedContainerColor = colorResource(id = R.color.backcolor),
                 unfocusedIndicatorColor = Color.Gray,
                 focusedIndicatorColor = Color.Transparent,
                 disabledIndicatorColor = Color.Transparent,

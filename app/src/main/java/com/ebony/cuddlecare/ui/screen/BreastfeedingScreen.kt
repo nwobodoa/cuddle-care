@@ -9,7 +9,9 @@ import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.Delete
@@ -91,7 +93,7 @@ fun BreastfeedingScreen(
             resetSaved()
         }
     }
-
+    val scrollState = rememberScrollState()
     Column(
         modifier = Modifier
             .fillMaxHeight()
@@ -102,6 +104,7 @@ fun BreastfeedingScreen(
         Column(
             modifier = Modifier
                 .fillMaxHeight()
+                .verticalScroll(state = scrollState)
                 .clip(shape = RoundedCornerShape(topStart = 40.dp, topEnd = 40.dp))
                 .background(color = colorResource(id = R.color.backcolor))
                 .padding(16.dp),
