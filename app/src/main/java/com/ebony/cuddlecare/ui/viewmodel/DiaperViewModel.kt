@@ -299,6 +299,33 @@ class DiaperViewModel : ViewModel() {
                     }
             }
     }
+
+    fun fetchRangeRecords(activeBaby: Baby?, startDate: LocalDate, endDate: LocalDate) {
+        if (activeBaby == null) return
+        val startOfDayEpoch = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = endDate.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        setLoading(true)
+        activeBabyCollection(diaperCollection, activeBaby)
+            .whereLessThanOrEqualTo("timestamp", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("timestamp", startOfDayEpoch)
+            .addSnapshotListener { snap, ex ->
+                setLoading(false)
+                if (ex != null) {
+                    Log.e(TAG, "fetch diaper Records: ", ex)
+                    return@addSnapshotListener
+                }
+                snap?.documents
+                    ?.mapNotNull { it.toObject(DiaperRecord::class.java) }
+                    ?.let { records ->
+                        _diaperUIState.update {
+                            it.copy(
+                                diaperRecords = records
+                            )
+                        }
+                    }
+            }
+    }
 }
 
 fun diaperUIToDiaperRecord(diaperUIState: DiaperUIState): DiaperRecord {

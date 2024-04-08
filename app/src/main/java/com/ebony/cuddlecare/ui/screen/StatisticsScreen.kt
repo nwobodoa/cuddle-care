@@ -32,12 +32,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import co.yml.charts.axis.AxisData
 import co.yml.charts.common.components.Legends
 import co.yml.charts.common.extensions.getMaxElementInYAxis
@@ -62,7 +67,10 @@ import com.ebony.cuddlecare.R
 import com.ebony.cuddlecare.ui.components.DateInput
 import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
+import com.ebony.cuddlecare.ui.documents.DiaperRecord
+import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
+import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
 import com.ebony.cuddlecare.ui.viewmodel.StatsViewModel
 import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
 import java.time.LocalDate
@@ -70,6 +78,20 @@ import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
 import kotlin.math.max
+
+
+val pieChartConfig =
+    PieChartConfig(
+        labelVisible = true,
+        strokeWidth = 270f,
+        labelColor = Color.Black,
+        activeSliceAlpha = .9f,
+        isEllipsizeEnabled = true,
+        labelTypeface = Typeface.defaultFromStyle(Typeface.BOLD),
+        isAnimationEnable = true,
+        chartPadding = 25,
+        labelFontSize = 42.sp,
+    )
 
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -82,28 +104,26 @@ fun StatisticsScreen(
     activeBaby: Baby?,
     innerPadding: PaddingValues,
     statsViewModel: StatsViewModel = viewModel(),
-    bottleFeedViewModel: BottleFeedViewModel = viewModel()
+    bottleFeedViewModel: BottleFeedViewModel = viewModel(),
+    navController: NavHostController = rememberNavController(),
+    diaperViewModel: DiaperViewModel = viewModel()
 ) {
-    val pieChartConfig =
-        PieChartConfig(
-            labelVisible = true,
-            strokeWidth = 270f,
-            labelColor = Color.Black,
-            activeSliceAlpha = .9f,
-            isEllipsizeEnabled = true,
-            labelTypeface = Typeface.defaultFromStyle(Typeface.BOLD),
-            isAnimationEnable = true,
-            chartPadding = 25,
-            labelFontSize = 42.sp,
-        )
+
     val scrollState = rememberScrollState()
 
     val statsUIState by statsViewModel.statsUIState.collectAsState()
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
+    val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
 
 
     LaunchedEffect(key1 = activeBaby, key2 = statsUIState.startDate, key3 = statsUIState.endDate) {
         bottleFeedViewModel.fetchRangeRecords(
+            activeBaby,
+            statsUIState.startDate,
+            statsUIState.endDate
+        )
+
+        diaperViewModel.fetchRangeRecords(
             activeBaby,
             statsUIState.startDate,
             statsUIState.endDate
@@ -117,7 +137,9 @@ fun StatisticsScreen(
             .padding(innerPadding)
             .padding(16.dp)
     ) {
-        Navigator()
+        ActivityMenuRow(
+            onTopNavigation = { navController.navigate(it) }
+        )
 
         RangePicker(
             startDate = statsUIState.startDate,
@@ -164,39 +186,29 @@ fun StatisticsScreen(
 
             }
         }
-        BottleFeedingSummary(
-            bottleFeedingUIState.bottleFeedingRecords,
-            statsUIState.startDate,
-            statsUIState.endDate
-        )
-        //DiaperSummary(context = LocalContext.current, pieChartConfig = pieChartConfig)
+
+        NavHost(navController = navController, startDestination = Screen.Bottle.name) {
+            composable(Screen.Bottle.name) {
+                BottleFeedingSummary(
+                    bottleFeedingUIState.bottleFeedingRecords,
+                    statsUIState.startDate,
+                    statsUIState.endDate
+                )
+            }
+
+            composable(Screen.Diaper.name) {
+
+            }
+
+        }
+
+        DiaperStats(diaperRecords = diaperUIState.diaperRecords)
 
 
     }
 
 }
 
-
-@Composable
-private fun Navigator() {
-    Row(
-        modifier = Modifier
-            .fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-    )
-    {
-        Image(
-            modifier = Modifier
-                .padding(end = 16.dp)
-                .size(50.dp),
-            painter = painterResource(id = R.drawable.diaper), contentDescription = null
-        )
-
-        Text(text = "Diaper", fontWeight = FontWeight.Bold, fontSize = 30.sp)
-        Image(imageVector = Icons.Default.ExpandMore, contentDescription = null)
-
-    }
-}
 
 @Composable
 private fun RangePicker(
@@ -242,37 +254,23 @@ private fun RangePicker(
     }
 }
 
+fun diaperRecordsToPieData(diaperRecords:List<DiaperRecord>): Triple<Float, Float, Float>? {
+    if (diaperRecords.isEmpty()) return null
+    val wetCountOnly = diaperRecords.count { it.soilState.contains(DiaperSoilType.WET) && it.soilState.size == 1 }
+    val dirtyCountOnly = diaperRecords.count { it.soilState.contains(DiaperSoilType.DIRTY) && it.soilState.size == 1 }
+    val wetAndDirty = diaperRecords.count { it.soilState.contains(DiaperSoilType.DIRTY) && it.soilState.contains(DiaperSoilType.WET) }
+
+    val total = (wetCountOnly + dirtyCountOnly + wetAndDirty).toFloat()
+
+    return Triple(wetCountOnly/total,dirtyCountOnly/total,wetAndDirty/total)
+
+}
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig) {
-    val data = PieChartData(
-        slices = listOf(
-            PieChartData.Slice("Dirty", 15f, Color(0xFFEC9F05)),
-            PieChartData.Slice("Wet", 30f, Color(0xFF5F0A87)),
-            PieChartData.Slice("Dirty and Wet", 10f, Color(0xFF58C2AB)),
+fun DiaperStats(diaperRecords:List<DiaperRecord>) {
 
-            ),
-        plotType = PlotType.Donut
-    )
-    Column(
-        modifier = Modifier
-            .padding(vertical = 16.dp)
-            .background(Color.White, RoundedCornerShape(10))
-            .fillMaxWidth()
-            .height(500.dp)
-    ) {
-        Legends(legendsConfig = DataUtils.getLegendsConfigFromPieChartData(pieChartData = data, 3))
-        DonutPieChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp),
-            data,
-            pieChartConfig
-        ) { slice ->
-            Toast.makeText(context, slice.label, Toast.LENGTH_SHORT).show()
-        }
-    }
+    DiaperPieChart(diaperRecords)
 
     val barSize = 3
     val listSize = 10
@@ -304,7 +302,7 @@ fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig) {
         .topPadding(36.dp)
         .build()
 
-    val colorList = listOf<Color>(
+    val colorList = listOf(
         colorResource(id = R.color.orange),
         colorResource(id = R.color.myRed),
         colorResource(id = R.color.purple_700)
@@ -359,6 +357,49 @@ fun DiaperSummary(context: Context, pieChartConfig: PieChartConfig) {
         )
     }
 
+}
+
+@Composable
+@OptIn(ExperimentalMaterialApi::class)
+private fun DiaperPieChart(
+    diaperRecords:List<DiaperRecord>
+) {
+    val context = LocalContext.current
+    val pieData = diaperRecordsToPieData(diaperRecords)
+
+    if(pieData == null) {
+        Text(text = "No Data")
+        return
+    }
+
+    val (wet, dirty, wetDirty) = pieData
+    val data = PieChartData(
+        slices = listOf(
+            PieChartData.Slice("Dirty", dirty, Color(0xFFEC9F05)),
+            PieChartData.Slice("Wet", wet, Color(0xFF5F0A87)),
+            PieChartData.Slice("Dirty and Wet", wetDirty, Color(0xFF58C2AB)),
+
+            ),
+        plotType = PlotType.Donut
+    )
+    Column(
+        modifier = Modifier
+            .padding(vertical = 16.dp)
+            .background(Color.White, RoundedCornerShape(10))
+            .fillMaxWidth()
+            .height(500.dp)
+    ) {
+        Legends(legendsConfig = DataUtils.getLegendsConfigFromPieChartData(pieChartData = data, 3))
+        DonutPieChart(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(400.dp),
+            data,
+            pieChartConfig
+        ) { slice ->
+            Toast.makeText(context, slice.label, Toast.LENGTH_SHORT).show()
+        }
+    }
 }
 
 @OptIn(ExperimentalMaterialApi::class)
@@ -649,6 +690,7 @@ fun getDiaperLegendsLabelData(): List<LegendLabel> {
     }
     return labelList
 }
+
 
 
 

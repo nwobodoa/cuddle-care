@@ -291,7 +291,7 @@ fun HomeScreen(
 
 
 @Composable
-private fun ActivityMenuRow(onTopNavigation: (String) -> Unit) {
+fun ActivityMenuRow(onTopNavigation: (String) -> Unit) {
     LazyRow(
         modifier = Modifier.padding(start = 8.dp, end = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
