@@ -3,7 +3,6 @@ package com.ebony.cuddlecare.ui.screen
 import android.content.Context
 import android.graphics.Typeface
 import android.widget.Toast
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
@@ -13,14 +12,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -34,8 +30,6 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.res.painterResource
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -51,13 +45,13 @@ import co.yml.charts.common.model.LegendsConfig
 import co.yml.charts.common.model.PlotType
 import co.yml.charts.common.model.Point
 import co.yml.charts.common.utils.DataUtils
-import co.yml.charts.common.utils.DataUtils.getGroupBarChartData
 import co.yml.charts.ui.barchart.BarChart
 import co.yml.charts.ui.barchart.StackedBarChart
 import co.yml.charts.ui.barchart.models.BarChartData
 import co.yml.charts.ui.barchart.models.BarData
 import co.yml.charts.ui.barchart.models.BarPlotData
 import co.yml.charts.ui.barchart.models.BarStyle
+import co.yml.charts.ui.barchart.models.GroupBar
 import co.yml.charts.ui.barchart.models.GroupBarChartData
 import co.yml.charts.ui.barchart.models.SelectionHighlightData
 import co.yml.charts.ui.piechart.charts.DonutPieChart
@@ -70,10 +64,18 @@ import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
 import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
+import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
+import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.DiaperViewModel
+import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
+import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.StatsViewModel
 import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
+import com.ebony.cuddlecare.util.localDateTimeToEpoch
+import java.time.Duration
 import java.time.LocalDate
+import java.time.LocalDateTime
+import java.time.LocalTime
 import java.time.format.DateTimeFormatter
 import java.time.temporal.ChronoUnit
 import java.util.Locale
@@ -93,6 +95,8 @@ val pieChartConfig =
         labelFontSize = 42.sp,
     )
 
+private val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)
+
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -106,7 +110,9 @@ fun StatisticsScreen(
     statsViewModel: StatsViewModel = viewModel(),
     bottleFeedViewModel: BottleFeedViewModel = viewModel(),
     navController: NavHostController = rememberNavController(),
-    diaperViewModel: DiaperViewModel = viewModel()
+    diaperViewModel: DiaperViewModel = viewModel(),
+    breastFeedViewModel: BreastfeedingViewModel = viewModel(),
+    sleepingViewModel: SleepingViewModel = viewModel()
 ) {
 
     val scrollState = rememberScrollState()
@@ -114,6 +120,8 @@ fun StatisticsScreen(
     val statsUIState by statsViewModel.statsUIState.collectAsState()
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
     val diaperUIState by diaperViewModel.diaperUIState.collectAsState()
+    val breastfeedingUIState by breastFeedViewModel.breastfeedingUIState.collectAsState()
+    val sleepUiState by sleepingViewModel.sleepingUIState.collectAsState()
 
 
     LaunchedEffect(key1 = activeBaby, key2 = statsUIState.startDate, key3 = statsUIState.endDate) {
@@ -124,6 +132,17 @@ fun StatisticsScreen(
         )
 
         diaperViewModel.fetchRangeRecords(
+            activeBaby,
+            statsUIState.startDate,
+            statsUIState.endDate
+        )
+
+        breastFeedViewModel.fetchRangeRecords(
+            activeBaby,
+            statsUIState.startDate,
+            statsUIState.endDate
+        )
+        sleepingViewModel.fetchRangeRecords(
             activeBaby,
             statsUIState.startDate,
             statsUIState.endDate
@@ -195,14 +214,28 @@ fun StatisticsScreen(
                     statsUIState.endDate
                 )
             }
-
             composable(Screen.Diaper.name) {
-
+                DiaperStats(
+                    diaperRecords = diaperUIState.diaperRecords,
+                    statsUIState.startDate,
+                    statsUIState.endDate
+                )
             }
-
+            composable(Screen.BreastfeedingScreen.name) {
+                BreastFeedingStats(
+                    breastFeedingRecords = breastfeedingUIState.breastfeedingRecords,
+                    statsUIState.startDate,
+                    statsUIState.endDate
+                )
+            }
+            composable(Screen.SleepingScreen.name) {
+                SleepSummary(
+                    startDate = statsUIState.startDate,
+                    endDate = statsUIState.endDate,
+                    sleepRecords = sleepUiState.sleepRecords
+                )
+            }
         }
-
-        DiaperStats(diaperRecords = diaperUIState.diaperRecords)
 
 
     }
@@ -254,34 +287,123 @@ private fun RangePicker(
     }
 }
 
-fun diaperRecordsToPieData(diaperRecords:List<DiaperRecord>): Triple<Float, Float, Float>? {
-    if (diaperRecords.isEmpty()) return null
-    val wetCountOnly = diaperRecords.count { it.soilState.contains(DiaperSoilType.WET) && it.soilState.size == 1 }
-    val dirtyCountOnly = diaperRecords.count { it.soilState.contains(DiaperSoilType.DIRTY) && it.soilState.size == 1 }
-    val wetAndDirty = diaperRecords.count { it.soilState.contains(DiaperSoilType.DIRTY) && it.soilState.contains(DiaperSoilType.WET) }
+fun countSoilType(diaperRecords: List<DiaperRecord>): Triple<Int, Int, Int> {
+    val wetCountOnly =
+        diaperRecords.count { it.soilState.contains(DiaperSoilType.WET) && it.soilState.size == 1 }
+    val dirtyCountOnly =
+        diaperRecords.count { it.soilState.contains(DiaperSoilType.DIRTY) && it.soilState.size == 1 }
+    val wetAndDirty = diaperRecords.count {
+        it.soilState.contains(DiaperSoilType.DIRTY) && it.soilState.contains(DiaperSoilType.WET)
+    }
+    return Triple(wetCountOnly, dirtyCountOnly, wetAndDirty)
+}
 
-    val total = (wetCountOnly + dirtyCountOnly + wetAndDirty).toFloat()
-
-    return Triple(wetCountOnly/total,dirtyCountOnly/total,wetAndDirty/total)
+fun countBreastSideSession(breastFeedingRecords: List<BreastFeedingRecord>): Pair<Int, Int> {
+    val left = breastFeedingRecords.count { (it.leftBreast?.activeSeconds ?: 0) > 0 }
+    val right = breastFeedingRecords.count { (it.rightBreast?.activeSeconds ?: 0) > 0 }
+    return Pair(left, right)
 
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+fun diaperRecordsToPieData(diaperRecords: List<DiaperRecord>): Triple<Float, Float, Float>? {
+    if (diaperRecords.isEmpty()) return null
+    val (wetCountOnly, dirtyCountOnly, wetAndDirty) = countSoilType(diaperRecords)
+    val total = (wetCountOnly + dirtyCountOnly + wetAndDirty).toFloat()
+    return Triple(wetCountOnly / total, dirtyCountOnly / total, wetAndDirty / total)
+}
+
+
+fun toBarData(value: Int, index: Int, label: String): BarData {
+    return BarData(
+        Point(index.toFloat(), value.toFloat()),
+        label = label
+    )
+}
+
+
+fun diaperRecordToGroupBarData(
+    diaperRecords: List<DiaperRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+): List<GroupBar> {
+    val dateByRecord =
+        diaperRecords.groupBy { epochSecondsToLocalDateTime(it.timestamp)!!.toLocalDate() }
+    val fullRangeByRecord =
+        minDateRange(startDate, endDate).associateWith { emptyList<DiaperRecord>() } + dateByRecord
+
+    return fullRangeByRecord
+        .mapValues { countSoilType(it.value) }.toList()
+        .sortedBy { it.first }
+        .mapIndexed { idx, (date, values) ->
+            val label = date.format(formatter)
+            val barData = values.toList().map { toBarData(it, idx, label) }
+            GroupBar(label, barData)
+        }
+}
+
+fun breastFeedingRecordToGroupBarData(
+    breastFeedingRecords: List<BreastFeedingRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+): List<GroupBar> {
+    val dateByRecord =
+        breastFeedingRecords.groupBy { epochSecondsToLocalDateTime(it.endTime!!)!!.toLocalDate() }
+    val fullRangeByRecord =
+        minDateRange(
+            startDate,
+            endDate
+        ).associateWith { emptyList<BreastFeedingRecord>() } + dateByRecord
+
+    return fullRangeByRecord
+        .mapValues {
+            countBreastSideSession(it.value)
+        }.toList()
+        .sortedBy { it.first }
+        .mapIndexed { idx, (date, values) ->
+            val label = date.format(formatter)
+            val barData = values.toList().map { toBarData(it, idx, label) }
+            GroupBar(label, barData)
+        }
+
+}
+
 @Composable
-fun DiaperStats(diaperRecords:List<DiaperRecord>) {
+fun DiaperStats(diaperRecords: List<DiaperRecord>, startDate: LocalDate, endDate: LocalDate) {
+    Column {
+        DiaperPieChart(diaperRecords)
+        DiaperStackedBarChart(diaperRecords, startDate, endDate)
+    }
+}
 
-    DiaperPieChart(diaperRecords)
+@Composable
+private fun DiaperStackedBarChart(
+    diaperRecords: List<DiaperRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+) {
+    if (diaperRecords.isEmpty()) {
+        Text(text = "No data")
+        return
+    }
+    val legendsConfig = LegendsConfig(
+        legendLabelList = getDiaperLegendsLabelData(),
+        gridColumnCount = 3
+    )
+    BarChart(diaperRecordToGroupBarData(diaperRecords, startDate, endDate), legendsConfig)
+}
 
-    val barSize = 3
-    val listSize = 10
-    val groupBarData = getGroupBarChartData(listSize, 50, barSize)
+@Composable
+private fun BarChart(groupBarData: List<GroupBar>, legendsConfig: LegendsConfig) {
+    val listSize = groupBarData.size
     val yStepSize = 10
+
     val xAxisData = AxisData.Builder()
         .axisStepSize(30.dp)
         .steps(listSize - 1)
         .startDrawPadding(48.dp)
-        .labelData { index -> "C $index" }
+        .labelData { groupBarData[it].label }
         .build()
+
     val yAxisData = AxisData.Builder()
         .steps(yStepSize)
         .labelAndAxisLinePadding(20.dp)
@@ -308,16 +430,13 @@ fun DiaperStats(diaperRecords:List<DiaperRecord>) {
         colorResource(id = R.color.purple_700)
     )
 
-    val legendsConfig = LegendsConfig(
-        legendLabelList = getDiaperLegendsLabelData(),
-        gridColumnCount = 3
-    )
+
     val groupBarPlotData = BarPlotData(
         groupBarList = groupBarData,
         barStyle = BarStyle(
             barWidth = 35.dp,
             selectionHighlightData = SelectionHighlightData(
-                isHighlightFullBar = true,
+                isHighlightFullBar = false,
                 groupBarPopUpLabel = { name, value ->
                     "Name : C$name Value : ${String.format("%.2f", value)}"
                 }
@@ -356,22 +475,17 @@ fun DiaperStats(diaperRecords:List<DiaperRecord>) {
             legendsConfig = legendsConfig
         )
     }
-
 }
 
 @Composable
-@OptIn(ExperimentalMaterialApi::class)
 private fun DiaperPieChart(
-    diaperRecords:List<DiaperRecord>
+    diaperRecords: List<DiaperRecord>
 ) {
-    val context = LocalContext.current
     val pieData = diaperRecordsToPieData(diaperRecords)
-
-    if(pieData == null) {
+    if (pieData == null) {
         Text(text = "No Data")
         return
     }
-
     val (wet, dirty, wetDirty) = pieData
     val data = PieChartData(
         slices = listOf(
@@ -382,6 +496,15 @@ private fun DiaperPieChart(
             ),
         plotType = PlotType.Donut
     )
+    PieChart(data)
+}
+
+@Composable
+@OptIn(ExperimentalMaterialApi::class)
+private fun PieChart(
+    data: PieChartData
+) {
+    val context = LocalContext.current
     Column(
         modifier = Modifier
             .padding(vertical = 16.dp)
@@ -402,193 +525,95 @@ private fun DiaperPieChart(
     }
 }
 
-@OptIn(ExperimentalMaterialApi::class)
+
 @Composable
-fun BreastFeedingSummary(context: Context, pieChartConfig: PieChartConfig) {
-    val data = PieChartData(
-        slices = listOf(
-            PieChartData.Slice("Left Breast", 15f, Color(0xFF5F0A87)),
-            PieChartData.Slice("Right Breast", 30f, Color(0xFF20BF55)),
-
-            ),
-        plotType = PlotType.Donut
-    )
-
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(500.dp)
-    ) {
-        Legends(legendsConfig = DataUtils.getLegendsConfigFromPieChartData(pieChartData = data, 3))
-        DonutPieChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp),
-            data,
-            pieChartConfig
-        ) { slice ->
-            Toast.makeText(context, slice.label, Toast.LENGTH_SHORT).show()
-        }
+fun BreastFeedingStats(
+    breastFeedingRecords: List<BreastFeedingRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+) {
+    Column {
+        BreastfeedingPieChart(breastFeedingRecords)
+        BreastfeedingBarChart(breastFeedingRecords, startDate, endDate)
     }
+}
 
-    val barSize = 2
-    val listSize = 10
-    val groupBarData = getGroupBarChartData(listSize, 50, barSize)
-    val yStepSize = 10
-    val xAxisData = AxisData.Builder()
-        .axisStepSize(30.dp)
-        .steps(listSize - 1)
-        .startDrawPadding(48.dp)
-        .labelData { index -> "C $index" }
-        .build()
-    val yAxisData = AxisData.Builder()
-        .steps(yStepSize)
-        .labelAndAxisLinePadding(20.dp)
-        .axisOffset(20.dp)
-        .labelData { index ->
-            val valueList = mutableListOf<Float>()
-            groupBarData.map { groupBar ->
-                var yMax = 0f
-                groupBar.barList.forEach {
-                    yMax += it.point.y
-                }
-                valueList.add(yMax)
-            }
-            val maxElementInYAxis = getMaxElementInYAxis(valueList.maxOrNull() ?: 0f, yStepSize)
-
-            (index * (maxElementInYAxis / yStepSize)).toString()
-        }
-        .topPadding(36.dp)
-        .build()
-
-    val colorList = listOf(
-        colorResource(id = R.color.orange),
-        colorResource(id = R.color.myRed),
-        colorResource(id = R.color.purple_700)
-    )
-
+@Composable
+private fun BreastfeedingBarChart(
+    breastFeedingRecords: List<BreastFeedingRecord>,
+    startDate: LocalDate,
+    endDate: LocalDate
+) {
+    val groupBarData = breastFeedingRecordToGroupBarData(breastFeedingRecords, startDate, endDate)
     val legendsConfig = LegendsConfig(
-        legendLabelList = getDiaperLegendsLabelData(),
-        gridColumnCount = 3
+        legendLabelList = breastfeedingLegendsLabelData(),
+        gridColumnCount = 2
     )
-    val groupBarPlotData = BarPlotData(
-        groupBarList = groupBarData,
-        barStyle = BarStyle(
-            barWidth = 35.dp,
-            selectionHighlightData = SelectionHighlightData(
-                isHighlightFullBar = true,
-                groupBarPopUpLabel = { name, value ->
-                    "Name : C$name Value : ${String.format("%.2f", value)}"
-                }
-            )
-        ),
-        barColorPaletteList = colorList
-    )
-    val groupBarChartData = GroupBarChartData(
-        barPlotData = groupBarPlotData,
-        xAxisData = xAxisData,
-        yAxisData = yAxisData,
-        paddingBetweenStackedBars = 0.dp,
-        drawBar = { drawScope, barChartData, barStyle, drawOffset, height, barIndex ->
-            with(drawScope) {
-                drawRect(
-                    color = colorList[barIndex],
-                    topLeft = drawOffset,
-                    size = Size(barStyle.barWidth.toPx(), height),
-                    style = barStyle.barDrawStyle,
-                    blendMode = barStyle.barBlendMode
-                )
-            }
-        }
-    )
-    Column(
-        Modifier
-            .height(500.dp)
-    ) {
-        StackedBarChart(
-            modifier = Modifier
-                .height(400.dp),
-            groupBarChartData = groupBarChartData
-        )
-        Legends(
-            legendsConfig = legendsConfig
-        )
-    }
+    BarChart(groupBarData = groupBarData, legendsConfig = legendsConfig)
 }
 
-
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
-fun SleepSummary(context: Context, pieChartConfig: PieChartConfig) {
+private fun BreastfeedingPieChart(breastFeedingRecords: List<BreastFeedingRecord>) {
+    if (breastFeedingRecords.isEmpty()) {
+        Text(text = "No data")
+        return
+    }
+
+    val leftSessions = breastFeedingRecords.count { it.leftBreast != null }
+    val rightSessions = breastFeedingRecords.count { it.rightBreast != null }
+    val total = leftSessions + rightSessions
+
     val data = PieChartData(
         slices = listOf(
-            PieChartData.Slice("Total Hours Awake", 15f, Color(0xFF5F0A87)),
-            PieChartData.Slice("Total Hours Asleep", 30f, Color(0xFF20BF55)),
-
-            ),
+            PieChartData.Slice("Left Breast", leftSessions / total.toFloat(), Color(0xFF5F0A87)),
+            PieChartData.Slice("Right Breast", rightSessions / total.toFloat(), Color(0xFF20BF55)),
+        ),
         plotType = PlotType.Donut
     )
-
     Column(
         modifier = Modifier
             .fillMaxWidth()
             .height(500.dp)
     ) {
-        Legends(legendsConfig = DataUtils.getLegendsConfigFromPieChartData(pieChartData = data, 3))
-        DonutPieChart(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(400.dp),
-            data,
-            pieChartConfig
-        ) { slice ->
-            Toast.makeText(context, slice.label, Toast.LENGTH_SHORT).show()
-        }
+        PieChart(data = data)
     }
-
-    val maxRange = 100
-    val barData = DataUtils.getGradientBarChartData(50, 100)
-    val yStepSize = 10
-    val xAxisData = AxisData.Builder()
-        .axisStepSize(30.dp)
-        .steps(barData.size - 1)
-        .bottomPadding(40.dp)
-        .axisLabelAngle(20f)
-        .startDrawPadding(48.dp)
-        .labelData { index -> barData[index].label }
-        .build()
-    val yAxisData = AxisData.Builder()
-        .steps(yStepSize)
-        .labelAndAxisLinePadding(20.dp)
-        .axisOffset(20.dp)
-        .labelData { index -> (index * (maxRange / yStepSize)).toString() }
-        .build()
-    val barChartData = BarChartData(
-        chartData = barData,
-        xAxisData = xAxisData,
-        yAxisData = yAxisData,
-        barStyle = BarStyle(paddingBetweenBars = 20.dp,
-            barWidth = 35.dp,
-            isGradientEnabled = true,
-            selectionHighlightData = SelectionHighlightData(
-                highlightBarColor = Color.Red,
-                highlightTextBackgroundColor = Color.Green,
-                popUpLabel = { _, y -> " Value : $y " }
-            )),
-        showYAxis = true,
-        showXAxis = true,
-        horizontalExtraSpace = 20.dp
-    )
-    BarChart(
-        modifier = Modifier
-            .padding(top = 32.dp)
-            .height(350.dp), barChartData = barChartData
-    )
 }
 
-fun dateByQty(startDate: LocalDate, endDate: LocalDate): Map<LocalDate, Long> {
+
+@Composable
+fun SleepSummary(startDate: LocalDate, endDate: LocalDate, sleepRecords: List<SleepRecord>) {
+    val minStart = sleepRecords.minBy { it.startTimeEpochSecs }.startTimeEpochSecs
+    val maxStart = sleepRecords.maxBy { it.endTimeEpochSecs }.endTimeEpochSecs
+    val startDateTime = LocalDateTime.of(startDate, LocalTime.MIDNIGHT)
+    val endDateTime = LocalDateTime.of(endDate, LocalTime.MIDNIGHT)
+    val duration = Duration.between(startDateTime, endDateTime)
+    val totalDuration =  Duration.between(startDateTime, endDateTime).seconds
+    val sleepTime = sleepRecords.sumOf { it.endTimeEpochSecs - it.startTimeEpochSecs }
+    val awakeTime = totalDuration - sleepTime
+
+    val data = PieChartData(
+        slices = listOf(
+            PieChartData.Slice(
+                "Total Hours Awake",
+                awakeTime / totalDuration.toFloat(),
+                Color(0xFF5F0A87)
+            ),
+            PieChartData.Slice(
+                "Total Hours Asleep",
+                sleepTime / totalDuration.toFloat(),
+                Color(0xFF20BF55)
+            ),
+
+            ),
+        plotType = PlotType.Donut
+    )
+
+    PieChart(data = data)
+}
+
+fun minDateRange(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
     val days = max(ChronoUnit.DAYS.between(startDate, endDate), 7)
-    return (0..days).map { startDate.plusDays(it) }.associateWith { 0 }
+    return (0..days).map { startDate.plusDays(it) }
 }
 
 
@@ -598,13 +623,11 @@ fun diaperToBarChatData(
     endDate: LocalDate
 ): List<BarData> {
 
-
-    val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)
     val summary = bottleFeedingRecords
         .groupBy { epochSecondsToLocalDateTime(it.timestamp)!!.toLocalDate() }
         .mapValues { it.value.sumOf { c -> c.quantityMl } }
 
-    val rangeSummary = dateByQty(startDate, endDate) + summary
+    val rangeSummary = minDateRange(startDate, endDate).associateWith { 0 } + summary
     return rangeSummary
         .map { Pair(it.key, it.value) }
         .sortedBy { it.first }
@@ -679,6 +702,27 @@ fun getDiaperLegendsLabelData(): List<LegendLabel> {
         colorResource(id = R.color.purple_700)
     )
     val labelNames = listOf("Wet", "Dirty", "Wet and Dirty")
+
+    for (index in colorList.indices) {
+        labelList.add(
+            LegendLabel(
+                colorList[index],
+                labelNames[index]
+            )
+        )
+    }
+    return labelList
+}
+
+@Composable
+fun breastfeedingLegendsLabelData(): List<LegendLabel> {
+
+    val labelList = mutableListOf<LegendLabel>()
+    val colorList = listOf(
+        colorResource(id = R.color.orange),
+        colorResource(id = R.color.purple_700)
+    )
+    val labelNames = listOf("Left", "Right")
 
     for (index in colorList.indices) {
         labelList.add(

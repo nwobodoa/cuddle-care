@@ -151,4 +151,27 @@ class SleepingViewModel : ViewModel() {
             }
     }
 
+    fun fetchRangeRecords(activeBaby: Baby?, startDate: LocalDate, endDate: LocalDate) {
+        if(activeBaby == null) return
+        val startOfDayEpoch = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = endDate.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        setLoading(true)
+        activeBabyCollection(sleepingCollection, activeBaby)
+            .whereLessThanOrEqualTo("endTimeEpochSecs", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("endTimeEpochSecs", startOfDayEpoch)
+            .addSnapshotListener { snap, ex ->
+                setLoading(false)
+                if (ex != null) {
+                    Log.e(TAG, "fetchRecord: ", ex)
+                    return@addSnapshotListener
+                }
+
+                val sleepRecords =
+                    snap?.documents?.mapNotNull { it.toObject(SleepRecord::class.java) }
+                        ?: emptyList()
+                _sleepingUIState.update { it.copy(sleepRecords = sleepRecords) }
+            }
+    }
+
 }

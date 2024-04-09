@@ -238,5 +238,32 @@ class BreastfeedingViewModel : ViewModel() {
         }
     }
 
+    fun fetchRangeRecords(activeBaby: Baby?, startDate: LocalDate, endDate: LocalDate) {
+        if (activeBaby == null) return
+        val startOfDayEpoch = startDate.atStartOfDay().toEpochSecond(ZoneOffset.UTC)
+        val endOfDayEpoch = endDate.atTime(LocalTime.MAX).toEpochSecond(ZoneOffset.UTC)
+
+        setLoading(true)
+        activeBabyCollection(breastfeedingCollection, activeBaby)
+            .whereLessThanOrEqualTo("endTime", endOfDayEpoch)
+            .whereGreaterThanOrEqualTo("endTime", startOfDayEpoch)
+            .addSnapshotListener { snap, ex ->
+                setLoading(false)
+                if (ex != null) {
+                    Log.e(TAG, "fetchRecords: ", ex)
+                    return@addSnapshotListener
+                }
+                snap?.documents
+                    ?.mapNotNull { it.toObject(BreastFeedingRecord::class.java) }
+                    ?.let { records ->
+                        _breastfeedingState.update {
+                            it.copy(
+                                breastfeedingRecords = records
+                            )
+                        }
+                    }
+            }
+    }
+
 
 }
