@@ -4,7 +4,6 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
@@ -33,7 +32,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -77,7 +75,7 @@ fun formatDate(date: LocalDate): String {
     return date.format(DateTimeFormatter.ofPattern("EEE, d MMM", Locale.US))
 }
 
-val screens = listOf(
+val navigationItems = listOf(
     NavigationItem(
         iconDrawableId = R.drawable.bf,
         title = "Breastfeeding",
@@ -189,9 +187,6 @@ fun HomeNavigableScreen(
             }
             composable(Screen.Statistics.name) {
                 StatisticsScreen(
-                    onTopNavigation = onTopNavigation,
-                    babies = babies,
-                    setActiveBaby = setActiveBaby,
                     activeBaby = activeBaby,
                     innerPadding = innerPadding
                 )
@@ -252,52 +247,64 @@ fun HomeScreen(
 
     ) {
         ActivityMenuRow(onTopNavigation)
-            Column(modifier = Modifier.verticalScroll(scrollState)) {
-                TipsCard(show = isTipsCardVisible,
-                    onDismiss = { isTipsCardVisible = false })
-                TodayDateDisplay()
-                if (loading) {
-                    Loading()
-                    return
-                }
-
-                if (sortableActivities.isEmpty()) {
-                    Column(
-                        modifier = Modifier
-                            .fillMaxSize()
-                            .padding(top = 250.dp),
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Center
-                    ) {
-                        Image(
-                            imageVector = Icons.AutoMirrored.Filled.DirectionsBike,
-                            contentDescription = null
-                        )
-                        Text(text = "No data found")
-                    }
-                    return
-                }
-
-                ActivityDailySummary(
-                    breastfeedingUIState.breastfeedingRecords,
-                    bottleFeedingUIState.bottleFeedingRecords,
-                    diaperUIState.diaperRecords
-                )
-                DetailedActivityList(sortableActivities = sortableActivities)
-
+        Column(modifier = Modifier.verticalScroll(scrollState)) {
+            TipsCard(show = isTipsCardVisible,
+                onDismiss = { isTipsCardVisible = false })
+            TodayDateDisplay()
+            if (loading) {
+                Loading()
+                return
             }
+
+            if (sortableActivities.isEmpty()) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxSize()
+                        .padding(top = 250.dp),
+                    horizontalAlignment = Alignment.CenterHorizontally,
+                    verticalArrangement = Arrangement.Center
+                ) {
+                    Image(
+                        imageVector = Icons.AutoMirrored.Filled.DirectionsBike,
+                        contentDescription = null
+                    )
+                    Text(text = "No data found")
+                }
+                return
+            }
+
+            ActivityDailySummary(
+                breastfeedingUIState.breastfeedingRecords,
+                bottleFeedingUIState.bottleFeedingRecords,
+                diaperUIState.diaperRecords
+            )
+            DetailedActivityList(sortableActivities = sortableActivities)
+
         }
     }
-
+}
 
 
 @Composable
-fun ActivityMenuRow(onTopNavigation: (String) -> Unit) {
+fun ActivityMenuRow(
+    onTopNavigation: (String) -> Unit,
+    statsScreen: Boolean = false
+) {
+
+    val statsItem = setOf(
+        Screen.BreastfeedingScreen.name,
+        Screen.Bottle.name,
+        Screen.Diaper.name,
+        Screen.SleepingScreen.name
+    )
+
+    val items = if(statsScreen) navigationItems.filter { statsItem.contains(it.destination.name)} else navigationItems
+
     LazyRow(
         modifier = Modifier.padding(start = 8.dp, end = 8.dp),
         horizontalArrangement = Arrangement.spacedBy(8.dp)
     ) {
-        items(screens) { item ->
+        items(items) { item ->
             NavigationIcon(
                 drawableId = item.iconDrawableId!!,
                 text = item.title,

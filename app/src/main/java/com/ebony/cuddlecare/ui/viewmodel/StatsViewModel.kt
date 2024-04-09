@@ -1,6 +1,7 @@
 package com.ebony.cuddlecare.ui.viewmodel
 
 import androidx.lifecycle.ViewModel
+import com.ebony.cuddlecare.ui.documents.Baby
 import com.ebony.cuddlecare.util.epochMillisToDate
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -12,6 +13,7 @@ data class StatsUIState(
     val endDate:LocalDate = LocalDate.now(),
     val endDateExpanded:Boolean = false,
     val startDateExpanded:Boolean = false,
+    val numOfTimes:Int = 0
 )
 class StatsViewModel:ViewModel() {
    private val _statsUIState = MutableStateFlow(StatsUIState())
@@ -19,6 +21,10 @@ class StatsViewModel:ViewModel() {
 
     fun setStartDate(date:Long) {
         _statsUIState.update { it.copy(startDate = epochMillisToDate(date)) }
+    }
+
+    fun setNumOfTime(count:Int) {
+        _statsUIState.update { it.copy(numOfTimes = count) }
     }
 
     fun setEndDate(date:Long) {
@@ -30,4 +36,6 @@ class StatsViewModel:ViewModel() {
     fun toggleEndDateExpanded() {
         _statsUIState.update { it.copy(endDateExpanded = !it.endDateExpanded) }
     }
+
+
 }

@@ -1,10 +1,8 @@
 package com.ebony.cuddlecare.ui.screen
 
-import android.content.Context
 import android.graphics.Typeface
 import android.widget.Toast
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
@@ -12,11 +10,11 @@ import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
-import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.MaterialTheme
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -71,7 +69,6 @@ import com.ebony.cuddlecare.ui.viewmodel.SleepRecord
 import com.ebony.cuddlecare.ui.viewmodel.SleepingViewModel
 import com.ebony.cuddlecare.ui.viewmodel.StatsViewModel
 import com.ebony.cuddlecare.util.epochSecondsToLocalDateTime
-import com.ebony.cuddlecare.util.localDateTimeToEpoch
 import java.time.Duration
 import java.time.LocalDate
 import java.time.LocalDateTime
@@ -98,13 +95,9 @@ val pieChartConfig =
 private val formatter = DateTimeFormatter.ofPattern("d MMM", Locale.ENGLISH)
 
 
-@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun StatisticsScreen(
     onNotificationClick: () -> Unit = {},
-    onTopNavigation: (String) -> Unit,
-    babies: List<Baby>,
-    setActiveBaby: (String) -> Unit,
     activeBaby: Baby?,
     innerPadding: PaddingValues,
     statsViewModel: StatsViewModel = viewModel(),
@@ -154,10 +147,12 @@ fun StatisticsScreen(
         modifier = Modifier
             .verticalScroll(state = scrollState)
             .padding(innerPadding)
-            .padding(16.dp)
+            .padding(16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         ActivityMenuRow(
-            onTopNavigation = { navController.navigate(it) }
+            onTopNavigation = { navController.navigate(it) },
+            statsScreen = true
         )
 
         RangePicker(
@@ -171,44 +166,10 @@ fun StatisticsScreen(
             toggleStartDate = statsViewModel::toggleStartDateExpanded
         )
 
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        )
-        {
-            Column(
-                modifier = Modifier
-                    .border(
-                        width = 1.dp, color = Color.Green,
-                        shape = RoundedCornerShape(10.dp)
-                    )
-                    .width(150.dp)
-                    .background(Color.White, shape = RoundedCornerShape(10.dp))
-                    .padding(8.dp)
-            ) {
-                Text(text = "Number of Times")
-                Text(text = "")
-                Text(text = "Day")
-
-            }
-
-            Column(
-                modifier = Modifier
-                    .width(150.dp)
-                    .height(90.dp)
-                    .background(Color.White, shape = RoundedCornerShape(10.dp))
-                    .padding(8.dp)
-            ) {
-                Text(text = "Time of Day")
-
-
-            }
-        }
 
         NavHost(navController = navController, startDestination = Screen.Bottle.name) {
             composable(Screen.Bottle.name) {
-                BottleFeedingSummary(
+                BottleFeedingStats(
                     bottleFeedingUIState.bottleFeedingRecords,
                     statsUIState.startDate,
                     statsUIState.endDate
@@ -229,17 +190,14 @@ fun StatisticsScreen(
                 )
             }
             composable(Screen.SleepingScreen.name) {
-                SleepSummary(
+                SleepStats(
                     startDate = statsUIState.startDate,
                     endDate = statsUIState.endDate,
                     sleepRecords = sleepUiState.sleepRecords
                 )
             }
         }
-
-
     }
-
 }
 
 
@@ -369,7 +327,12 @@ fun breastFeedingRecordToGroupBarData(
 
 @Composable
 fun DiaperStats(diaperRecords: List<DiaperRecord>, startDate: LocalDate, endDate: LocalDate) {
-    Column {
+    if (diaperRecords.isEmpty()) {
+        Text(text = "No data")
+        return
+    }
+
+    Column(verticalArrangement = Arrangement.spacedBy(16.dp)) {
         DiaperPieChart(diaperRecords)
         DiaperStackedBarChart(diaperRecords, startDate, endDate)
     }
@@ -389,7 +352,10 @@ private fun DiaperStackedBarChart(
         legendLabelList = getDiaperLegendsLabelData(),
         gridColumnCount = 3
     )
-    BarChart(diaperRecordToGroupBarData(diaperRecords, startDate, endDate), legendsConfig)
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        ChatTitle(text = "Frequency of Each Soil type per day")
+        BarChart(diaperRecordToGroupBarData(diaperRecords, startDate, endDate), legendsConfig)
+    }
 }
 
 @Composable
@@ -496,7 +462,10 @@ private fun DiaperPieChart(
             ),
         plotType = PlotType.Donut
     )
-    PieChart(data)
+    Column {
+        ChatTitle(text = "Diaper Soil Type")
+        PieChart(data)
+    }
 }
 
 @Composable
@@ -532,9 +501,19 @@ fun BreastFeedingStats(
     startDate: LocalDate,
     endDate: LocalDate
 ) {
+    if (breastFeedingRecords.isEmpty()) {
+        Text(text = "No data")
+        return
+    }
     Column {
-        BreastfeedingPieChart(breastFeedingRecords)
-        BreastfeedingBarChart(breastFeedingRecords, startDate, endDate)
+        Column {
+            ChatTitle(text = "Left breast session vs Right Breast Sessions in period")
+            BreastfeedingPieChart(breastFeedingRecords)
+        }
+        Column {
+            ChatTitle(text = "Left breast sessions vs Right Breast Sessions per day")
+            BreastfeedingBarChart(breastFeedingRecords, startDate, endDate)
+        }
     }
 }
 
@@ -581,13 +560,15 @@ private fun BreastfeedingPieChart(breastFeedingRecords: List<BreastFeedingRecord
 
 
 @Composable
-fun SleepSummary(startDate: LocalDate, endDate: LocalDate, sleepRecords: List<SleepRecord>) {
-    val minStart = sleepRecords.minBy { it.startTimeEpochSecs }.startTimeEpochSecs
-    val maxStart = sleepRecords.maxBy { it.endTimeEpochSecs }.endTimeEpochSecs
+fun SleepStats(startDate: LocalDate, endDate: LocalDate, sleepRecords: List<SleepRecord>) {
+    if (sleepRecords.isEmpty()) {
+        Text(text = "No data")
+        return
+    }
+
     val startDateTime = LocalDateTime.of(startDate, LocalTime.MIDNIGHT)
     val endDateTime = LocalDateTime.of(endDate, LocalTime.MIDNIGHT)
-    val duration = Duration.between(startDateTime, endDateTime)
-    val totalDuration =  Duration.between(startDateTime, endDateTime).seconds
+    val totalDuration = Duration.between(startDateTime, endDateTime).seconds
     val sleepTime = sleepRecords.sumOf { it.endTimeEpochSecs - it.startTimeEpochSecs }
     val awakeTime = totalDuration - sleepTime
 
@@ -607,8 +588,11 @@ fun SleepSummary(startDate: LocalDate, endDate: LocalDate, sleepRecords: List<Sl
             ),
         plotType = PlotType.Donut
     )
+    Column {
+        ChatTitle(text = "Awake Time vs Sleep Time")
+        PieChart(data = data)
+    }
 
-    PieChart(data = data)
 }
 
 fun minDateRange(startDate: LocalDate, endDate: LocalDate): List<LocalDate> {
@@ -640,12 +624,15 @@ fun diaperToBarChatData(
 
 
 @Composable
-fun BottleFeedingSummary(
+fun BottleFeedingStats(
     bottleFeedingRecords: List<BottleFeedingRecord>,
     startDate: LocalDate,
     endDate: LocalDate
 ) {
-    if (bottleFeedingRecords.isEmpty()) return
+    if (bottleFeedingRecords.isEmpty()) {
+        Text(text = "No data")
+        return
+    }
     val maxRange = 100
     val barData = diaperToBarChatData(bottleFeedingRecords, startDate, endDate)
     val yStepSize = 10
@@ -683,13 +670,21 @@ fun BottleFeedingSummary(
         horizontalExtraSpace = 20.dp
     )
 
-    BarChart(
-        modifier = Modifier
-            .padding(top = 32.dp)
-            .height(350.dp),
-        barChartData = barChartData
-    )
+    Column {
+        ChatTitle(text = "Quantity of Feeds Per Day (ml)")
+        BarChart(
+            modifier = Modifier
+                .padding(top = 32.dp)
+                .height(350.dp),
+            barChartData = barChartData
+        )
+    }
 
+}
+
+@Composable
+fun ChatTitle(text: String) {
+    Text(text = text, style = MaterialTheme.typography.h6)
 }
 
 @Composable
