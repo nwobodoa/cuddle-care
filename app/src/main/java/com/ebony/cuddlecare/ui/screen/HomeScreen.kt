@@ -51,6 +51,7 @@ import com.ebony.cuddlecare.ui.documents.BottleFeedingRecord
 import com.ebony.cuddlecare.ui.documents.CareGiver
 import com.ebony.cuddlecare.ui.documents.DiaperRecord
 import com.ebony.cuddlecare.ui.documents.DiaperSoilType
+import com.ebony.cuddlecare.ui.viewmodel.AccountViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BottleFeedViewModel
 import com.ebony.cuddlecare.ui.viewmodel.BreastFeedingRecord
 import com.ebony.cuddlecare.ui.viewmodel.BreastfeedingViewModel
@@ -143,9 +144,17 @@ fun HomeNavigableScreen(
     activeBaby: Baby?,
     setBabyToUpdate: (Baby) -> Unit,
     onSignOut: () -> Unit,
-    user: CareGiver,
     navController: NavHostController = rememberNavController(),
+    accountViewModel: AccountViewModel = viewModel(),
+    user: CareGiver
 ) {
+
+    val accountUIState by accountViewModel.accountUIState.collectAsState()
+
+    LaunchedEffect(key1 = user) {
+        accountViewModel.checkInvites(user)
+    }
+
 
     Scaffold(
         topBar = {
@@ -158,7 +167,8 @@ fun HomeNavigableScreen(
         },
         bottomBar = {
             BottomNavBar(
-                navigate = { dest -> navController.navigate(dest) }
+                navigate = { dest -> navController.navigate(dest) },
+                accountHasNews = accountUIState.pendingInvites.isNotEmpty()
             )
         },
     ) { innerPadding ->
@@ -206,8 +216,9 @@ fun HomeScreen(
     diaperViewModel: DiaperViewModel = viewModel(),
     sleepViewModel: SleepingViewModel = viewModel(),
     medicineViewModel: MedicineViewModel = viewModel(),
-    vaccinationViewModel: VaccinationViewModel = viewModel()
-) {
+    vaccinationViewModel: VaccinationViewModel = viewModel(),
+
+    ) {
     var isTipsCardVisible by remember { mutableStateOf(true) }
     val bottleFeedingUIState by bottleFeedViewModel.bottleFeedingUIState.collectAsState()
     val breastfeedingUIState by breastFeedingViewModel.breastfeedingUIState.collectAsState()
@@ -298,7 +309,8 @@ fun ActivityMenuRow(
         Screen.SleepingScreen.name
     )
 
-    val items = if(statsScreen) navigationItems.filter { statsItem.contains(it.destination.name)} else navigationItems
+    val items =
+        if (statsScreen) navigationItems.filter { statsItem.contains(it.destination.name) } else navigationItems
 
     LazyRow(
         modifier = Modifier.padding(start = 8.dp, end = 8.dp),

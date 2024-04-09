@@ -127,13 +127,14 @@ val navItems = listOf(
     )
 )
 
+
 @Composable
-fun BottomNavBar(navigate: (String) -> Unit) {
+fun BottomNavBar(
+    navigate: (String) -> Unit,
+    accountHasNews: Boolean = false
+
+) {
     var selectedItemIndex by rememberSaveable { mutableIntStateOf(0) }
-
-
-
-
     NavigationBar {
         navItems.forEachIndexed { index, item ->
             NavigationBarItem(
@@ -144,7 +145,7 @@ fun BottomNavBar(navigate: (String) -> Unit) {
                             Badge {
                                 Text(text = item.badgeCount.toString())
                             }
-                        } else if (item.hasNews) {
+                        } else if (item.destination == Screen.Profile && accountHasNews) {
                             Badge()
                         }
                     }) {

@@ -48,11 +48,10 @@ fun RegisterScreen(
                     "Successfully Registered",
                     duration = SnackbarDuration.Short
                 )
-                navigationController.navigate(Screen.Login.name)
             }
-
         }
     }
+
     val errors = registerUIState.errors
     val hasError = errors.isNotEmpty()
     Scaffold(

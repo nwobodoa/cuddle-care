@@ -71,7 +71,6 @@ class RegisterViewModel : ViewModel() {
                         addError(e.message.toString())
                         it.user!!.delete()
                     }.addOnSuccessListener {
-                        firebaseAuth.signOut()
                         updateRegistrationState(true)
                     }.addOnCompleteListener {
                         setLoading(false)
